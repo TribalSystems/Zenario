@@ -4,7 +4,7 @@ zenario_videos_manager:
     panels:
         videos:
             title: Video library
-            no_items_message: There are no videos.
+            no_items_message: No videos found
             panel_type: multi_line_list_or_grid
             use_tall_rows: true
             item: 
@@ -22,11 +22,9 @@ zenario_videos_manager:
             
             columns:
                 thumbnail_id:
-                    type: hidden
                     hidden: true
                     db_column: v.image_id
                 thumbnail_checksum:
-                    type: hidden
                     hidden: true
                     db_column: f.checksum
                     table_join: |
@@ -70,7 +68,6 @@ zenario_videos_manager:
                     show_by_default: true
                     db_column: v.url
                     searchable: true
-                    sortable: true
                     width: xlarge
                 date:
                     title: Date
@@ -176,7 +173,7 @@ zenario_videos_manager:
                     priv: _PRIV_MANAGE_VIDEOS
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
-                    label: Add a video by URL
+                    label: Add a video
                     admin_box:
                         path: zenario_videos_manager__video
                 update_vimeo_privacy:
@@ -191,3 +188,13 @@ zenario_videos_manager:
                             message_type: question
                         request:
                             update_vimeo_privacy: 1
+                help:
+                    label: Help
+                    hide_in_select_mode: true
+                    help: 
+                        message: |
+                            The video library holds videos that can be managed and played on this site, even thought they are stored on YouTube or Vimeo.
+
+                            Videos can be public, or may be unlisted or private on YouTube/Vimeo, and by displaying them on a private page on Zenario you can control access through Zenario's extranet system.
+
+                            To add a video, click the "Add video" button, and paste in the URL from the YouTube or Vimeo host.

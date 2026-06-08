@@ -14,15 +14,15 @@ zenario__locations:
                         title: ID
                         format: id
                         db_column: id
-                        show_by_default: Yes
-                        searchable: Yes
-                        align_right: Yes
+                        show_by_default: true
+                        searchable: true
+                        align_right: true
                         width: xxsmall
                     name:
                         title: Name
                         db_column: name
-                        show_by_default: Yes
-                        searchable: Yes
+                        show_by_default: true
+                        searchable: true
                         width: medium
                 item_buttons:
                     rename_score:
@@ -30,6 +30,5 @@ zenario__locations:
                         label: Rename
                         admin_box:
                             path: zenario_location_manager__score
-                disable_close_up_view: Yes
                 item:
                     css_class: zenario_location_manager__score

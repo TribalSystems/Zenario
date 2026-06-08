@@ -87,7 +87,7 @@ zenario__content:
             css_class: zenario_category_icon
             separator_before_this: true
             label: Categories
-            tooltip: Edit categories of content item, used when listing items in Content Summary List (CSL) plugins.
+            tooltip: Edit categories of content item, used when listing items in Content Summary List (CSL) plugins
             link:
                 path: zenario__content/panels/categories
         writer_profiles:

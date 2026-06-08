@@ -10,7 +10,7 @@
 				><span class="zenario_at_button_main">
 					Go to Organizer
 				</span></a>
-				<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link', zenarioO.getNavigation().items)}}</ul>
+				<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link', zenarioO.getNavigation(true).items)}}</ul>
 			</li>
 		</ul>
 	</div>
@@ -94,6 +94,19 @@
 							<% } %>
 							data-tooltip-options="
 								{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+							"
+						></div>
+					<% } %>
+					
+					<% if (zenarioA.running.zenario_analytics_matomo) { %>
+						<div
+							class="zenario_at_dev_icon zenario_topRightIcon organizer_analytics_box"
+							data-step="16" data-position="bottom-right-aligned"
+							data-intro="{{'<p><strong>Analytics</strong></p><p>Click here for info on analytics.</p>'|escape}}"
+							onclick="zenarioAB.open('zenario_analytics_info', {});"
+							title="Analytics"
+							data-tooltip-options="
+								{position: {collision: 'flipfit'}}
 							"
 						></div>
 					<% } %>

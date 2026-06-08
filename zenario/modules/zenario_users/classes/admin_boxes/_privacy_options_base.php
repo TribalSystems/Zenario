@@ -49,6 +49,10 @@ class zenario_users__privacy_options_base extends zenario_users {
 		ze\lang::applyMergeFields($fields['privacy/privacy']['values']['logged_in']['label'], ['user_count' => $userCountPhrase]);
 		
 		$fields['privacy/group_ids']['values'] = ze\datasetAdm::getGroupPickerCheckboxesForFAB();
+		if (empty($fields['privacy/group_ids']['values'])) {
+			$box['key']['groups_exist'] = false;
+		}
+		
 		$fields['privacy/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();
 		
 		if ($duplicatingOrTranslating) {

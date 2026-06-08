@@ -112,6 +112,7 @@ zenario_publish:
                     type: date
                     indent: 1
                     no_past_dates: true
+                    format_onchange: true
                 publish_hours:
                     grouping: schedule
                     visible_if:
@@ -168,6 +169,7 @@ zenario_publish:
                             label: '23'
                     value: 1
                     same_row: true
+                    format_onchange: true
                 publish_mins:
                     grouping: schedule
                     visible_if:
@@ -201,11 +203,12 @@ zenario_publish:
                         
                     value: 00
                     same_row: true
+                    format_onchange: true
                 
                 featured_image_grouping:
                     type: grouping
                     grouping_css_class: content_item_feature_image
-                    pre_grouping_html: '<div class="testing_grouping">'
+                    pre_grouping_html: '<div class="content_item_info_grouping">'
                 featured_image:
                     grouping: featured_image_grouping
                     snippet:
@@ -247,13 +250,39 @@ zenario_publish:
                     type: text
                     label: 'Language:'
                     show_as_a_span: true
+                release_date:
+                    hidden: true
+                    grouping: content_item_details
+                    type: text
+                    label: 'Release date:'
+                    pre_field_html: '<div class="publish__item_release_date">'
+                    post_field_html: '</div>'
+                    show_as_a_span: true
+                    notices_below:
+                        release_date_is_not_today:
+                            type: warning
+                            #The message is created in the PHP class.
+                            message: ''
+                            html: true
+                            hidden: true
+                        release_date_is_not_the_scheduled_publishing_date:
+                            type: warning
+                            #The message is created in the PHP class.
+                            message: ''
+                            html: true
+                            hidden: true
+                        release_date_not_set:
+                            type: warning
+                            message: 'The release date is not set. If that is not correct, [[link_start]]edit the meta data[[link_end]].'
+                            html: true
+                            hidden: true
                 
-                
-                publishing_before_release_date_warning:
+                multiple_items__publishing_date_not_set_correctly:
                     notices_above:
                         notice:
                             type: warning
-                            message: "[[publishing_before_release_date_warning_note]]"
+                            #The message is created in the PHP class.
+                            message: ""
                             html: true
                             hidden: true
 

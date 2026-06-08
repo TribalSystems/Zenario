@@ -1,0 +1,9 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background track circle -->
+  <circle cx="60" cy="60" r="50" fill="none" stroke="#D1D5DB" stroke-width="12"/>
+  
+  <!-- Animated spinner -->
+  <circle cx="60" cy="60" r="50" fill="none" stroke="#9CA3AF" stroke-width="12" stroke-linecap="round" stroke-dasharray="80 235">
+    <animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="1s" repeatCount="indefinite"/>
+  </circle>
+</svg>

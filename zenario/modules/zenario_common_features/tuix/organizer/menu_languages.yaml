@@ -8,16 +8,14 @@ zenario__menu:
         by_language:
             title: Menu Languages
             no_items_message: >
-                No Languages have been enabled. You must enable a Language
-                before creating any Menu Nodes.
-            php: true
+                No languages have been enabled. You must enable a language
+                before creating any menu nodes.
             db_items:
                 table: '[[DB_PREFIX]]languages AS l'
                 id_column: l.id
                 client_side: true
             refiners:
-                show_language_choice:
-                    exists: true
+                show_language_choice: {}
             columns:
                 name:
                     title: Language Name
@@ -26,11 +24,8 @@ zenario__menu:
                     format: language_english_name_with_id
                     show_by_default: true
             item:
-                name: Language
-                names: Languages
                 css_class: ""
                 tooltip_when_link_is_active: 'View menu sections in the language &quot;[[name]]&quot;.'
                 link:
                     path: zenario__menu/panels/sections
-                    branch: true
                     refiner: language

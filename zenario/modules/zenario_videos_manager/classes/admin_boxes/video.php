@@ -208,7 +208,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 								echo ze\admin::phrase('Zenario cannot currently receive uploaded files, because the private/ folder is not writeable.');
 							} else {
 								$filename = 'video_' . ze\escape::sql($videoId) . '_thumbnail.jpg';
-								$safeFileName = ze\file::safeName($filename);
+								$safeFileName = ze\file::validName($filename);
 
 								$failed = false;
 								if (!file_exists($path = CMS_ROOT. $dir. $safeFileName) || !filesize($path = CMS_ROOT. $dir. $safeFileName)) {
@@ -296,7 +296,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 											echo ze\admin::phrase('Zenario cannot currently receive uploaded files, because the private/ folder is not writeable.');
 										} else {
 											$filename = 'video_' . ze\escape::sql($videoId) . '_thumbnail.jpg';
-											$safeFileName = ze\file::safeName($filename);
+											$safeFileName = ze\file::validName($filename);
 			
 											$failed = false;
 											if (!file_exists($path = CMS_ROOT. $dir. $safeFileName) || !filesize($path = CMS_ROOT. $dir. $safeFileName)) {

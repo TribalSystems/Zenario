@@ -2053,7 +2053,7 @@ zenarioGM.saveProperties = function(el, params) {
 		
 		if (data.cells[i].slot) {
 			
-			var name,
+			var nameLC = params.name.toLowerCase(),
 				hasError = false,
 				errorMessage;
 				
@@ -2063,16 +2063,15 @@ zenarioGM.saveProperties = function(el, params) {
 			} else if (hasError = params.name != params.name.replace(/[^a-zA-Z0-9_]/g, '')) {
 				errorMessage = phrase.gridErrorNameFormat;
 		
-			} else if (hasError = params.name != data.cells[i].name && zenarioGM.checkIfNameUsed(params.name)) {
-				name = params.name.toLowerCase();
+			} else if (hasError = nameLC != data.cells[i].name.toLowerCase() && zenarioGM.checkIfNameUsed(params.name)) {
 				
-				if (zenarioGM.mode != 'head' && zenarioGM.slotsUsedInHeader[name]) {
+				if (zenarioGM.mode != 'head' && zenarioGM.slotsUsedInHeader[nameLC]) {
 					errorMessage = phrase.gridErrorNameInUseHeader;
 				
-				} else if (zenarioGM.mode != 'body' && zenarioGM.slotsUsedInLayouts[name]) {
+				} else if (zenarioGM.mode != 'body' && zenarioGM.slotsUsedInLayouts[nameLC]) {
 					errorMessage = phrase.gridErrorNameInUseLayout;
 				
-				} else if (zenarioGM.mode != 'foot' && zenarioGM.slotsUsedInFooter[name]) {
+				} else if (zenarioGM.mode != 'foot' && zenarioGM.slotsUsedInFooter[nameLC]) {
 					errorMessage = phrase.gridErrorNameInUseFooter;
 				
 				} else {

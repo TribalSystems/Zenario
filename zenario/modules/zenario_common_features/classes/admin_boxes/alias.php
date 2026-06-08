@@ -41,7 +41,7 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 			$modRewriteSuffix = ze::setting('mod_rewrite_suffix');
 
 			if ($modRewriteSuffix && ze::in($modRewriteSuffix, '.htm', '.html')) {
-				$fields['meta_data/alias']['oninput'] = 'zenarioAB.removeHtmAndHtmlFromAlias("' . htmlspecialchars($modRewriteSuffix) . '");';
+				$fields['meta_data/alias']['oninput'] .= ' zenarioAB.removeHtmAndHtmlFromAlias("' . htmlspecialchars($modRewriteSuffix) . '");';
 			}
 		}
 		
@@ -91,8 +91,8 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 				//First, get the default lang content item tag, format it, and format the language name nicely.
 				$defaultLangContentItemTag = $box['key']['cType'] . "_" . $box['key']['equivId'];
 				$defaultLangContentItemTagFormatted = ze\content::formatTag($box['key']['equivId'], $box['key']['cType']);
-				$defaultLangContentItemLangId = ze\row::get('content_items', 'language_id', ['id' => $box['key']['equivId'], 'type' => $box['key']['cType']]);
-				$defaultLangContentItemLangName = ze\lang::name($defaultLangContentItemLangId);
+				
+				$defaultLangName = ze\lang::name(ze::$defaultLang);
 				
 				//Build the front-end link string, and merge field values...
 				$aliasString = "Changing the alias of this content item is not possible here, as this item is not in the site's default language ([[lang]]).";
@@ -104,7 +104,7 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 				//... then do the same for the translation chain link...
 				$thisItemTranslationChainHref =
 					ze\link::protocol() . ze\link::host() . SUBDIRECTORY
-					. 'organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//item_buttons/zenario_trans__view' . $defaultLangContentItemTag;
+					. 'organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//item_buttons/zenario_trans__view//' . $defaultLangContentItemTag;
 				$thisItemTranslationChainLinkStart = '<a href="' . htmlspecialchars($thisItemTranslationChainHref) . '" target="_blank">';
 				$thisItemTranslationChainLinkEnd = '</a>';
 				$linksString = "Go to [[ci_link_start]][[ci_tag_formatted]][[ci_link_end]] and edit its alias, or [[tc_link_start]]view this item's translation chain[[tc_link_end]].";
@@ -114,7 +114,7 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 				$box['tabs']['meta_data']['notices']['cannot_change_alias']['message'] =
 					ze\admin::phrase($aliasString . " " . $linksString,
 					[
-						'lang' => $defaultLangContentItemLangName,
+						'lang' => $defaultLangName,
 						'ci_link_start' => $defaultLangContentItemTagLinkStart,
 						'ci_tag_formatted' => $defaultLangContentItemTagFormatted,
 						'ci_link_end' => $defaultLangContentItemTagLinkEnd,

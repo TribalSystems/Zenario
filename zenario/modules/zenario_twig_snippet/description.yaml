@@ -20,7 +20,13 @@ keywords: edit, twig, html
 css_class_name: zenario_html_snippet
 is_pluggable: true
 can_be_version_controlled: false
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: true
+    regular_nests: true
+    slideshows: false
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: true
 default_instance_name: Untitled Twig Snippet
 inheritance:
     inherit_settings_from_module: zenario_html_snippet

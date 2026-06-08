@@ -51,7 +51,7 @@ common_definitions:
         description: >
             This controls the order in which elements are drawn on the screen.
             
-            If not set, it defaults to the order the CMS finds them in.
+            If not set, it defaults to the order Zenario finds them in.
             
             From version 10.1 onwards, we have some logic where you can place a field or a button
             immediately before or after an existing field or button using an offset.
@@ -184,6 +184,17 @@ additionalProperties:
                         
                         Defaults to the $box['key']['id'] variable if not set.
                     default: (Defaults to the $box['key']['id'] variable)
+                frontend_link:
+                    type: string
+                    description: >
+                        Use this to set a hyperlink to the item being edited.
+                        
+                        This works from version 10.4 onwards.
+                where_used:
+                    type: string
+                    description: >
+                        Use this to add some HTML (which can include hyperlinks)
+                        on the right of the identifier.
             description: >
                 This adds a green box at the top left with the current id.
                 
@@ -265,11 +276,11 @@ additionalProperties:
             type: boolean
             modified_by_cms: true
             description: >
-                If there are errors on a tab, the CMS will give the Admin Box a little
+                If there are errors on a tab, Zenario will give the Admin Box a little
                 shake when the Admin tries to submit it.
                 However if you wish to specifically enable or disable the shaking, you can
                 set this property.
-                The CMS will clear this property and go back to its default behaviour every time
+                Zenario will clear this property and go back to its default behaviour every time
                 the Admin Box is validated and formatted.
         
         css_class:
@@ -335,7 +346,7 @@ additionalProperties:
             type: boolean
             html_description: |
                 <p>You can set this for your Admin Box to offer a file download upon completion.</p>
-                <p>Setting the <code>download</code> property for an Admin Box will cause the CMS to call your <code>adminBoxDownload()</code> method as well as your <code>saveAdminBox()</code> method when the Admin Box is saved.</p>
+                <p>Setting the <code>download</code> property for an Admin Box will cause Zenario to call your <code>adminBoxDownload()</code> method as well as your <code>saveAdminBox()</code> method when the Admin Box is saved.</p>
                 <p>You should handle this request by outputting the appropriate headers and then outputting a file.</p>
                 
         
@@ -488,7 +499,7 @@ additionalProperties:
                         html_description: |
                             <p>You can set errors&nbsp;using your <code>validateAdminBox()</code> method to show that there are errors on a tab.</p>
                             <p>If edit mode is enabled for a tab, an Admin will not be able to leave that tab or save the Admin Box whilst there are errors on that tab.</p>
-                            <p>The CMS will automatically initialise the <code>errors</code> property to an empty array each time the tab is validated. This means that any errors from a previous validation will be cleared and must be re-added if the error is still present.</p>
+                            <p>Zenario will automatically initialise the <code>errors</code> property to an empty array each time the tab is validated. This means that any errors from a previous validation will be cleared and must be re-added if the error is still present.</p>
                         additionalProperties:
                             type: string
                             description: >
@@ -497,7 +508,7 @@ additionalProperties:
                         type: object
                         html_description: |
                             <p>Notices display like errors, but do not have any special functionality.&nbsp;If visible, they are displayed one after the other just below the error messages on a tab.</p>
-                            <p>The CMS never automatically sets or removes them, and a notice will not stop an Admin from leaving a tab or saving.</p>
+                            <p>Zenario never automatically sets or removes them, and a notice will not stop an Admin from leaving a tab or saving.</p>
                         additionalProperties:
                             type: object
                             required:
@@ -541,7 +552,7 @@ additionalProperties:
                     disable_autofocus:
                         type: boolean
                         description: >
-                            When a tab is displayed/redrawn/formatted, the CMS will try to focus on the
+                            When a tab is displayed/redrawn/formatted, Zenario will try to focus on the
                             first field on that tab.
                             This is usually convenient, but can cause problems for tabs with scrollbars
                             as the browser will scroll to show the focused field.
@@ -560,7 +571,7 @@ additionalProperties:
                                 type: boolean
                                 modified_by_cms: true
                                 description: >
-                                    The CMS will automatically set this property when this tab is in edit mode.
+                                    Zenario will automatically set this property when this tab is in edit mode.
                             use_view_and_edit_mode:
                                 type: boolean
                                 description: >
@@ -573,7 +584,7 @@ additionalProperties:
                             #        Include this property to show the "Undo Changes" button when using the
                             #        always_on property.
                             #
-                            #        If this property is not defined, then the CMS will automatically enable this
+                            #        If this property is not defined, then Zenario will automatically enable this
                             #        option if the $box['key']['id'] variable is set.
                             #    default: (intelligent default)
                             format_on_edit:
@@ -608,11 +619,15 @@ additionalProperties:
                             #        validated if the "Revert" button is pressed.
                     
                     
-                    # Please see the tuix_form_schema.yaml file for field definitions
+                    # Please see the tuix_form_schema.yaml file for field definitions.
+                    # The fields property here will be array_merge_recursive() with the fields property
+                    # from tuix_form_schema.yaml by the dev tools when this file is loaded.
                     fields: {}
         
         
-        # Please see the tuix_form_schema.yaml file for LoV definitions
+        # Please see the tuix_form_schema.yaml file for LoV definitions.
+        # The lovs property here will be array_merge_recursive() with the lovs property
+        # from tuix_form_schema.yaml by the dev tools when this file is loaded.
         lovs: {}
         
         go_to_url:

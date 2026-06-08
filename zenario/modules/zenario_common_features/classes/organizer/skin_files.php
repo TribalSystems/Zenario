@@ -82,7 +82,7 @@ class zenario_common_features__organizer__skin_files extends ze\moduleBaseClass 
 						}
 						
 						if (is_dir(CMS_ROOT. $dir. $file)) {
-							$item['traits']['subdir'] = true;
+							$item['subdir'] = true;
 						} else {
 							$item['link'] = false;
 						}

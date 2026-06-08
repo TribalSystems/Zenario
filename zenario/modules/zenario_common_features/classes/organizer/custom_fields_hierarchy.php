@@ -87,8 +87,8 @@ class zenario_common_features__organizer__custom_fields_hierarchy extends ze\mod
 		//implement it as well.
 		if ($mode == 'typeahead_search') {
 			$sql .= "
-				AND (f.label LIKE '%". ze\escape::like(ze::request('_search')). "%'
-				  OR f.field_name LIKE '%". ze\escape::like(ze::request('_search')). "%')";
+				AND (f.label LIKE '%". ze\escape::like(ze::request('_cms_searchTerm')). "%'
+				  OR f.field_name LIKE '%". ze\escape::like(ze::request('_cms_searchTerm')). "%')";
 		}
 		
 		$sql .= "

@@ -24,17 +24,12 @@ zenario__layouts:
                     show_by_default: true
                     disallow_sorting: true
             refiners:
-                skin:
-                    exists: true
-                subpath:
-                    exists: true
+                skin: {}
+                subpath: {}
             refiner_required: true
             item:
-                name: Skin File
-                names: Skin Files
                 link:
                     path: zenario__layouts/panels/skin_files
-                    branch: true
                     refiner: subpath
                 tooltip_when_link_is_active: 'View files in the sub-directory &quot;[[name]]&quot;'
             collection_buttons:
@@ -144,7 +139,6 @@ zenario__layouts:
                 view_image:
                     parent: view_dropdown
                     label: View image
-                    popout:
-                        exists: true
+                    popout: {}
                     visible_if_for_all_selected_items: >
                         item.name.match(/\.(gif|jpg|jpeg|png)$/i)

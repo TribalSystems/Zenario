@@ -5,11 +5,11 @@ copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: true  # N.b. changing this property won't do anything as this module is hard-coded in the installer to run on install.
 license_info: 'Modified BSD License'
-display_name: Document Container
+display_name: Hierarchical Document Container
 description: |
-    <p>A Document Container allows you to display a document on a page in a content-managed way.</p>
-    
-    <p>The document can be displayed together with an thumbnail and or a description.</p>
+    <p>A Hierarchical Document Container allows you to display one or more hierarchical documents.</p>
+    <p>Note that Hierarchical Documents are stored in Organizer->Library->Hierarchical documents, and are not the same thing as Document Content Items.</p>
+    <p>Hierarchical Documents can be displayed with their meta information, such as title, a thumbnail and or a description.</p>
 keywords: >
     document, documents, file, files, download, pdf, doc, docx, xls, xlsx
 category: pluggable
@@ -18,6 +18,12 @@ category: pluggable
 # latest_revision_no.inc.php file if you change any of the fields below:
 is_pluggable: true
 can_be_version_controlled: false
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: true
+    regular_nests: true
+    slideshows: false
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: false
 default_framework: standard
 default_instance_name: Untitled Document Container

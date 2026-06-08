@@ -69,10 +69,10 @@ methods.validateFormatOrRedrawForField = function(field) {
 };
 
 
-methods.submitForm = function() {
+methods.submitForm = function(confirm) {
 	if (thus.ffoving < 4) {
 		thus.ffoving = 4;
-		thus.save();
+		thus.save(confirm);
 	}
 };
 
@@ -85,8 +85,8 @@ methods.format = function() {
 methods.validate = function() {
 	return thus.ffov('validate');
 };
-methods.save = function() {
-	return thus.ffov('save');
+methods.save = function(confirm) {
+	return thus.ffov('save', confirm);
 };
 
 methods.setData = function(data) {
@@ -125,7 +125,7 @@ methods.sendsSignalOnEvent = function(eventName) {
 };
 
 
-methods.ffov = function(action) {
+methods.ffov = function(action, confirm) {
 	
 	var cb = new zenario.callback,
 		url = thus.setURLForSyncedRequests(action),
@@ -137,35 +137,54 @@ methods.ffov = function(action) {
 	} else {
 		thus.prevPath = thus.path;
 		thus.checkValues();
-		post = {_format: true, _tuix: thus.sendStateToServer()};
+		post = {_cms_formatAction: true, _cms_tuix: thus.sendStateToServer()};
+		
+		if (confirm) {
+			post._cms_confirm = 1;
+		}
 	}
 	
 	if (!thus.loading) {
 		thus.showLoader();
 		
-		var after = function(tuix) {
+		var after = function(tuixToMergeIn) {
 			thus.hideLoader();
 			
-			zenarioT.checkDumps(tuix);
+			zenarioT.checkDumps(tuixToMergeIn);
+			
+			var js,
+				runAfter,
+				runAfterString,
+				tuix,
+				go = tuixToMergeIn.go,
+				closePopout = thus.inPopout && tuixToMergeIn.close_popout,
+				closing = go || closePopout;
 			
 			if (action == 'fill') {
-				thus.tuix = tuix;
-			} else {
-				thus.setData(tuix);
-			}
+				tuix = thus.tuix = tuixToMergeIn;
+				
+				js = tuix.js_before_first_load,
+				runAfter = tuix.js_on_first_load;
 			
-			var js = thus.tuix.js,
-				runAfter = thus.tuix.js_after,
-				runAfterString;
+			} else {
+				thus.setData(tuixToMergeIn);
+				tuix = thus.tuix;
+				
+				if (closing) {
+					js = tuix.js_on_save;
+				} else {
+					runAfter = tuix.js_on_reformat;
+				}
+			}
 		
 			//Reload the opener if the reload_parent flag was set
-			if (thus.tuix.reload_parent) {
+			if (tuix.reload_parent) {
 				thus.reloadParent();
 			}
 			
 			//Allow FEA plugins to call a functions or methods to run before a FEA plugin is displayed.
 			if (js) {
-				zenarioT.eval(js, thus);
+				zenarioT.run(js, thus);
 			}
 			
 			//Allow FEA plugins to call a functions or methods to run after a FEA plugin has finished displaying.
@@ -173,26 +192,26 @@ methods.ffov = function(action) {
 				runAfterString = runAfter;
 				
 				runAfter = function() {
-					zenarioT.eval(runAfterString, thus);
+					zenarioT.run(runAfterString, thus);
 				};
 			}
 			
 			//If this is a popout, and the close_popout flag was set, close it
-			if (thus.tuix.close_popout && thus.inPopout) {
+			if (closePopout) {
 				thus.closePopout();
 			}
 			
 			//If the stop_flow property was set, don't do a go() or a draw().
-			if (thus.tuix.stop_flow) {
+			if (tuix.stop_flow) {
 				return;
 			}
 			
 			
-			if (thus.tuix.go) {
-				thus.go(thus.tuix.go, undefined, undefined, runAfter);
+			if (go) {
+				thus.go(go, undefined, undefined, runAfter);
 			
-			} else if (thus.tuix.go_to_url && !goneToURL) {
-				zenario.goToURL(thus.tuix.go_to_url);
+			} else if (tuix.go_to_url && !goneToURL) {
+				zenario.goToURL(tuix.go_to_url);
 				goneToURL = true;
 				
 				//Set a timeout to re-liven the form, just in case the URL was a redirect to a download which wouldn't
@@ -219,11 +238,11 @@ methods.ffov = function(action) {
 				}
 			
 				//Scroll to the top of the slot on a "format" or "validate" event
-				if ((action == 'format' || action == 'validate') && thus.tuix.scroll_to_top_of_slot_on_format_or_validate) {
+				if ((action == 'format' || action == 'validate') && tuix.scroll_to_top_of_slot_on_format_or_validate) {
 					zenario.scrollToSlotTop(thus.containerId, true);
 				}
 				
-				if (action == 'save' && thus.tuix.scroll_after_save) {
+				if (action == 'save' && tuix.scroll_after_save) {
 					zenario.scrollToSlotTop(thus.containerId, true);
 				}
 				
@@ -323,7 +342,7 @@ methods.putHTMLOnPage = function(html) {
 	$fea.html(html);
 	
 	if (zenarioT.showDevTools()) {
-		thus.__lastFormHTML = html;
+		thus._cms_formHTML = html;
 	}
 	
 	thus.cb.done();
@@ -391,17 +410,17 @@ methods.microTemplate = function(template, data, filter, preMicroTemplate, postM
 	
 	var html, cusTemplate, cusTemplateApplied = false;
 	
-	if (!thus.__cusTemplateApplied
+	if (!thus._cms_customTemplateApplied
 	 && (template == 'fea_list' || template == 'fea_form')
 	 && (cusTemplate = thus.tuix && thus.tuix.microtemplate)) {
 		template = cusTemplate;
-		thus.__cusTemplateApplied = cusTemplateApplied = true;
+		thus._cms_customTemplateApplied = cusTemplateApplied = true;
 	}
 	
 	html = methodsOf(zenarioF).microTemplate.call(thus, template, data, filter, preMicroTemplate, postMicroTemplate);
 	
 	if (cusTemplateApplied) {
-		delete thus.__cusTemplateApplied;
+		delete thus._cms_customTemplateApplied;
 	}
 	
 	return html;
@@ -433,6 +452,10 @@ methods.on = function(eventName, handler) {
 
 methods.off = function(eventName) {
 	zenario.off(false, thus.containerId, eventName);
+};
+
+methods.registeredEvents = function(eventName) {
+	return zenario.registeredEvents(false, thus.containerId, eventName);
 };
 
 methods.showLoader = function(hide, wasRedraw) {
@@ -548,7 +571,7 @@ methods.loadData = function(request, json, TUIXSnippetLink) {
 
 methods.doAjaxLoadThenShowPlugin = function(request, callWhenLoaded) {
 	
-	delete thus.__lastFormHTML;
+	delete thus._cms_formHTML;
 	
 	switch (thus.typeOfLogic()) {
 		case 'list':
@@ -576,15 +599,15 @@ methods.doAjaxLoadThenShowPlugin = function(request, callWhenLoaded) {
 methods.loadingDoneInAdvanceSoDrawPlugin = function() {
 	var typeOfLogic = thus.typeOfLogic(),
 		tuix = thus.tuix || {},
-		js = thus.tuix.js,
-		runAfter = thus.tuix.js_after;
+		js = thus.tuix.js_before_first_load,
+		runAfter = thus.tuix.js_on_first_load;
 	
 	//Allow FEA plugins to call a functions or methods to run before a FEA plugin is displayed.
 	if (js) {
-		zenarioT.eval(js, thus);
+		zenarioT.run(js, thus);
 	}
 	
-	delete thus.__lastFormHTML;
+	delete thus._cms_formHTML;
 	
 	switch (typeOfLogic) {
 		case 'list':
@@ -613,7 +636,7 @@ methods.loadingDoneInAdvanceSoDrawPlugin = function() {
 	
 	//Allow FEA plugins to call a functions or methods to run after a FEA plugin has finished displaying.
 	if (runAfter) {
-		zenarioT.eval(runAfter, thus);
+		zenarioT.run(runAfter, thus);
 	}
 };
 
@@ -657,6 +680,12 @@ methods.doAjaxLoadThenShowList = function(callWhenLoaded) {
 		thus.tuix = tuix;
 		
 		thus.drawList();
+		
+		
+		var js = tuix.js_on_reformat;
+		if (js) {
+			zenarioT.run(js, thus);
+		}
 		
 		if (callWhenLoaded) {
 			callWhenLoaded();
@@ -714,7 +743,7 @@ methods.feaAJAX = function(action, typeOfLogic) {
 	} else {
 		thus.prevPath = thus.path;
 		thus.checkValues();
-		post = {_format: true, _tuix: thus.sendStateToServer()};
+		post = {_cms_formatAction: true, _cms_tuix: thus.sendStateToServer()};
 	}
 	
 	if (!thus.loading) {
@@ -756,21 +785,30 @@ methods.drawForm = function() {
 	thus.draw();
 	
 	thus.registerSignalHandlers();
+	
+	//If we're redrawing the form because the user tried to save but the server wanted a
+	//confirmation, show the confirm box so the user can confirm.
+	var tuix = thus.tuix;
+	if (tuix._cms_showConfirm) {
+		thus.confirm(tuix.confirm, function() {
+			thus.submitForm(true);
+		});
+	}
 };
 
 
 
 
 methods.drawList = function() {
-	thus.hadSparkline = false;
 	
 	thus.sortOutTUIX();
 	
-	var page = 1 * thus.tuix.__page__,
-		pageSize = 1 * thus.tuix.__page_size__,
-		itemCount = 1 * thus.tuix.__item_count__,
+	var page = 1 * thus.tuix._cms_page,
+		pageSize = 1 * thus.tuix._cms_pageSize,
+		itemCount = 1 * thus.tuix._cms_itemCount,
 		items = thus.tuix.items,
-		item, itemId, paginationId;
+		ii, item, itemId, paginationId,
+		ci, col;
 	
 	
 	if (thus.hasBypass
@@ -814,10 +852,30 @@ methods.drawList = function() {
 	
 
 	
-	//call sparkline
-	if (thus.hadSparkline) {
-		thus.initSparklineChart();
+	//Add any sparkline charts in the list
+	foreach (thus.sortedColumns as ci => col) {
+		if (col.sparkline) {
+			
+			foreach (thus.sortedItems as ii => item) {
+				
+				
+				var graph = Highcharts.merge(col.sparkline, item[col.id] || {}),
+					$td = $(get('zfea_' + thus.containerId + '_row_' + ii + '_col_' + ci));
+				
+				//Quality of life feature to allow merging on series data.
+				//Allow series to be defined in an associative array, but convert to a standard array
+				//at this point as Highcharts doesn't support associative arrays.
+				if (defined(graph.series)
+				 && _.isObject(graph.series)
+				 && !_.isArray(graph.series)) {
+					graph.series = _.toArray(graph.series);
+				}
+				
+				$td.highcharts('SparkLine', graph);
+			}
+		}
 	}
+	
 	
 	
 	if (thus.tuix.map) {
@@ -889,16 +947,16 @@ methods.drawGraph = function() {
 	
 	
 	//Here's the code to support the advanced version.
-	if (!thus._storedGraphSeriesData) {
-		thus._storedGraphSeriesData = {};
+	if (!thus._cms_graphSeriesData) {
+		thus._cms_graphSeriesData = {};
 	}
 	
-	var seriesData = thus._storedGraphSeriesData,
+	var seriesData = thus._cms_graphSeriesData,
 		sync = tuix.always_sync_this_data_between_client_and_server,
 		noSync = tuix.never_sync_this_data_between_client_and_server,
 		incomingSeriesData = noSync && noSync.seriesData || {},
 		incomingGraph = sync.graph,
-		existingGraph = thus._graph,
+		existingGraph = thus._cms_graphData,
 		thingsToCheck = ['yAxis', 'series'], ti, thing, i, ob, id, data;
 	
 	//Update the series data we have with anything new sent from the server
@@ -969,7 +1027,7 @@ methods.drawGraph = function() {
 	//	if (existingGraph) {
 	//		existingGraph.destroy()
 	//	}
-	//	delete thus._graph;
+	//	delete thus._cms_graphData;
 	//	
 	//	return;
 	//}
@@ -982,7 +1040,7 @@ methods.drawGraph = function() {
 	
 	//If the graph didn't previously exist on the page, initialise it
 	if (!existingGraph) {
-		thus._graph = Highcharts.chart(incomingGraph);
+		thus._cms_graphData = Highcharts.chart(incomingGraph);
 
 	} else {
 		//Otherwise, update the existing graph dynamically
@@ -1049,8 +1107,8 @@ methods.registerSignalHandlers = function() {
 		signalOnRegister;
 	
 	//Only run this if there are signals defined, and only run this once per instance.
-	if (defined(signals) && !thus._addedEvents) {
-		thus._addedEvents = true;
+	if (defined(signals) && !thus._cms_eventsAdded) {
+		thus._cms_eventsAdded = true;
 		
 		//Don't be too picky with the format of the handle_signals property.
 		signals = zenarioT.tuixToArray(thus.tuix.handle_signals);
@@ -1353,7 +1411,7 @@ methods.typeaheadSearchEnabled = function(field, id, tab) {
 
 methods.typeaheadSearchAJAXURL = function(field, id, tab) {
 	
-	return thus.visitorTUIXLink(_.extend({_tab: tab, _field: id}, thus.tuix.key), 'tas');
+	return thus.visitorTUIXLink(_.extend({_cms_currentTab: tab, _cms_field: id}, thus.tuix.key), 'tas');
 };
 
 methods.parseTypeaheadSearch = function(field, id, tab, readOnly, data) {
@@ -1581,9 +1639,9 @@ methods.itemButtonIsntHidden = function(button, itemIds, isCheckboxSelect) {
 		}
 		
 		//Check if the button is not flagged as hidden on this item
-		if (thus.tuix._hiddenItemButtons
-		 && thus.tuix._hiddenItemButtons[button.id]
-		 && thus.tuix._hiddenItemButtons[button.id][itemId]) {
+		if (thus.tuix._cms_hiddenItemButtons
+		 && thus.tuix._cms_hiddenItemButtons[button.id]
+		 && thus.tuix._cms_hiddenItemButtons[button.id][itemId]) {
 			return false;
 		}
 	}
@@ -1704,7 +1762,7 @@ methods.buttonIsntDisabled = function(button, itemIds) {
 	} while (false);
 	
 	//If it is disabled, flag it as such and change to the disabled-tooltip
-	button._isDisabled = true;
+	button._cms_buttonIsDisabled = true;
 	button.tooltip = button.disabled_tooltip || button.tooltip;
 	
 	return false;
@@ -1716,9 +1774,9 @@ methods.columnVisibleForItem = function(columnId, itemId) {
 	var column = thus.tuix.columns[columnId] || {},
 		item = thus.tuix.items[itemId] || {};
 	
-	if (thus.tuix._hiddenColumns
-	 && thus.tuix._hiddenColumns[columnId]
-	 && thus.tuix._hiddenColumns[columnId][itemId]) {
+	if (thus.tuix._cms_hiddenColumns
+	 && thus.tuix._cms_hiddenColumns[columnId]
+	 && thus.tuix._cms_hiddenColumns[columnId][itemId]) {
 		return false;
 	}
 	
@@ -1833,9 +1891,9 @@ methods.sortOutTUIX = function() {
 		}
 		
 		//Special rule for columns in FEA lists: if every cell is hidden, hide the column too!
-		if (tuix._hiddenColumns
-		 && tuix._hiddenColumns[id]
-		 && _.size(tuix._hiddenColumns[id]) == numberofItemsShown) {
+		if (tuix._cms_hiddenColumns
+		 && tuix._cms_hiddenColumns[id]
+		 && _.size(tuix._cms_hiddenColumns[id]) == numberofItemsShown) {
 			continue;
 		}
 		
@@ -1859,8 +1917,8 @@ methods.sortOutTUIX = function() {
 	zenarioT.setKin(thus.sortedItemButtons, 'zfea_button_with_children');
 	
 	
-	if (tuix.__item_sort_order__) {
-		sortedItemIds = tuix.__item_sort_order__;
+	if (tuix._cms_itemSortOrder) {
+		sortedItemIds = tuix._cms_itemSortOrder;
 	} else {
 		var sortBy = tuix.sort_by || 'name',
 			sortDesc = engToBoolean(tuix.sort_desc);
@@ -1881,8 +1939,8 @@ methods.sortOutTUIX = function() {
 		
 		sortedButtonsAndColumnButtons = thus.getSortedItemButtons([id], false);
 		
-		item.__sortedItemButtons = sortedButtonsAndColumnButtons[0];
-		item.__columnButtons = sortedButtonsAndColumnButtons[1];
+		item._cms_sortedItemButtons = sortedButtonsAndColumnButtons[0];
+		item._cms_columnButtons = sortedButtonsAndColumnButtons[1];
 	}
 	
 	if (_.isEmpty(tuix.list_groupings)) {
@@ -1977,7 +2035,7 @@ methods.getSortedItemButtons = function(itemIds, isCheckboxSelect) {
 				
 				//If not showing as a link on a column, show as a button as normal
 				if (!shownOnCol) {
-					thus.tuix.__itemHasItemButton = true;
+					thus.tuix._cms_itemHasItemButton = true;
 					sortedButtons.push(button);
 				}
 			}
@@ -2102,22 +2160,27 @@ methods.setupButtonLinks = function(button, itemId) {
 };
 
 //Submit/toggle button presses on forms
-methods.clickButton = function(id) {
+methods.clickButton = function(id, confirmed) {
 	
 	var button = thus.field(id),
-		clickButton = methodsOf(zenarioF).clickButton;
+		go;
 	
-	if (button.confirm
+	if (!confirmed
+	 && button.confirm
 	 && !thus.hidden(button.confirm, undefined, id, button)) {
 		thus.confirm(
 			button.confirm,
 			function () {
-				clickButton.call(thus, id);
+				thus.clickButton(id, true);
 			}
 		);
+	
+	//Allow "go" requests on form buttons if they are on FEAs
+	} else if (go = button.go) {
+		thus.go(go);
 		
 	} else {
-		clickButton.call(thus, id);
+		methodsOf(zenarioF).clickButton.call(thus, id);
 	}
 };
 
@@ -2153,11 +2216,17 @@ methods.button = function(el, button, item, itemId, onclickFun, confirmed) {
 			confirm = _.extend({}, confirm);
 			isHTML = confirm.html;
 			
+			//Not currently implemented, and might scrap this idea:
+			//if (confirm.message_microtemplate) {
+			//	//Don't try to apply merge fields if we're going to be using a microtemplate in the message anyway
+			//
+			//} else
 			if (numItems === 1) {
 				if (defined(confirm.title)) {
 					confirm.title = zenario.applyMergeFields(confirm.title, item);
 				}
 				confirm.message = zenario.applyMergeFields(confirm.message, item, undefined, isHTML);
+			
 			} else {
 				
 				getMergeField = function(mrg, options) {
@@ -2398,74 +2467,13 @@ methods.updateItemButtons = function() {
 
 
 
-//Sparkline
-methods.sparkline = function() {
-
-	var start = +new Date(),
-		$tds = $('td[data-sparkline]'),
-		fullLen = $tds.length,
-		n = 0;
-	
-	var ii, item, ci, col;
-	foreach (thus.sortedColumns as ci => col) {
-		if (col.sparkline) {
-			foreach (thus.sortedItems as ii => item) {
-				
-				var i,
-					$td = $(thus.get('zfea_' + thus.containerId + '_row_' + ii + '_col_' + ci)),
-					data = item[col.id] || {},
-					chart = {};
-				//chart.type = '...';
-				
-				if (!data.values) {
-					var columnId = 'zfea_' + thus.containerId + '_row_' + ii + '_col_' + ci;
-					$('#'+columnId).html(data.no_data_message);
-					continue;
-				}
-				
-				var colour;
-				if(data.colour){
-					colour = data.colour;
-				}else{
-					colour = "#82CAFF";
-				}
-				
-				$td.highcharts('SparkLine', {
-					colors: [colour],
-					series: [{
-						data: _.toArray(data.values),
-						pointStart: 1
-					}],
-					tooltip: {
-						headerFormat: '<span style="font-size: 10px">' + data.label+':</span><br/>',
-						pointFormat: '<b>{point.y}</b> ' + data.units
-					},
-					chart: chart
-				});
-			}
-		}
-	}
-};
-
-
-methods.initSparklineChart = function() {
-	
-	thus.sparkline();
-};
-
-
-
-
-
-
-
 methods.confirm = function(confirm, after) {
 	if (thus.loading) {
 		return;
 	}
 	
-	if (!_.isFunction(after) && after._zenario_confirmed) {
-		delete after._zenario_confirmed;
+	if (!_.isFunction(after) && after._cms_isConfirmed) {
+		delete after._cms_isConfirmed;
 		return true;
 	}
 	
@@ -2498,7 +2506,7 @@ methods.confirm = function(confirm, after) {
 	if (!_.isFunction(after)) {
 		$('#zfea_do_it').click(function() {
 			$.colorbox.remove();
-			after._zenario_confirmed = true;
+			after._cms_isConfirmed = true;
 			$(after).click();
 		});
 	} else {
@@ -2529,10 +2537,6 @@ methods.runAJAXRequest = function(request, goAfter, ajax, itemId) {
 	} else {
 		url = zenario.pluginAJAXLink(thus.moduleClassName, thus.containerId);
 		
-		//Experimental debugging feature.
-		//Add support for using ze::dump() when pressing AJAX buttons in FEA plugins.
-		url += '&supportsZeDump';
-		
 		thus.showLoader();
 		thus.ajax(url, request).after(function(resp) {
 			thus.hideLoader();
@@ -2540,11 +2544,6 @@ methods.runAJAXRequest = function(request, goAfter, ajax, itemId) {
 			if (toast) {
 				zenarioT.toast(toast);
 			}
-			
-			//Experimental debugging feature.
-			//Add support for using ze::dump() when pressing AJAX buttons in FEA plugins.
-			resp = zenario.splitFlagsFromMessage(resp);
-			zenario.showDumpsFromFlags(resp.flags);
 			
 			if (resp.responseText) {
 				thus.AJAXErrorHandler(resp);
@@ -2648,6 +2647,17 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 		m.body = msg;
 		m.retry = !!resp.zenario_retry;
 		m.continueAnyway = resp.zenario_continueAnyway && resp.data;
+		m.close = m.retry || m.continueAnyway;
+		
+		if (thus.inPopout) {
+			thus.closePopout();
+			
+			//Don't show the "retry" button if showing the FEA form in a popup, as this isn't implemented
+			//probably and just bugs out.
+			//However still show the close button instead of the OK button for consistency
+			//with how the rest of the error messages work.
+			delete m.retry;
+		}
 		
 		$.colorbox({
 			className: 'zfea_error_box',

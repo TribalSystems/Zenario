@@ -18,8 +18,7 @@ echo
 <head>
 	<title>JavaScript function short names</title>';
 
-$prefix = '../../';
-ze\content::pageHead($prefix);
+ze\content::pageHead($scriptPrefix = '../../', $scriptMode = 'other');
 
 ze\skinAdm::checkForChangesInFiles($runInProductionMode = true);
 $v = ze\db::codeVersion();
@@ -38,8 +37,8 @@ echo '
 </style>
 
 </head>';
-ze\content::pageBody();
-ze\content::pageFoot($prefix, false, $includeOrganizer = true, $includeAdminToolbar = false);
+ze\content::pageBody($scriptPrefix, $scriptMode);
+ze\content::pageFoot($scriptPrefix, $scriptMode, $includeOrganizer = true, $includeAdminToolbar = false);
 
 echo '
 <script type="text/javascript">

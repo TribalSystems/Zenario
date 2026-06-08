@@ -20,11 +20,6 @@ zenario_location_manager__location:
                     message: "This location is suspended."
                 
             fields:
-                external_id:
-                    label: 'External number'
-                    type: text
-                    maxlength: "255"
-                    allow_admin_to_change_visibility: true
                 name_grouping:
                     type: grouping
                     dataset_label: '[Name grouping]'
@@ -35,7 +30,7 @@ zenario_location_manager__location:
                     type: text
                     validation:
                         required: Please enter a name for this location.
-                copy_from_customer:
+                copy_from_organization:
                     grouping: name_grouping
                     #This button will only appear if Organization-Location Manager module is running,
                     #and the admin is creating/editing a location within an organization.
@@ -46,6 +41,11 @@ zenario_location_manager__location:
                     css_class: zenario_gp_button
                     format_onchange: true
                     dataset_label: '[Copy from [[organization_singular_en]] button]'
+                external_id:
+                    label: 'External number'
+                    type: text
+                    maxlength: "255"
+                    allow_admin_to_change_visibility: true
                 address_line_1:
                     label: 'Address line 1:'
                     type: text
@@ -223,12 +223,13 @@ zenario_location_manager__location:
                         disabled_if_for_any_selected_items: item.privacy != 'public'
                     upload:
                         multi: true
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                         reorder_items: true

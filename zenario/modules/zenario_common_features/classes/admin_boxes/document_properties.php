@@ -38,7 +38,14 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		if ($documentId = $box['key']['id']) {
 			$documentTagsString = '';
 
-			$documentDetails = ze\row::get('documents', ['chain_id', 'file_id', 'thumbnail_id', 'extract', 'extract_wordcount', 'title', 'filename', 'folder_name', 'privacy'],  $documentId);
+			$documentDetails = ze\row::get(
+				'documents',
+				[
+					'chain_id', 'file_id', 'thumbnail_id', 'extract', 'extract_wordcount', 'title', 'filename', 'folder_name', 'privacy',
+					'created', 'created_admin_id', 'created_user_id', 'created_username', 'last_edited', 'last_edited_admin_id', 'last_edited_user_id', 'last_edited_username'
+				],
+				$documentId
+			);
 			$documentName = $documentDetails['filename'];
 			$box['title'] = ze\admin::phrase('Editing metadata for document "[[filename]]"', ["filename" => $documentName]);
 			
@@ -47,8 +54,6 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			$values['details/document_extension'] = $extension;
 			$values['details/document_name'] = pathinfo($documentName, PATHINFO_FILENAME);
 			$fields['details/document_name']['post_field_html'] = '&nbsp;.' . $extension;
-			$fileDatetime = ze\row::get('documents', 'file_datetime', ['type' => 'file','id' => $documentId]);
-			$values['details/date_uploaded'] = $fileDatetime;
 			
 			if (ze::setting('enable_document_tags')) {
 				$documentTags = ze\row::getValues('document_tag_link', 'tag_id', ['document_id' => $documentId]);
@@ -143,6 +148,8 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 					ze\admin::phrase('Select a document here to link "[[filename]]" to the selected document. To link multiple documents together in the same chain, select a document that\'s already linked.',
 						$documentDetails);
 			}
+			
+			$box['last_updated'] = ze\admin::formatLastUpdated($documentDetails);
 		}
 	}
 	
@@ -163,7 +170,7 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a filename.');
 		} else {
 			// Stop spaces and illegal characters being used in filenames
-			if ($newDocumentName !== ze\file::safeName($newDocumentName)) {
+			if ($newDocumentName !== ze\file::validName($newDocumentName)) {
 				$box['tabs']['details']['errors'][] = ze\admin::phrase('Your filename cannot contain any of the following characters: /, \\, :, ;, *, ?, ", <, > or |');
 			}
 		}
@@ -284,6 +291,25 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		
 		//Update document privacy settings
 		ze\row::update('documents', ['privacy' => $documentPrivacy], ['id' => $documentId]);
+		
+		//Update created/edited note
+		$lastUpdated = [];
+		$row = [];
+        ze\admin::setLastUpdated($lastUpdated, !$box['key']['id']);
+
+        if ($box['key']['id']) {
+            $row['last_edited'] = $lastUpdated['last_edited'];
+            $row['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
+            $row['last_edited_user_id'] = $lastUpdated['last_edited_user_id'];
+            $row['last_edited_username'] = $lastUpdated['last_edited_username'];
+        } else {
+            $row['created'] = $lastUpdated['created'];
+            $row['created_admin_id'] = $lastUpdated['created_admin_id'];
+            $row['created_user_id'] = $lastUpdated['created_user_id'];
+            $row['created_username'] = $lastUpdated['created_username'];
+        }
+        
+        ze\row::update('documents', $row, ['id' => $documentId]);
 		
 		//Generate public link if the document is public...
 		if ($documentPrivacy == 'public') {

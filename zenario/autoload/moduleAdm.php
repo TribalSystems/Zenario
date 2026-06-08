@@ -303,12 +303,6 @@ class moduleAdm {
 						}
 					}
 				}
-				
-				if (!empty($desc['nestable_only'])) {
-					$nestable = 2;
-				} else {
-					$nestable = \ze\ring::engToBoolean($desc['nestable']);
-				}
 			
 				$foundModules[$moduleName] = true;
 				$sql = "
@@ -317,8 +311,7 @@ class moduleAdm {
 						vlp_class = '". \ze\escape::asciiInSQL($desc['vlp_class_name']). "',
 						display_name = '". \ze\escape::sql($desc['display_name']). "',
 						default_framework = '". \ze\escape::sql($desc['default_framework']). "',
-						css_class_name = '". \ze\escape::sql($desc['css_class_name']). "',
-						nestable = ". (int) $nestable;
+						css_class_name = '". \ze\escape::sql($desc['css_class_name']). "'";
 					
 				if (!$dbUpdateSafeMode && \ze\ring::engToBoolean($desc['is_abstract'] ?? false)) {
 					$sql .= ",
@@ -328,16 +321,67 @@ class moduleAdm {
 					$sql .= ",
 						status = 'module_running'";
 				}
-			
+				
 				if (!$dbUpdateSafeMode) {
 					$category = (!empty($desc['category'])) ? ("'".\ze\escape::sql($desc['category'])."'") : "NULL";
+					// The rarely_used property is not currently implemented and has no effect.
 					$sql .= ",
 						edition = '". \ze\escape::sql($edition). "',
 						is_pluggable = ". \ze\ring::engToBoolean($desc['is_pluggable']). ",
+						rarely_used = ". (int) !empty($desc['rarely_used']). ",
+						adds_sitewide_html = ". \ze\ring::engToBoolean($desc['adds_sitewide_html']). ",
 						fill_organizer_nav = ". \ze\ring::engToBoolean($desc['fill_organizer_nav']). ",
 						can_be_version_controlled = ". \ze\ring::engToBoolean(\ze\ring::engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
 						missing = 0,
 						category = ". $category;
+					
+					//If this description uses the new format, prefer that.
+					if (isset($desc['can_be_plugged_into'])) {
+						$sql .= ",
+							into_content_items = ". (int) !empty($desc['can_be_plugged_into']['content_items']). ",
+							into_layouts = ". (int) !empty($desc['can_be_plugged_into']['layouts']). ",
+							into_regular_nests = ". (int) !empty($desc['can_be_plugged_into']['regular_nests']). ",
+							into_ajax_nests_without_conductor = ". (int) !empty($desc['can_be_plugged_into']['ajax_nests_without_conductor']). ",
+							into_ajax_nests_with_conductor = ". (int) !empty($desc['can_be_plugged_into']['ajax_nests_with_conductor']). ",
+							into_slideshows = ". (int) !empty($desc['can_be_plugged_into']['slideshows']);
+					
+					//Otherwise I have some rules for reading the old format, for backwards compatibility.
+					} elseif (!empty($desc['nestable_only'])) {
+						$sql .= ",
+							into_content_items = 0,
+							into_layouts = 0,
+							into_regular_nests = 1,
+							into_ajax_nests_without_conductor = 1,
+							into_ajax_nests_with_conductor = 1,
+							into_slideshows = 1";
+					
+					} elseif (!empty($desc['nestable'])) {
+						$sql .= ",
+							into_content_items = 1,
+							into_layouts = 1,
+							into_regular_nests = 1,
+							into_ajax_nests_without_conductor = 1,
+							into_ajax_nests_with_conductor = 1,
+							into_slideshows = 1";
+					
+					} elseif (!empty($desc['is_pluggable'])) {
+						$sql .= ",
+							into_content_items = 1,
+							into_layouts = 1,
+							into_regular_nests = 0,
+							into_ajax_nests_without_conductor = 0,
+							into_ajax_nests_with_conductor = 0,
+							into_slideshows = 0";
+					
+					} else {
+						$sql .= ",
+							into_content_items = 0,
+							into_layouts = 0,
+							into_regular_nests = 0,
+							into_ajax_nests_without_conductor = 0,
+							into_ajax_nests_with_conductor = 0,
+							into_slideshows = 0";
+					}
 				}
 			
 				$sql .= "
@@ -345,8 +389,7 @@ class moduleAdm {
 						vlp_class = VALUES(vlp_class),
 						display_name = VALUES(display_name),
 						default_framework = VALUES(default_framework),
-						css_class_name = VALUES(css_class_name),
-						nestable = VALUES(nestable)";
+						css_class_name = VALUES(css_class_name)";
 					
 			
 				if (!$dbUpdateSafeMode && \ze\ring::engToBoolean($desc['is_abstract'] ?? false)) {
@@ -359,13 +402,22 @@ class moduleAdm {
 				}
 			
 				if (!$dbUpdateSafeMode) {
+					// The rarely_used property is not currently implemented and has no effect.
 					$sql .= ",
 						edition = VALUES(edition),
-						is_pluggable = VALUES(is_pluggable),
+						adds_sitewide_html = VALUES(adds_sitewide_html),
 						fill_organizer_nav = VALUES(fill_organizer_nav),
-						can_be_version_controlled = VALUES(can_be_version_controlled),
 						missing = 0,
-						category = VALUES(category)";
+						category = VALUES(category),
+						is_pluggable = VALUES(is_pluggable),
+						into_content_items = VALUES(into_content_items),
+						into_layouts = VALUES(into_layouts),
+						into_regular_nests = VALUES(into_regular_nests),
+						into_ajax_nests_without_conductor = VALUES(into_ajax_nests_without_conductor),
+						into_ajax_nests_with_conductor = VALUES(into_ajax_nests_with_conductor),
+						into_slideshows = VALUES(into_slideshows),
+						rarely_used = VALUES(rarely_used),
+						can_be_version_controlled = VALUES(can_be_version_controlled)";
 				}
 			
 				\ze\sql::update($sql);
@@ -624,6 +676,40 @@ class moduleAdm {
 	public static function isPluggable($moduleId) {
 		return \ze\row::get('modules', 'is_pluggable', $moduleId);
 	}
+	
+	public static function pluggableDesc($module) {
+		
+		if (empty($module['is_pluggable'])) {
+			return \ze\admin::phrase('Not pluggable');
+		
+		} else {
+			$places = [];
+			if (!empty($module['into_content_items'])) {
+				$places[] = \ze\admin::phrase('content items');
+			}
+			if (!empty($module['into_layouts'])) {
+				$places[] = \ze\admin::phrase('layouts');
+			}
+			if (!empty($module['into_regular_nests'])) {
+				$places[] = \ze\admin::phrase('regular nests');
+			}
+			if (!empty($module['into_ajax_nests_without_conductor'])) {
+				$places[] = \ze\admin::phrase('Ajax nests without conductor');
+			}
+			if (!empty($module['into_ajax_nests_with_conductor'])) {
+				$places[] = \ze\admin::phrase('Ajax nests with conductor');
+			}
+			if (!empty($module['into_slideshows'])) {
+				$places[] = \ze\admin::phrase('slideshows');
+			}
+			
+			if (count($places) > 0) {
+				return \ze\admin::phrase('Into'). ' '. implode(', ', $places);
+			} else {
+				return \ze\admin::phrase('Not pluggable');
+			}
+		}
+	}
 
 
 
@@ -662,13 +748,8 @@ class moduleAdm {
 				}
 			}
 		}
-		
-		if (!empty($desc['nestable_only'])) {
-			$nestable = 2;
-		} else {
-			$nestable = \ze\ring::engToBoolean($desc['nestable']);
-		}
 
+		// The rarely_used property is not currently implemented and has no effect.
 		$sql = "
 			UPDATE ". DB_PREFIX. "modules SET
 				vlp_class = '". \ze\escape::asciiInSQL($desc['vlp_class_name']). "',
@@ -676,12 +757,63 @@ class moduleAdm {
 				default_framework = '". \ze\escape::sql($desc['default_framework']). "',
 				css_class_name = '". \ze\escape::sql($desc['css_class_name']). "',
 				is_pluggable = ". \ze\ring::engToBoolean($desc['is_pluggable']). ",
+				rarely_used = ". (int) !empty($desc['rarely_used']). ",
 				must_be_on = '". \ze\escape::sql($mustBeOn). "',
+				adds_sitewide_html = ". (int) !empty($desc['adds_sitewide_html']). ",
 				fill_organizer_nav = ". \ze\ring::engToBoolean($desc['fill_organizer_nav']). ",
 				can_be_version_controlled = ". \ze\ring::engToBoolean(\ze\ring::engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
 				for_use_in_twig = ". \ze\ring::engToBoolean($desc['for_use_in_twig']). ",
-				nestable = ". (int) $nestable. ",
-				category = '". \ze\escape::sql($category). "'
+				category = '". \ze\escape::sql($category). "'";
+		
+		//If this description uses the new format, prefer that.
+		if (isset($desc['can_be_plugged_into'])) {
+			$sql .= ",
+				into_content_items = ". (int) !empty($desc['can_be_plugged_into']['content_items']). ",
+				into_layouts = ". (int) !empty($desc['can_be_plugged_into']['layouts']). ",
+				into_regular_nests = ". (int) !empty($desc['can_be_plugged_into']['regular_nests']). ",
+				into_ajax_nests_without_conductor = ". (int) !empty($desc['can_be_plugged_into']['ajax_nests_without_conductor']). ",
+				into_ajax_nests_with_conductor = ". (int) !empty($desc['can_be_plugged_into']['ajax_nests_with_conductor']). ",
+				into_slideshows = ". (int) !empty($desc['can_be_plugged_into']['slideshows']);
+		
+		//Otherwise I have some rules for reading the old format, for backwards compatibility.
+		} elseif (!empty($desc['nestable_only'])) {
+			$sql .= ",
+				into_content_items = 0,
+				into_layouts = 0,
+				into_regular_nests = 1,
+				into_ajax_nests_without_conductor = 1,
+				into_ajax_nests_with_conductor = 1,
+				into_slideshows = 1";
+		
+		} elseif (!empty($desc['nestable'])) {
+			$sql .= ",
+				into_content_items = 1,
+				into_layouts = 1,
+				into_regular_nests = 1,
+				into_ajax_nests_without_conductor = 1,
+				into_ajax_nests_with_conductor = 1,
+				into_slideshows = 1";
+		
+		} elseif (!empty($desc['is_pluggable'])) {
+			$sql .= ",
+				into_content_items = 1,
+				into_layouts = 1,
+				into_regular_nests = 0,
+				into_ajax_nests_without_conductor = 0,
+				into_ajax_nests_with_conductor = 0,
+				into_slideshows = 0";
+		
+		} else {
+			$sql .= ",
+				into_content_items = 0,
+				into_layouts = 0,
+				into_regular_nests = 0,
+				into_ajax_nests_without_conductor = 0,
+				into_ajax_nests_with_conductor = 0,
+				into_slideshows = 0";
+		}
+		
+		$sql .= "
 			WHERE id = '". (int) $moduleId. "'";
 		\ze\sql::update($sql);
 
@@ -1264,28 +1396,6 @@ class moduleAdm {
 		}
 	}
 
-
-	//Read the pagination-types of a module from an XML description
-	public static function getPaginationTypesFromDescription($moduleName, &$paginationTypes) {
-	
-		$paginationTypes = [];
-		$desc = false;
-		if (!\ze\moduleAdm::loadDescription($moduleName, $desc)) {
-			return false;
-		}
-	
-		//Record any pagination types
-		if (!empty($desc['pagination_types']) && is_array($desc['pagination_types'])) {
-			foreach ($desc['pagination_types'] as $pagination_type) {
-				if (!empty($pagination_type['function_name']) && !empty($pagination_type['label'])) {
-					$paginationTypes[$moduleName. '::'. $pagination_type['function_name']] = \ze\admin::phrase($pagination_type['label']);
-				}
-			}
-		}
-	
-		return true;
-	}
-
 	//Get any plugin instances of a module which are in nests and/or slideshows
 	public static function usageInNestsAndSlideshows($moduleId) {
 		$nestAndSlideshowModuleCount = [
@@ -1318,6 +1428,212 @@ class moduleAdm {
 		}
 		
 		return $nestAndSlideshowModuleCount;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	#
+	#	Some functions specifically for migration steps for modules and plugins in the installer
+	#
+
+	//Code for handling renaming module directories
+	public static function renameDirectory($oldName, $newName, $movePlugins, $moveEditableCSS, $movePhrases, $uninstallOldModule = false) {
+		
+		$oldId = \ze\module::id($oldName);
+		$newId = \ze\module::id($newName);
+		
+		if ($newName) {
+			
+			if ($movePlugins && $oldId && $newId) {
+				foreach([
+					'content_types', 'jobs', 'signals',
+					'module_dependencies', 'plugin_setting_defs',
+					'nested_plugins', 'plugin_instances',
+					'plugin_item_link', 'plugin_layout_link', 'plugin_sitewide_link'
+				] as $table) {
+					$sql = "
+						UPDATE IGNORE ". DB_PREFIX. $table. " SET
+							module_id = ". (int) $newId. "
+						WHERE module_id = ". (int) $oldId;
+					\ze\sql::update($sql);
+				}
+				
+				$oldStatus = \ze\row::get('modules', 'status', $oldId);
+				$newStatus = \ze\row::get('modules', 'status', $newId);
+				
+				if (\ze::in($newStatus, 'module_not_initialized', 'module_suspended')) {
+					\ze\row::set('modules', ['status' => $oldStatus], $newId);
+				}
+			}
+			
+			if ($movePhrases) {
+				$sql = "
+					UPDATE IGNORE ". DB_PREFIX. "visitor_phrases SET
+						module_class_name = '". \ze\escape::sql($newName). "'
+					WHERE module_class_name = '". \ze\escape::sql($oldName). "'";
+				\ze\sql::update($sql);
+			}
+			
+			if ($moveEditableCSS
+			 && is_dir($gtDir = CMS_ROOT. 'zenario_custom/skins/')) {
+				
+				foreach (scandir($gtDir) as $skin) {
+					
+					if ($skin[0] != '.'
+					 && is_dir($cssDir = $gtDir. $skin. '/editable_css/')
+					 && is_writable($cssDir = $gtDir. $skin. '/editable_css/')) {
+						
+						foreach (scandir($cssDir) as $oldFile) {
+							if (is_file($cssDir. $oldFile)
+							 && ($suffix = \ze\ring::chopPrefix('2.'. $oldName, $oldFile))
+							 && ($contents = file_get_contents($cssDir. $oldFile))) {
+								
+								$contents = preg_replace('/\b'. $oldName. '_(\d)/', $newName. '_$1', $contents);
+								
+								$newFile = '2.'. $newName. $suffix;
+								
+								if (file_exists($cssDir. $newFile)) {
+									if (is_writable($cssDir. $newFile)) {
+										file_put_contents(
+											$cssDir. $newFile,
+											"\n\n\n". $contents,
+											FILE_APPEND | LOCK_EX
+										);
+										unlink($cssDir. $oldFile);
+									}
+								} else {
+									file_put_contents($cssDir. $newFile, $contents);
+									unlink($cssDir. $oldFile);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if ($uninstallOldModule && $oldId) {
+			\ze\row::update('modules', ['status' => 'module_not_initialized'], $oldId);
+			\ze\row::delete('special_pages', ['module_class_name' => $oldName]);
+		}
+	}
+	
+	//Code for one Module replacing functionality from another
+	public static function replace($oldName, $newName) {
+		if (($oldId = \ze\module::id($oldName)) && ($newId = \ze\module::id($newName))) {
+			foreach([
+				'content_types',
+				'nested_plugins', 'plugin_instances',
+				'plugin_item_link', 'plugin_layout_link'
+			] as $table) {
+				$sql = "
+					UPDATE IGNORE ". DB_PREFIX. $table. " SET
+						module_id = ". (int) $newId. "
+					WHERE module_id = ". (int) $oldId;
+				\ze\sql::update($sql);
+			}
+			
+			$oldStatus = \ze\row::get('modules', 'status', $oldId);
+			$newStatus = \ze\row::get('modules', 'status', $newId);
+			
+			if ($oldStatus == 'module_running' || $newStatus == 'module_running') {
+				\ze\row::set('modules', ['status' => 'module_running'], $newId);
+			
+			} elseif ($oldStatus == 'module_suspended' || $newStatus == 'module_suspended') {
+				\ze\row::set('modules', ['status' => 'module_suspended'], $newId);
+			}
+			
+			\ze\moduleAdm::uninstall($oldId, $uninstallRunningModules = true);
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	//Code for one Module replacing specific plugins from another
+	//Currently only supports replacing plugins that are in a nest
+	public static function replacePlugins($oldName, $newName, $settingName, $settingValue) {
+		if (($oldId = \ze\module::id($oldName)) && ($newId = \ze\module::id($newName))) {
+			$sql = "
+				UPDATE IGNORE ". DB_PREFIX. "nested_plugins np
+				INNER JOIN " . DB_PREFIX . "plugin_settings ps
+					ON np.id = ps.egg_id
+					AND ps.name = '" . \ze\escape::sql($settingName) . "'
+				SET np.module_id = ". (int) $newId. "
+				WHERE np.module_id = ". (int) $oldId;
+			if (is_array($settingValue)) {
+				$sql .= "
+					AND ps.value IN (" . \ze\escape::in($settingValue) . ")";
+			} else {
+				 $sql .= "
+					AND ps.value = '" . \ze\escape::sql($settingValue) . "'";
+			}
+			\ze\sql::update($sql);
+			
+			$oldStatus = \ze\row::get('modules', 'status', $oldId);
+			$newStatus = \ze\row::get('modules', 'status', $newId);
+			
+			if ($oldStatus == 'module_running' || $newStatus == 'module_running') {
+				\ze\row::set('modules', ['status' => 'module_running'], $newId);
+			
+			} elseif ($oldStatus == 'module_suspended' || $newStatus == 'module_suspended') {
+				\ze\row::set('modules', ['status' => 'module_suspended'], $newId);
+			}
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	//Code for running a dependency, if a previously existing Module gains a new dependancy
+	public static function runNewDependency($moduleName, $dependencyName) {
+		if (($moduleId = \ze\module::id($moduleName)) && ($dependencyId = \ze\module::id($dependencyName))) {
+			$moduleStatus = \ze\row::get('modules', 'status', $moduleId);
+			$dependencyStatus = \ze\row::get('modules', 'status', $dependencyId);
+			
+			if ($moduleStatus == 'module_running' && !\ze::in($dependencyStatus, 'module_running', 'module_is_abstract')) {
+				\ze\row::set('modules', ['status' => 'module_running'], $dependencyId);
+			
+			} elseif ($moduleStatus == 'module_suspended' && !\ze::in($dependencyStatus, 'module_running', 'module_suspended', 'module_is_abstract')) {
+				\ze\row::set('modules', ['status' => 'module_suspended'], $dependencyId);
+			}
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	
+	public static function convertSpecialPageToPluginPage($specialPage, $pluginPageModule = '', $pluginPageMode = '') {
+		if ($spDetails = \ze\row::get('special_pages', true, $specialPage)) {
+			
+			\ze\row::insert('plugin_pages_by_mode', [
+				'equiv_id' => $spDetails['equiv_id'],
+				'content_type' => $spDetails['content_type'],
+				'module_class_name' => $pluginPageModule ?: $spDetails['module_class_name'],
+				'mode' => $pluginPageMode ?: '',
+			], $ignore = true);
+			
+			\ze\row::delete('special_pages', $specialPage);
+		}
+	}
+	
+	
+	public static function uninstalledRemovedModule($moduleName) {
+		if (\ze\module::isRunning($moduleName)) {
+			$moduleId = \ze\module::id($moduleName);
+			\ze\moduleAdm::uninstall($moduleId, $uninstallRunningModules = true, $checkForDependenciesBeforeUninstalling = false);
+		}
 	}
 
 }

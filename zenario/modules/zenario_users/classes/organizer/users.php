@@ -66,12 +66,12 @@ class zenario_users__organizer__users extends zenario_users {
 			$convertToContactButtonConfirmationMessage =
 				"Are you sure you want to convert the user \"[[identifier]]\" to contact?
                                 
-            	The user's password and screen name will be cleared and they will no longer be able to log in to a password-protected area of your site.";
+            	The user's password and screen name will be cleared and they will no longer be able to log in to this site's password-protected area.";
 		} else {
 			$convertToContactButtonConfirmationMessage =
 				"Are you sure you want to convert the user \"[[identifier]]\" to contact?
                                 
-            	The user's password will be cleared and they will no longer be able to log in to a password-protected area of your site.";
+            	The user's password will be cleared and they will no longer be able to log in to this site's password-protected area.";
 		}
 		$panel['item_buttons']['convert_to_contact']['ajax']['confirm']['message'] = $convertToContactButtonConfirmationMessage;
 	}
@@ -175,21 +175,20 @@ class zenario_users__organizer__users extends zenario_users {
 		
 		//Add user images to each user, if they have an image
 		foreach ($panel['items'] as $id => &$item) {
-			$item['traits'] = [];
 				
 			if (!empty($item['checksum'])) {
-				$item['traits']['has_image'] = true;
+				$item['has_image'] = true;
 				$img = '&usage=user&c='. $item['checksum'];
 	
 				$item['image'] = 'zenario/file.php?og=1'. $img;
 			}
 			
 			if ($item['status'] == 'contact') {
-				$item['traits']['is_contact'] = true;
+				$item['is_contact'] = true;
 			} elseif ($item['status'] == 'active'){
-				$item['traits']['active'] = true;
+				$item['active'] = true;
 			} else {
-				$item['traits']['suspended'] = true;
+				$item['suspended'] = true;
 			}
 			
 			if ($item['status'] == 'contact') {

@@ -38,7 +38,7 @@ $path = false;
 $methodCall = $_REQUEST['method_call'] ?? false;
 if ($methodCall == 'handleOrganizerPanelAJAX') {
 	ze::$tuixType = $type = 'organizer';
-	ze::$tuixPath = $path = $_REQUEST['__path__'] ?? false;
+	ze::$tuixPath = $path = $_REQUEST['path'] ?? false;
 }
 
 $isForPlugin = ze::request('cID') && ze::request('cType') && ze::request('instanceId');
@@ -169,8 +169,8 @@ if ($methodCall == 'refreshPlugin'
 		require 'visitorheader.inc.php';
 	}
 	
-	if (ze::request('__pluginClassName__')) {
-		if (!($module = ze\module::activate($moduleClassName = $_REQUEST['__pluginClassName__'] ?? false))) {
+	if (ze::request('_cms_class')) {
+		if (!($module = ze\module::activate($moduleClassName = $_REQUEST['_cms_class'] ?? false))) {
 			exit;
 		}
 	} elseif (ze::request('moduleClassName')) {
@@ -197,8 +197,8 @@ if ($methodCall == 'refreshPlugin'
 	require 'visitorheader.inc.php';
 	
 	$codes = [];
-	if (isset($_GET['__code__'])) {
-		$codes = ze\ray::explodeDecodeAndTrim($_GET['__code__']);
+	if (isset($_GET['_cms_code'])) {
+		$codes = ze\ray::explodeDecodeAndTrim($_GET['_cms_code']);
 	}
 	$languageId = ze::get('langId') ?: (($_SESSION['user_lang'] ?? false) ?: ze::$defaultLang);
 	
@@ -206,7 +206,7 @@ if ($methodCall == 'refreshPlugin'
 		SELECT code, local_text
 		FROM ". DB_PREFIX. "visitor_phrases
 		WHERE language_id = '". ze\escape::asciiInSQL($languageId). "'
-		  AND module_class_name = '". ze\escape::asciiInSQL(ze::get('__class__')). "'";
+		  AND module_class_name = '". ze\escape::asciiInSQL(ze::get('_cms_class')). "'";
 	
 	if (!empty($codes)) {
 		$sql .= "
@@ -230,7 +230,7 @@ if ($methodCall == 'refreshPlugin'
 	if (!empty($codes) && ze::isAdmin()) {
 		foreach ($codes as $code) {
 			if (!isset($phrases[$code])) {
-				$phrases[$code] = ze\lang::phrase($code, [], ze::get('__class__'), $languageId, ze\admin::phrase('JavaScript code'));
+				$phrases[$code] = ze\lang::phrase($code, [], ze::get('_cms_class'), $languageId, ze\admin::phrase('JavaScript code'));
 			}
 		}
 	}
@@ -345,7 +345,7 @@ if ($methodCall == 'showFile') {
 	 || (!$isForPlugin && !$module->returnVisitorTUIXEnabledForPopouts($requestedPath))
 	) {
 	  	
-	  	if ($isAdmin) {
+	  	if (ze::isAdmin()) {
 			echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
 		}
 		exit;
@@ -356,7 +356,7 @@ if ($methodCall == 'showFile') {
 	$tags = [];
 	
 	if ($methodCall == 'typeaheadSearchAJAX') {
-		$module->typeaheadSearchAJAX($requestedPath, $_REQUEST['_tab'] ?? '', $_REQUEST['_field'] ?? '', $_REQUEST['_search'] ?? '', $tags);
+		$module->typeaheadSearchAJAX($requestedPath, $_REQUEST['_cms_currentTab'] ?? '', $_REQUEST['_cms_field'] ?? '', $_REQUEST['_cms_searchTerm'] ?? '', $tags);
 		
 	} else {
 	
@@ -372,17 +372,17 @@ if ($methodCall == 'showFile') {
 	
 	
 		$exporting = $methodCall == 'exportVisitorTUIX';
-		$filling = $methodCall == 'fillVisitorTUIX' || $exporting || empty($_POST['_tuix']);
+		$filling = $methodCall == 'fillVisitorTUIX' || $exporting || empty($_POST['_cms_tuix']);
 		$saving = !$filling && $methodCall == 'saveVisitorTUIX';
 		$validating = !$filling && ($saving || $methodCall == 'validateVisitorTUIX');
 	
-		$debugMode = $isAdmin && ze::get('_debug');
+		$debugMode = ze::isAdmin() && ze::get('_cms_debug');
 	
 		ze\tuix::visitorTUIX($module, $requestedPath, $tags, $filling, $validating, $saving, $debugMode, $exporting);
 	}
 	
 	if (!empty(ze::$dumps)) {
-		$tags['__dumps'] = ze::$dumps;
+		$tags['_cms_dumps'] = ze::$dumps;
 		ze::$dumps = [];
 	}
 	
@@ -438,14 +438,14 @@ if ($methodCall == 'showFile') {
 
 
 //Handle a file download from Organizer
-} elseif ($methodCall == 'handleOrganizerPanelAJAX' && !empty($_POST['_download'])) {
+} elseif ($methodCall == 'handleOrganizerPanelAJAX' && !empty($_POST['_cms_isDownload'])) {
 	
 	//Handle the old name if it's not been changed yet
 	if (method_exists($module, 'storekeeperDownload')) {
-		$module->storekeeperDownload($_REQUEST['__path__'] ?? false, ze::request('id'), ze::request('refinerName'), ze::request('refinerId'));
+		$module->storekeeperDownload($_REQUEST['path'] ?? false, ze::request('id'), ze::request('refinerName'), ze::request('refinerId'));
 	}
 	
-	$module->organizerPanelDownload($_REQUEST['__path__'] ?? false, ze::request('id'), ze::request('refinerName'), ze::request('refinerId'));
+	$module->organizerPanelDownload($_REQUEST['path'] ?? false, ze::request('id'), ze::request('refinerName'), ze::request('refinerId'));
 	
 	exit;
 
@@ -469,17 +469,17 @@ if ($methodCall == 'showFile') {
 	} else {
 		//Handle the old name if it's not been changed yet
 		if (method_exists($module, 'storekeeperAJAX')) {
-			$module->storekeeperAJAX($_REQUEST['__path__'] ?? false, ze::request('id'), ze::request('id2'), ze::request('refinerName'), ze::request('refinerId'));
+			$module->storekeeperAJAX($_REQUEST['path'] ?? false, ze::request('id'), ze::request('id2'), ze::request('refinerName'), ze::request('refinerId'));
 		}
 		
-		$newIds = $module->handleOrganizerPanelAJAX($_REQUEST['__path__'] ?? false, ze::request('id'), ze::request('id2'), ze::request('refinerName'), ze::request('refinerId'));
+		$newIds = $module->handleOrganizerPanelAJAX($_REQUEST['path'] ?? false, ze::request('id'), ze::request('id2'), ze::request('refinerName'), ze::request('refinerId'));
 	}
 	
 	if ($newIds && !is_array($newIds)) {
 		$newIds = explode(',', $newIds);
 	}
 	
-	if (ze::request('_sk_form_submission')) {
+	if (ze::request('_cms_isBackwardsCompatibilityMode')) {
 		$message = trim(ob_get_contents());
 		ob_end_clean();
 		
@@ -664,10 +664,29 @@ if ($methodCall == 'showFile') {
 				$others = count(\ze\content::$piWarnings) - 1;
 	
 				$mrg = [];
-				$mrg['eg1'] = array_shift(\ze\content::$piWarnings);
+				
+				//Check if the blocked image is in the image library.
+				//If it is, try to display a clickable link.
+				$firstElement = array_key_first(\ze\content::$piWarnings);
+				if (\ze\row::exists('files', ['id' => $firstElement, 'usage' => 'image'])) {
+					$mrg['link_1_start'] = '<a href="' . \ze\link::absolute() . 'organizer.php#zenario__library/panels/image_library//' . (int) $firstElement . '" target="_blank">';
+					$mrg['link_1_end'] = '</a>';
+				}
+				
+				$mrg['eg1'] = \ze\content::$piWarnings[$firstElement];
+				unset(\ze\content::$piWarnings[$firstElement]);
 	
 				if ($others) {
-					$mrg['eg2'] = array_shift(\ze\content::$piWarnings);
+					//Check if the blocked image is in the image library.
+					//If it is, try to display a clickable link.
+					$secondElement = array_key_first(\ze\content::$piWarnings);
+					if (\ze\row::exists('files', ['id' => $secondElement, 'usage' => 'image'])) {
+						$mrg['link_2_start'] = '<a href="' . \ze\link::absolute() . 'organizer.php#zenario__library/panels/image_library//' . (int) $secondElement . '" target="_blank">';
+						$mrg['link_2_end'] = '</a>';
+					}
+					
+					$mrg['eg2'] = \ze\content::$piWarnings[$secondElement];
+					unset(\ze\content::$piWarnings[$secondElement]);
 				}
 				
 				ze\escape::flag('IMAGES_BLOCKED');
@@ -680,9 +699,9 @@ if ($methodCall == 'showFile') {
 				);
 				ze\escape::flag('IMAGES_BLOCKED_MSG',
 					ze\admin::nzPhrase(
-						"[[eg1]] is a private image and cannot be shown on a public content item",
-						"[[eg1]] and [[eg2]] are private images and cannot be shown on a public content item",
-						"[[eg1]] and [[count]] others are private images and cannot be shown on a public content item",
+						"[[link_1_start]][[eg1]][[link_1_end]] is a private image and cannot be shown on a public content item",
+						"[[link_1_start]][[eg1]][[link_1_end]] and [[link_2_start]][[eg2]][[link_2_end]] are private images and cannot be shown on a public content item",
+						"[[link_1_start]][[eg1]][[link_1_end]] and [[count]] others are private images and cannot be shown on a public content item",
 						$others, $mrg
 					)
 				);
@@ -747,10 +766,9 @@ if ($methodCall == 'showFile') {
 }
 
 
-//Experimental debugging feature.
-//Add support for using ze::dump() when pressing AJAX buttons in FEA plugins,
-//as well as anything else that opts into it using the "supportsZeDump" flag.
-if (!empty(ze::$dumps) && isset($_GET['supportsZeDump'])) {
+//If someone has used the ze::dump() function anywhen in this call, add it to the output.
+//Warning: This may cause an error if the calling script on the client does not support flags!
+if (!empty(ze::$dumps)) {
 	ze\escape::flag('DUMPS', json_encode(ze::$dumps), false);
 	ze::$dumps = [];
 }

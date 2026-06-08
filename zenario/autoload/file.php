@@ -263,7 +263,7 @@ class file {
 			}
 			
 			header('Content-type: '. ($file['mime_type'] ?: 'application/octet-stream'));
-			header('Content-Disposition: attachment; filename="'. \ze\file::safeName($filename). '"');
+			header('Content-Disposition: attachment; filename="'. \ze\file::validName($filename). '"');
 			
 			\ze\cache::end();
 			if ($file['location'] == 'docstore') {
@@ -560,7 +560,7 @@ class file {
 		return false;
 	}
 
-	public static function safeName($filename, $strict = false, $replaceSpaces = false) {
+	public static function validName($filename, $strict = false, $replaceSpaces = false) {
 		
 		if ($strict || $replaceSpaces) {
 			$filename = str_replace(' ', '-', $filename);
@@ -590,7 +590,7 @@ class file {
 		$details = explode('/', \ze\ring::decodeIdForOrganizer($uploadCode), 3);
 	
 		if (!empty($details[1])
-		 && file_exists($filepath = CMS_ROOT. 'private/uploads/'. preg_replace('@[^\w-]@', '', $details[0]). '/'. \ze\file::safeName($details[1]))) {
+		 && file_exists($filepath = CMS_ROOT. 'private/uploads/'. preg_replace('@[^\w-]@', '', $details[0]). '/'. \ze\file::validName($details[1]))) {
 			return $filepath;
 		} else {
 			return false;

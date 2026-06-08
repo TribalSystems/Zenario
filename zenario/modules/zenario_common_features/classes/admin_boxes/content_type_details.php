@@ -58,7 +58,6 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		
 		$values['details/content_type_name_en'] = $details['content_type_name_en'];
 		$values['details/content_type_plural_en'] = $details['content_type_plural_en'];
-		$values['details/tooltip_text'] = $details['tooltip_text'];
 		$values['details/default_layout_id'] = $details['default_layout_id'];
 		$values['details/default_permissions'] = $details['default_permissions'];
 		$values['details/hide_private_item'] = $details['hide_private_item'];
@@ -185,7 +184,6 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			$vals = [
 				'content_type_name_en' => $values['details/content_type_name_en'],
 				'content_type_plural_en' => $values['details/content_type_plural_en'],
-				'tooltip_text' => $values['details/tooltip_text'],
 				'default_layout_id' => $values['details/default_layout_id'],
 				'prompt_to_create_a_menu_node' => (int) ($values['details/prompt_to_create_a_menu_node'] == 'prompt'),
 				'menu_node_position_edit' => $values['details/menu_node_position_edit'] ?: 'suggest',

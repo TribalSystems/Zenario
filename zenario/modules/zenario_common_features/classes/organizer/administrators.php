@@ -36,6 +36,22 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 		if (!$refinerName && !ze::in($mode, 'get_item_name', 'get_item_links')) {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_refiner'];
 		}
+		
+		if (!empty(zenario_organizer::filterValue('is_active'))) {
+			$days = \ze\admin::getDaysBeforeAdminsAreInactive();
+			
+			if (zenario_organizer::filterIsNot('is_active')) {
+				$panel['db_items']['where_statement'] .= '
+					AND (
+						last_login IS NULL
+						OR last_login < DATE_SUB(NOW(), INTERVAL ' . (int)$days . ' DAY)
+					)';
+			} else {
+				$panel['db_items']['where_statement'] .= '
+					AND last_login IS NOT NULL
+					AND last_login >= DATE_SUB(NOW(), INTERVAL ' . (int)$days . ' DAY)';
+			}
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
@@ -121,8 +137,9 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 			}
 			
 			//Show an inline warning button if this admin is inactive.
+			$item['is_active'] = true;
 			if (ze\admin::isInactive($id)) {
-				$item['is_inactive'] = true;
+				$item['is_active'] = false;
 				
 				if ($item['last_login']) {
 					$item['inactive_tooltip'] = ze\admin::phrase(
@@ -238,6 +255,17 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 			}
 			
 			$item['full_name_for_pickers'] = self::formatNameIncludeEmailAddress($item['id']);
+		}
+		
+		//If a filter with parent/child buttons is set, make sure to change the label of the parent to what was chosen.
+		if (!empty(zenario_organizer::filterValue('is_active'))) {
+			if (zenario_organizer::filterIsNot('is_active')) {
+				$panel['quick_filter_buttons']['is_active']['label'] =
+					$panel['quick_filter_buttons']['inactive']['label'];
+			} else {
+				$panel['quick_filter_buttons']['is_active']['label'] =
+					$panel['quick_filter_buttons']['active_recently']['label'];
+			}
 		}
 		
 		if ($refinerName == 'trashed') {

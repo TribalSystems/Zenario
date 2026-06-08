@@ -23,7 +23,7 @@ common_definitions:
         description: >
             This controls the order in which elements are drawn on the screen.
             
-            If not set, it defaults to the order the CMS finds them in.
+            If not set, it defaults to the order Zenario finds them in.
             
             From version 10.1 onwards, we have some logic where you can place a field or a button
             immediately before or after an existing field or button using an offset.
@@ -108,7 +108,8 @@ common_definitions:
             link_to_new_tab:
                 type: string
                 description: >
-                    Enter a URL here to show a 'target="_blank"' link to that URL after the label.
+                    Enter a URL here if you have an onclick button that also has a hyperlink
+                    to where it goes.
             
             show_as_option_in_fab:
                 type: boolean

@@ -38,7 +38,7 @@ require '../adminheader.inc.php';
 $mode = false;
 $tagPath = '';
 $modules = [];
-$debugMode = (bool) ze::get('_debug');
+$debugMode = (bool) ze::get('_cms_debug');
 $settingGroup = '';
 $compatibilityClassNames = [];
 ze::$tuixType = $type = 'admin_toolbar';
@@ -117,11 +117,11 @@ if (ze::request('_script')) {
 }
 
 if (ze::$recordFiles) {
-	$tags['__source_files'] = ze\tuix::recordedFiles();
+	$tags['_cms_sourceFileList'] = ze\tuix::recordedFiles();
 }
 
 if (!empty(ze::$dumps)) {
-	$tags['__dumps'] = ze::$dumps;
+	$tags['_cms_dumps'] = ze::$dumps;
 	ze::$dumps = [];
 }
 

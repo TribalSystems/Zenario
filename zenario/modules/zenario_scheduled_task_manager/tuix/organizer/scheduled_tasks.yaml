@@ -124,8 +124,6 @@ zenario__administration:
                     disallow_sorting: true
             default_sort_column: job_name
             item:
-                name: Scheduled Task
-                names: Scheduled Tasks
                 css_class: zenario_scheduled_task_manager__task
             no_items_message: |
                 No Scheduled Tasks exist.
@@ -231,7 +229,6 @@ zenario__administration:
                     link:
                         path: >
                             zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks/hidden_nav/log/panel
-                        branch: true
                         refiner: job
                 rerun:
                     ord: 40
@@ -250,8 +247,7 @@ zenario__administration:
                     panel:
                         title: Log
                         slidedown_view_microtemplate: summary
-                        default_sort_desc: 
-                            exists: true
+                        default_sort_desc: true
                         db_items:
                             table: '[[DB_PREFIX]]job_logs AS jl'
                             id_column: jl.id

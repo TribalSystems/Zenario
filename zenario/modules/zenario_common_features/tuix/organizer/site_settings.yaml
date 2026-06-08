@@ -27,8 +27,6 @@ zenario__administration:
                     hidden: true
                     
             item:
-                name: Settings
-                names: Settings
                 css_class: setting
             items:
                 admin_passwords:
@@ -210,26 +208,3 @@ zenario__administration:
                         id == 'site_disabled'
                     admin_box:
                         path: zenario_enable_site
-                
-                #view_dropdown:
-                #    label: View
-                #    hide_when_children_are_not_visible: true
-                #profile:
-                #    parent: view_dropdown
-                #    label: Profile
-                #    admin_box:
-                #        path: zenario_admin
-                #        key:
-                #            view_profile: "1"
-                #    visible_if_for_all_selected_items: |
-                #        id == 'profile'
-                #action_dropdown:
-                #    label: Actions
-                #    hide_when_children_are_not_visible: true
-                #change_password:
-                #    parent: action_dropdown
-                #    local_admins_only: true
-                #    label: Change Password
-                #    frontend_link: 'admin.php?task=change_password&og=zenario__administration/nav/configure_settings/panel//profile'
-                #    visible_if_for_all_selected_items: |
-                #        id == 'profile'

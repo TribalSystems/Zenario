@@ -83,17 +83,17 @@ zenarioAW.sendStateToServer = function() {
 zenarioAW.draw = function() {
 	if (zenarioAW.tuix) {
 		
-		if (zenarioAW.tuix._clear_local_storage) {
-			delete zenarioAW.tuix._clear_local_storage;
+		if (zenarioAW.tuix._cms_clearLocalStorage) {
+			delete zenarioAW.tuix._cms_clearLocalStorage;
 			zenario.sClear(true);
 		}
 		
 		if (defined(zenarioAW.tuix.go_to_url)) {
 			document.location.href = zenario.addBasePath(zenarioAW.tuix.go_to_url);
 			return;
-		} else if (defined(zenarioAW.tuix._task)) {
-			zenarioAW.task = zenarioAW.tuix._task;
-			delete zenarioAW.tuix._task;
+		} else if (defined(zenarioAW.tuix._cms_currentTask)) {
+			zenarioAW.task = zenarioAW.tuix._cms_currentTask;
+			delete zenarioAW.tuix._cms_currentTask;
 		}
 	}
 	

@@ -46,8 +46,10 @@ sections:
                 ajax:
                     confirm:
                         message: |
-                            Create a draft that can be edited?
+                            Create a draft?
                                                        
+                            The draft version will be editable.
+                            
                             The published version will not be affected until the new draft is published.
                         message__editing_published: |
                             You are editing a published content item.
@@ -287,11 +289,11 @@ sections:
                 ajax:
                     confirm:
                         message: |
-                            Zenario will delete the draft version of this content item. Any edits on the draft will be lost.
+                            Delete the draft version of this content item?
                             
+                            Any edits on the draft will be lost.
+                           
                             This will not affect the published version.
-                            
-                            Proceed?
                         button_message: Delete draft
                         cancel_button_message: Cancel
                         message_type: warning

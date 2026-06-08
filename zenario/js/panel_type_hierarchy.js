@@ -446,20 +446,13 @@ methods.scanNewHier = function(doSave) {
 		actionRequests.id = saves;
 		
 		//Send these results via AJAX
-		var actionTarget =
-			'zenario/ajax.php?' +
-				'__pluginClassName__=' + thus.tuix.class_name +
-				'&__path__=' + zenarioO.path +
-				'&method_call=handleOrganizerPanelAJAX';
+		var actionTarget = zenario.ajaxURL('handleOrganizerPanelAJAX', thus.tuix.class_name, zenarioO.path);
 		
 		//Clear the local storage, as there have probably just been changes
 		delete zenario.rev;
 		
 		//Save the data
-		zenario.ajax(
-			zenario.addBasePath(actionTarget),
-			actionRequests
-		).after(function(message) {
+		zenario.ajax(actionTarget, actionRequests).after(function(message) {
 			if (message) {
 				zenarioA.showMessage(message);
 			}

@@ -1383,88 +1383,84 @@ class user {
 			$adminFacing = $adminFacing == 'fab';
 		}
 		
+		$array = [];
 		
-		if (!empty($lastEdited) || !empty($created)) {
-			
-			$array = [];
-			
-			if(!empty($created)) {
-				$array[] = [
-					'string' => "Created [[date]] by [[user_or_admin]]",
-					'editedOrCreated' => $created,
-					'editedOrCreatedAdminId' => $createdAdminId,
-					'editedOrCreatedUserId' => $createdUserId,
-					'editedOrCreatedUsername' => $createdUsername
-				];
-			}
-			
-			if (!empty($lastEdited)) {
-				$array[] = [
-					'string' => "Last edited [[date]] by [[user_or_admin]]",
-					'editedOrCreated' => $lastEdited,
-					'editedOrCreatedAdminId' => $lastEditedAdminId,
-					'editedOrCreatedUserId' => $lastEditedUserId,
-					'editedOrCreatedUsername' => $lastEditedUsername
-				];
-			}
-			
-			$strings = [];
-			foreach ($array as &$row) {
-			
-				if ($adminFacing) {
-					$row['string'] = \ze\admin::phrase($row['string']);
-				} else {
-					$row['string'] = \ze\lang::phrase($row['string']);
-				}
-			
-				if (!empty($row['editedOrCreatedAdminId'])) {
-					if ($adminFacing) {
-						if ($lastUpdatedByAdmin = \ze\row::get("admins", "id", ["id" => $row['editedOrCreatedAdminId']])) {
-							//It's ok to display the admin's first name, last name and username in a FAB.
-							$userOrAdmin = \ze\admin::formatName($row['editedOrCreatedAdminId']);
-						} else {
-							//Do not display the admin details on the front end (data protection reasons).
-							$userOrAdmin = "an administrator (admin account deleted)";
-						}
-					} else {
-						$userOrAdmin = "an administrator";
-					}
-				} elseif (!empty($row['editedOrCreatedUserId']) && $lastUpdatedByUser = \ze\user::details($row['editedOrCreatedUserId'])) {
-					if (
-						!$adminFacing
-						&& \ze::setting('user_use_screen_name')
-						&& !empty($lastUpdatedByUser['screen_name'])
-						&& $lastUpdatedByUser['screen_name_confirmed']
-					) {
-						$userOrAdmin = ($lastUpdatedByUser['screen_name'] ?? false) . " (user)";
-					} else {
-						$userOrAdmin = ($lastUpdatedByUser['identifier'] ?? false) . " (user)";
-					}
-				} elseif (!empty($row['editedOrCreatedUsername'])) {
-					$userOrAdmin = ($row['editedOrCreatedUsername'] ?? false) . " (user account deleted)";
-				} else {
-					$userOrAdmin = "unknown";
-				}
-			
-				if (!empty($relativeDate)) {
-					$date = \ze\date::formatRelativeDateTime($row['editedOrCreated'], 'day', ($relativeDateAddFullTime ? true : false), 'vis_date_format_short');
-				} else {
-					$date = \ze\date::formatDateTime($row['editedOrCreated'], 'vis_date_format_short');
-				}
-			
-				\ze\lang::applyMergeFields($row['string'], ['date' => $date, 'user_or_admin' => $userOrAdmin]);
-				
-				$strings[] = $row['string'];
-			}
-			
-			return implode("; ", $strings);
-			
-		} else {
-			return false;
+		$array[] = [
+			'string' => "Created [[date]] by [[user_or_admin]]",
+			'editedOrCreated' => $created,
+			'editedOrCreatedAdminId' => $createdAdminId,
+			'editedOrCreatedUserId' => $createdUserId,
+			'editedOrCreatedUsername' => $createdUsername
+		];
+		
+		if (!empty($lastEdited) || !empty($lastEditedAdminId)) {
+			$array[] = [
+				'string' => "Last edited [[date]] by [[user_or_admin]]",
+				'editedOrCreated' => $lastEdited,
+				'editedOrCreatedAdminId' => $lastEditedAdminId,
+				'editedOrCreatedUserId' => $lastEditedUserId,
+				'editedOrCreatedUsername' => $lastEditedUsername
+			];
 		}
+		
+		$strings = [];
+		foreach ($array as &$row) {
+		
+			if ($adminFacing) {
+				$row['string'] = \ze\admin::phrase($row['string']);
+			} else {
+				$row['string'] = \ze\lang::phrase($row['string']);
+			}
+		
+			if (!empty($row['editedOrCreatedAdminId'])) {
+				if ($adminFacing) {
+					if ($lastUpdatedByAdmin = \ze\row::get("admins", "id", ["id" => $row['editedOrCreatedAdminId']])) {
+						//It's ok to display the admin's first name, last name and username in a FAB.
+						$userOrAdmin = \ze\admin::formatName($row['editedOrCreatedAdminId']);
+					} else {
+						//Do not display the admin details on the front end (data protection reasons).
+						$userOrAdmin = "an administrator (admin account not found)";
+					}
+				} else {
+					$userOrAdmin = "an administrator";
+				}
+			} elseif (!empty($row['editedOrCreatedUserId']) && $lastUpdatedByUser = \ze\user::details($row['editedOrCreatedUserId'])) {
+				if (
+					!$adminFacing
+					&& \ze::setting('user_use_screen_name')
+					&& !empty($lastUpdatedByUser['screen_name'])
+					&& $lastUpdatedByUser['screen_name_confirmed']
+				) {
+					$userOrAdmin = ($lastUpdatedByUser['screen_name'] ?? false) . " (user)";
+				} else {
+					$userOrAdmin = ($lastUpdatedByUser['identifier'] ?? false) . " (user)";
+				}
+			} elseif (!empty($row['editedOrCreatedUsername'])) {
+				$userOrAdmin = ($row['editedOrCreatedUsername'] ?? false) . " (user account deleted)";
+			} else {
+				$userOrAdmin = "unknown administrator";
+			}
+		
+			if (!empty($relativeDate)) {
+				$date = \ze\date::formatRelativeDateTime($row['editedOrCreated'], 'day', ($relativeDateAddFullTime ? true : false), 'vis_date_format_short');
+			} else {
+				$date = \ze\date::formatDateTime($row['editedOrCreated'], 'vis_date_format_short');
+			}
+			
+			if (!$date) {
+				$date = 'date unknown';
+			}
+		
+			\ze\lang::applyMergeFields($row['string'], ['date' => $date, 'user_or_admin' => $userOrAdmin]);
+			
+			$strings[] = $row['string'];
+		}
+		
+		return implode("; ", $strings);
+		
 	}
 	
-	public static function formatLastActionedDatetime($adminFacing, $actionName, $actionCodeName, $data) {
+	public static function formatLastActionedDatetime($adminFacing, $actionName, $actionCodeName, $data, $dateFormat = 'vis_date_format_short') {
 		$row = [
 			'string' => $actionName . " on [[date]] by [[user_or_admin]]",
 			'action' => $data[$actionCodeName],
@@ -1504,10 +1500,10 @@ class user {
 			$userOrAdmin = "unknown";
 		}
 	
-		if (!empty($relativeDate)) {
-			$date = \ze\date::formatRelativeDateTime($row['action'], 'day', ($relativeDateAddFullTime ? true : false), 'vis_date_format_short');
-		} else {
-			$date = \ze\date::formatDateTime($row['action'], 'vis_date_format_short');
+		$date = \ze\date::formatDateTime($row['action'], $dateFormat);
+		
+		if (!$date) {
+			$date = 'date unknown';
 		}
 	
 		\ze\lang::applyMergeFields($row['string'], ['date' => $date, 'user_or_admin' => $userOrAdmin]);

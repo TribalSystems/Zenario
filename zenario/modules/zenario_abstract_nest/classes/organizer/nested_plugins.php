@@ -43,11 +43,21 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 		
 		
 		//Get a list of types of plugins that can be put in this nest
-		$key = ['status' => 'module_running', 'is_pluggable' => 1, 'nestable' => [1, 2]];
+		$key = ['status' => 'module_running', 'is_pluggable' => 1];
+		
+		if ($panel['key']['usesConductor']) {
+			$key['into_ajax_nests_with_conductor'] = 1;
+		} elseif ($panel['key']['isSlideshow']) {
+			$key['into_slideshows'] = 1;
+		} elseif ($instance['class_name'] == 'zenario_ajax_nest') {
+			$key['into_ajax_nests_without_conductor'] = 1;
+		} else {
+			$key['into_regular_nests'] = 1;
+		}
 		if ($instance['content_id']) {
 			$key['can_be_version_controlled'] = 1;
 		}
-		$modules = ze\row::getValues('modules', 'display_name', $key, 'display_name');
+		$pluggableModules = ze\row::getValues('modules', 'display_name', $key, 'display_name');
 		$ord = 222;
 		
 		//$twigSnippets = [];
@@ -64,6 +74,10 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 		//}
 
 		
+		//Get a list of modules whose plugins are already in this nest.
+		//Use it to populate the "Quick-add plugin" dropdown.
+		$modulesInThisNest = ze\row::getDistinctValues('nested_plugins', 'module_id', ['instance_id' => $instance['instance_id'], 'module_id' => ['!' => 0], 'is_slide' => 0]);
+		
 		foreach (['collection_buttons', 'item_buttons'] as $buttonType) {
 			if (!empty($panel[$buttonType])) {
 				foreach ($panel[$buttonType] as &$button) {
@@ -72,20 +86,13 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 						if (empty($button['class_name'])) {
 							$button['class_name'] = 'zenario_abstract_nest';
 						}
-					
-						//Plugin pickers need different paths for Wireframe modules
-						if ($instance['content_id']) {
-							if (isset($button['pick_items']['path_if_wireframe'])) {
-								$button['pick_items']['path'] = $button['pick_items']['path_if_wireframe'];
-							}
-						}
 					}
 				}
 				
 				//Automatically create drop-down menus for quickly adding plugins
 				if (!empty($panel[$buttonType]['add_plugin'])) {
 			
-					foreach ($modules as $moduleId => $name) {
+					foreach ($pluggableModules as $moduleId => $name) {
 						$panel[$buttonType]['add_plugin_'. $moduleId] =
 							[
 								'ord' => ++$ord,
@@ -97,6 +104,25 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 										'add_plugin' => 1,
 										'moduleId' => $moduleId
 							]]];
+					}
+				}
+				
+				if (!empty($panel[$buttonType]['quick_add_plugin'])) {
+			
+					foreach ($pluggableModules as $moduleId => $name) {
+						if (empty($panel[$buttonType]['quick_add_plugin'. $moduleId]) && in_array($moduleId, $modulesInThisNest)) {
+							$panel[$buttonType]['quick_add_plugin'. $moduleId] =
+								[
+									'ord' => ++$ord,
+									'parent' => 'quick_add_plugin',
+									'label' => $name,
+									'ajax' => [
+										'class_name' => 'zenario_abstract_nest',
+										'request' => [
+											'add_plugin' => 1,
+											'moduleId' => $moduleId
+								]]];
+						}
 					}
 				}
 				
@@ -283,6 +309,7 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 	
 	protected function setTitleAndCheckPermissions($path, &$panel, $refinerName, $refinerId, $mode, $instance) {
 		
+		$panel['key']['usesConductor'] = ze\pluginAdm::conductorEnabled($instance['instance_id']);
 		
 		//Check permissions for Wireframe modules
 		if ($instance['content_id'] && !ze\content::isDraft($instance['content_id'], $instance['content_type'], $instance['content_version'])) {
@@ -381,15 +408,12 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		$instanceId = (int) ze::get('refiner__nest');
-		$usesConductor = $panel['key']['usesConductor'] = ze\pluginAdm::conductorEnabled($instanceId);
-		
 		//Do an initial loop through the slides and plugins, to count/track a couple of things
 		$statesToSlides = [];
 		$slideNumsWithPlugins = [];
 		foreach ($panel['items'] as $id => &$item) {
 			if ($item['is_slide']) {
-				if ($usesConductor && $item['states']) {
+				if ($panel['key']['usesConductor'] && $item['states']) {
 					foreach (explode(',', $item['states']) as $state) {
 						$statesToSlides[$state] = $item['slide_num'];
 					}
@@ -423,8 +447,12 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 			}
 			
 			if ($item['is_slide']) {
-				if ($usesConductor && !$item['is_inner_slide']) {
+				if ($panel['key']['usesConductor'] && !$item['is_inner_slide']) {
 					$item['css_class'] = 'zenario_key_slide';
+					
+					if ($item['ordinal'] == 1) {
+						$item['css_class'] .= ' zenario_first_key_slide';
+					}
 				} else {
 					$item['css_class'] = 'zenario_nest_tab';
 				}
@@ -434,6 +462,14 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 				
 				if ($item['slide_permissions'] != 'public') {
 					$panel['columns']['slide_permissions']['always_show'] = true;
+					
+					if ($item['slide_permissions'] == 'group_members') {
+						$groups = ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'slide', 'link_from_id' => $id]);
+						
+						if (!$groups) {
+							$item['slide_permissions'] = 'group_members_without_any_group_selected';
+						}
+					}
 				}
 				
 				//This code would show a thumbnail instead of an icon when a slide has an image

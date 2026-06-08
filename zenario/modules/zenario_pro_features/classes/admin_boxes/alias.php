@@ -105,11 +105,12 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 					$fields['meta_data/alias']['error'] = true;
 				
 				} else {
+					$equivId = ze\content::equivId($box['key']['cID'], $box['key']['cType']);
 					$sql = "
 						SELECT 1
 						FROM ". DB_PREFIX. "content_items
 						WHERE `alias`= '". ze\escape::sql($alias). "'
-						  AND (id, `type`) NOT IN ((". (int) $box['key']['cID']. ", '". ze\escape::asciiInSQL($box['key']['cType']). "'))
+						  AND (equiv_id, `type`) NOT IN ((". (int) $equivId. ", '". ze\escape::asciiInSQL($box['key']['cType']). "'))
 						LIMIT 1";
 					
 					if (ze\sql::numRows($sql)) {

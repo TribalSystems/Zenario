@@ -281,8 +281,8 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 			}
 		}
 		
-		request.__pluginClassName__ = uploadButton.class_name;
-		request.__path__ = thus.path;
+		request._cms_class = uploadButton.class_name;
+		request.path = thus.path;
 		request.method_call = 'handleOrganizerPanelAJAX';
 		
 		zenarioT.setHTML5UploadFromDragDrop(

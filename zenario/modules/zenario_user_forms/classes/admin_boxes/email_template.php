@@ -33,14 +33,14 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 		$forms = ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['id', 'name'], ['status' => 'active'], 'name');
 		
 		foreach ($forms as $form) {
-			$fields['meta_data/user_form']['values'][$form['id']] = ze\admin::phrase('[[form_name]] (form ID[[form_id]])', ['form_name' => $form['name'], 'form_id' => $form['id']]);
+			$fields['email_body/user_form']['values'][$form['id']] = ze\admin::phrase('[[form_name]] (form ID[[form_id]])', ['form_name' => $form['name'], 'form_id' => $form['id']]);
 		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($formId = $values['meta_data/user_form']) {
+		if ($formId = $values['email_body/user_form']) {
 			//Get list of form fields for form
-			$fields['meta_data/user_form_field']['hidden'] = false;
+			$fields['email_body/user_form_field']['hidden'] = false;
 			$sql = '
 				SELECT
 					uff.id,
@@ -113,9 +113,9 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 				}
 			}
 			
-			$fields['meta_data/user_form_field']['values'] = $formFields;
+			$fields['email_body/user_form_field']['values'] = $formFields;
 			
-			if ($formFieldId = $values['meta_data/user_form_field']) {
+			if ($formFieldId = $values['email_body/user_form_field']) {
 				//Add form field mergefield onto end of email template
 				$sql = '
 					SELECT 
@@ -145,7 +145,7 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 					if ($row['name']) {
 						$mergeFields .= trim($row['name'], " \t\n\r\0\x0B:"). ': ';
 					}
-					if ($values['meta_data/use_standard_email_template'] == 'twig') {
+					if ($values['email_body/use_standard_email_template'] == 'twig') {
 						if ($row['split_first_name_last_name']) {
 							$mergeFields .= '{{first_name}} {{last_name}}';
 						} else {
@@ -161,11 +161,11 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 					$mergeFields .= '</p>';
 				}
 				
-				$values['meta_data/body'] .= $mergeFields;
-				$values['meta_data/user_form_field'] = '';
+				$values['email_body/body'] .= $mergeFields;
+				$values['email_body/user_form_field'] = '';
 			}
 		} else {
-			$fields['meta_data/user_form_field']['hidden'] = true;
+			$fields['email_body/user_form_field']['hidden'] = true;
 		}
 	}
 	

@@ -128,8 +128,16 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$fields['details/status']['readonly'] = true;
 			$fields['details/status']['values'] = [$user['status'] => $fields['details/status']['values'][$user['status']]];
 			
+			if ($user['created_date'] != NULL) {
+				$values['dates/created_date'] = date_format(new DateTime($user['created_date']), "d M Y H:i:s");
+			}
+			
+			if ($user['modified_date'] != NULL) {
+			    $values['dates/modified_date'] = date_format(new DateTime($user['modified_date']), "d M Y H:i:s");
+            }
+			
 			if ($user['last_login'] != NULL) {
-			    $values['dates/last_login'] = date_format(new DateTime($user['last_login']),"d M Y H:i:s");
+			    $values['dates/last_login'] = date_format(new DateTime($user['last_login']), "d M Y H:i:s");
             } else {
             	$values['dates/last_login'] = ze\admin::phrase('Never logged in');
             }

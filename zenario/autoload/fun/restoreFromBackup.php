@@ -396,7 +396,9 @@ if (!empty($failures)) {
 } else {
 	//Finally, we'll need to remove the existing tables and copy over 
 	
-	\ze\dbAdm::rememberLocationalSiteSettings();
+	if ($restoringOverExistingSite) {
+		\ze\dbAdm::rememberLocationalSiteSettings();
+	}
 	
 	//Drop the tables from the existing installation
 	$error = false;
@@ -421,7 +423,9 @@ if (!empty($failures)) {
 		\ze\sql::update('RENAME TABLE `'. $importTable. '` TO `'. $actualTable. '`', false, false);
 	}
 	
-	\ze\dbAdm::restoreLocationalSiteSettings();
+	if ($restoringOverExistingSite) {
+		\ze\dbAdm::restoreLocationalSiteSettings();
+	}
 	
 	//Note that Assetwolf's background threads will likely still be paused, even though we've
 	//just replaced everything in the database, as they get paused just before a backup is created.

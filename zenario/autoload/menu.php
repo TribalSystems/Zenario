@@ -217,7 +217,6 @@ class menu {
 				t.ext_url,
 				c.visitor_version,
 				m.invisible,
-				m.accesskey,
 				m.ordinal,
 				m.rel_tag,
 				m.css_class
@@ -445,17 +444,9 @@ class menu {
 		
 		//Menu nodes linking to content items should only be shown, depending on what their statuses are.
 		if ($adminMode) {
-			if ($showInvisibleMenuItems) {
-				$bannedStatuses = "('deleted', 'trashed')";
-			} else {
-				$bannedStatuses = "('deleted', 'trashed', 'unlisted', 'unlisted_with_draft')";
-			}
+			$bannedStatuses = "('deleted', 'trashed', 'unlisted', 'unlisted_with_draft')";
 		} else {
-			if ($showInvisibleMenuItems) {
-				$bannedStatuses = "('first_draft', 'hidden_with_draft', 'trashed_with_draft', 'hidden', 'trashed', 'deleted')";
-			} else {
-				$bannedStatuses = "('first_draft', 'hidden_with_draft', 'trashed_with_draft', 'hidden', 'trashed', 'deleted', 'unlisted', 'unlisted_with_draft')";
-			}
+			$bannedStatuses = "('first_draft', 'hidden_with_draft', 'trashed_with_draft', 'hidden', 'trashed', 'deleted', 'unlisted', 'unlisted_with_draft')";
 		}
 		
 		//The $getFullMenu option only has meaning when viewing a translation
@@ -484,7 +475,6 @@ class menu {
 				m.add_registered_get_requests,
 				m.custom_get_requests,
 				m.invisible,
-				m.accesskey,
 				m.ordinal,
 				m.rel_tag,
 				m.image_id,
@@ -853,10 +843,6 @@ class menu {
 			}
 		} else {
 			$row['url'] = '';
-		}
-	
-		if ($row['accesskey']) {
-			$row['title'] = \ze\admin::phrase('Access Key = [[key]]', ['key' => $row['accesskey']]);
 		}
 
 		if ($row['open_in_new_window']) {

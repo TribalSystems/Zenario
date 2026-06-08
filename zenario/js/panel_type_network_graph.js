@@ -363,22 +363,29 @@ methods.drawCytoscape = function($panel) {
 		}
 		
 		var id, item,
-			noPositionsWereSetBefore = _.isEmpty(thus.tuix.positions),
-			noPositionsWereChangedBefore = !thus.tuix.positionsChanged;
-		
-		thus.tuix.positions = {};
+			positions = {},
+			positionsChanged = false;
 		
 		foreach (thus.tuix.items as id => item) {
 			if (item.type == 'state') {
-				thus.tuix.positions[id] = thus.cy.$('#' + id).position();
-				thus.tuix.positionsChanged = true;
+				positions[id] = thus.cy.$('#' + id).position();
+				positionsChanged = true;
 			}
 		}
 		
-		//If no positions were set before, and they are now, we may need to redraw the buttons
-		if (noPositionsWereSetBefore || noPositionsWereChangedBefore) {
-			zenarioO.setButtons();
-		}
+		zenario.actAfterDelayIfNotSuperseded('save_positions', function() {
+			
+			var actionTarget = zenario.ajaxURL('handleOrganizerPanelAJAX', thus.tuix.class_name, zenarioO.path) + zenario.urlRequest(zenarioO.getKey()),
+				actionRequests = {save_positions: 1, positions: JSON.stringify(positions)};
+			
+			//Save the data
+			zenario.ajax(actionTarget, actionRequests).after(function(message) {
+				if (message) {
+					zenarioA.showMessage(message);
+				}
+			});
+			
+		}, 500);
 	});
 };
 

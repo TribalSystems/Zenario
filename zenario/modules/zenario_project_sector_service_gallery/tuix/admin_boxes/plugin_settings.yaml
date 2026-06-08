@@ -1,5 +1,4 @@
 plugin_settings: 
-    max_height: "450"
     tabs: 
         first_tab: 
             fields: 

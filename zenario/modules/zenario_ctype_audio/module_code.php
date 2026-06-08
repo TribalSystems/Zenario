@@ -33,7 +33,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 	protected $data = [];
 	
 	function init() {
-		$clearByContent = $this->setting('show_details_and_link') == 'another_content_item';
+		$clearByContent = false;
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
@@ -44,25 +44,13 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 	}
 
 	function showSlot() {
-		$targetID = $targetVersion = $targetType = false;
-		if ($this->setting('show_details_and_link') == 'another_content_item'){
-			$item = $this->setting('another_audio');
-			if (count($arr = explode("_",$item))==2){
-				$targetID = $arr[1];
-				$targetType = $arr[0];
-				if (!$targetVersion = ze\content::showableVersion($targetID,$targetType)){
-					return;
-				}
-			}
-		}
-		if (!($targetID && $targetVersion && $targetType)) {
-			$targetID = $this->cID;
-			$targetVersion = $this->cVersion;
-			$targetType = $this->cType;
-		}
-		if ($targetType != 'audio'){
+		$targetID = $this->cID;
+		$targetVersion = $this->cVersion;
+		$targetType = $this->cType;
+		
+		if ($targetType != 'audio') {
 			if (ze\admin::id()) {
-				echo "This plugin needs to be placed on an Audio content item or be configured to point to another Audio content item. Please check plugin settings.";
+				echo ze\admin::phrase("This plugin must be placed on a layout used by Audio content items.");
 			}
 			return;
 		}
@@ -88,11 +76,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes){
 		switch ( $path ){
-		    case 'plugin_settings':
-		        $box['tabs']['first_tab']['fields']['another_audio']['hidden'] = !(($values['first_tab/show_details_and_link'] ?? false)=='another_content_item');
-		        break;
-			
-			case 'zenario_content':
+		    case 'zenario_content':
 				if ($box['key']['cType'] == 'audio') {
 					$box['tabs']['file']['hidden'] = false;
 					$box['tabs']['file']['fields']['file']['upload']['accept'] = 'audio/*';

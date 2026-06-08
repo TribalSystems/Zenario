@@ -303,7 +303,8 @@
 
 /* Private page */
 
-.zenario_promo_menu ul li.private a:before,
+.zenario_promo_menu ul li.private > a:before,
+.zenario_promo_menu ul li.private > em > a:before,
 .zenario_promo_menu .column div.private a:after {
 	font-family: "FontAwesome";
   	content: "\f023";

@@ -1,5 +1,13 @@
 {% if Event_Details %}
 	<div class="Event_details">
+		{% if Show_Pinned_Icon or Show_Pinned_Text %}
+			<div class="{% if Pinned_Text %} pinned {% endif %} {% if Show_Pinned_Icon %} pinned_icon {% endif %}">
+				{% if Pinned_Text %}
+					<{{Pinned_Text_Html_Tag|e}}>{{Pinned_Text}}</{{Pinned_Text_Html_Tag|e}}>
+				{% endif %}
+			</div>
+		{% endif %}
+		
 		{% if show_title %}
 			<{{title_tags|e}}>{{title}}</{{title_tags|e}}>
 		{% endif %}

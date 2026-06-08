@@ -62,7 +62,7 @@ zenario__locations:
                 searchable: true
                 width: xlarge
                 hidden: false
-            parent_customer:
+            parent_organization:
                 hidden: false
             location_full_name:
                 hidden: false
@@ -285,7 +285,6 @@ zenario__locations:
             css_class: zenario_location_manager_location
             link:
                 path: zenario__locations/panel
-                branch: true
                 refiner: children_of_location
         collection_buttons:
             create_location:
@@ -334,7 +333,7 @@ zenario__locations:
             import_dropdown:
                 label: Import
                 hide_when_children_are_not_visible: true
-                ord: 999992
+                ord: 48
             import:
                 priv: _PRIV_EXPORT_LOCATIONS
                 label: Start import wizard
@@ -366,11 +365,11 @@ zenario__locations:
                     pass_matched_ids: true
                     key:
                         dataset: ''
-                ord: 999993
+                ord: 49
             
             settings_dropdown:
                 css_class: organizer_settings_dropdown
-                ord: 999999
+                ord: 50
                 hide_when_children_are_not_visible: true
                 label: ⚙
             settings:
@@ -383,6 +382,7 @@ zenario__locations:
                     key:
                         id: zenario_location_manager__site_settings_group
             help:
+                ord: 99
                 label: Help
                 hide_in_select_mode: true
                 help:
@@ -416,7 +416,7 @@ zenario__locations:
                 tooltip: View location in hierarchy
                 navigation_path: true
                 without_columns_set:
-                    traits.not_in_hierarchy: true
+                    not_in_hierarchy: true
             
             view_dropdown:
                 label: View
@@ -596,14 +596,13 @@ zenario__locations:
                     request:
                         upload_image: true
                 without_columns_set:
-                    traits.has_image: true
+                    has_image: true
             images:
                 parent: images_dropdown
                 label: View images
                 hide_in_select_mode: true
                 link:
                     path: zenario__locations/location_images/panel
-                    branch: true
                     refiner: location_images
             remove_location:
                 priv: _PRIV_MANAGE_LOCATIONS

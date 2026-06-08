@@ -483,12 +483,14 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			
 			$fields['first_tab/alt_tag']['placeholder'] = $image['alt_tag'];
 			
-			if ($image['floating_box_title']) {
-				$merge = '"' . $image['floating_box_title'] . '"';
-			} else {
-				$merge = 'No caption set';
-			}
-			$fields['first_tab/floating_box_title_mode']['values']['use_default']['label'] = 'Use the image\'s default floating box caption (' . htmlspecialchars($merge) .')';
+			$href = 'organizer.php#zenario__library/panels/image_library//' . (int) $imageId . '~.zenario_image~tdetails~k{"id"%3A"' . (int) $imageId . '"}';
+			$linkStart = "<a href='" . $href . "' target='_blank'>";
+			$linkEnd = '</a>';
+			
+			$fields['first_tab/floating_box_title_mode']['values']['use_default']['note_below'] = ze\admin::phrase(
+				'See [[link_start]]image properties[[link_end]] for the image caption',
+				['link_start' => $linkStart, 'link_end' => $linkEnd]
+			);
 				
 			if ($box['first_display']) {
 				if (!$values['first_tab/floating_box_title']) {

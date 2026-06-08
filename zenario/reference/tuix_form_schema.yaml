@@ -17,7 +17,7 @@ common_definitions:
         description: >
             This controls the order in which elements are drawn on the screen.
             
-            If not set, it defaults to the order the CMS finds them in.
+            If not set, it defaults to the order Zenario finds them in.
             
             From version 10.1 onwards, we have some logic where you can place a field or a button
             immediately before or after an existing field or button using an offset.
@@ -420,6 +420,11 @@ additionalProperties:
                                         The text will be styled as if it's attached to the button, but the button won't be pressed if the user tries to click the text.
                                         
                                         This works from version 10.2 onwards.
+                                
+                                pre_button_onclick:
+                                    type: string
+                                    description: >
+                                        If using the pre_button_text property to add some text, this lets you write JavaScript code in an onclick attribute for the text.
                                 
                                 side_note:
                                     type: string
@@ -1244,7 +1249,7 @@ additionalProperties:
                                     type: *variable
                                     modified_by_cms: true
                                     description: >
-                                        If edit mode is enabled, the CMS will store the current value of the field here.
+                                        If edit mode is enabled, Zenario will store the current value of the field here.
                                         
                                         You can use the <code>$values</code> array to set and retrieve the values of your fields
                                         without worrying about the difference between value and current_value.
@@ -1253,7 +1258,7 @@ additionalProperties:
                                     description: >
                                         Select lists and radio-groups work off a list of values.
                                         
-                                        If the user selects a value, the CMS will place a shortcut to the selected value
+                                        If the user selects a value, Zenario will place a shortcut to the selected value
                                         in the selected_option property, to help you write your visible_if conditions in JavaScript.
                                         
                                         This is only available in JavaScript, you will not see it in PHP.
@@ -1631,7 +1636,7 @@ additionalProperties:
                                         
                                         It's deprecated and you should avoid using it.
                                     properties:
-                                        _changed:
+                                        _cms_changed:
                                             type: boolean
                                             modified_by_cms: true
                                             description: >
@@ -1722,7 +1727,7 @@ additionalProperties:
                                                 This value is read when your Module is installed or a database update for your Module is applied.
                                                 If you change it you will need to increment your Module's revision number.
                                                 
-                                                As a helpful shortcut, if you do not provide it here the CMS will read the <code>value</code>
+                                                As a helpful shortcut, if you do not provide it here Zenario will read the <code>value</code>
                                                 property from the field itself.
                                                 
                                                 
@@ -1790,7 +1795,7 @@ additionalProperties:
                                             static: true
                                             description: >
                                                 You can include this property to indicate that your Plugin references something else
-                                                in the CMS.
+                                                in Zenario.
                                                 
                                                 Possible values are:
                                                     • category,
@@ -1887,7 +1892,7 @@ additionalProperties:
                                                 This value is read when your Module is installed or a database update for your Module is applied.
                                                 If you change it you will need to increment your Module's revision number.
                                                 
-                                                As a helpful shortcut, if you do not provide it here the CMS will read the <code>value</code>
+                                                As a helpful shortcut, if you do not provide it here Zenario will read the <code>value</code>
                                                 property from the field itself.
                                                 
                                                 
@@ -1923,7 +1928,7 @@ additionalProperties:
                                                 a live site, except for a few config options such as MQTT server or email
                                                 debug mode that should stay set to their dev settings.
                                                 
-                                                Note: this feature only works when using the CMS tool to restore a backup.
+                                                Note: this feature only works when using Zenario tool to restore a backup.
                                                 
                                                 This works from version 8.7 onwards.
                                         advanced_inline_styles:
@@ -1972,7 +1977,7 @@ additionalProperties:
                                                 This value is read when your Module is installed or a database update for your Module is applied.
                                                 If you change it you will need to increment your Module's revision number.
                                                 
-                                                As a helpful shortcut, if you do not provide it here the CMS will read the <code>value</code>
+                                                As a helpful shortcut, if you do not provide it here Zenario will read the <code>value</code>
                                                 property from the field itself.
                                                 
                                                 
@@ -2586,7 +2591,7 @@ additionalProperties:
                                         This property takes the name of a button on this tab - ideally a toggle or
                                         submit type field.
                                         
-                                        If an Admin presses the return key on their keyboard, the CMS will simulate
+                                        If an Admin presses the return key on their keyboard, Zenario will simulate
                                         a click on the named button.
                                     
                                 enable_microtemplates_in_properties:
@@ -2744,7 +2749,7 @@ additionalProperties:
                                 dont_trim:
                                     type: boolean
                                     description: |
-                                        From version 7.3 onwards, the CMS will automatically trim() the values of fields when they are
+                                        From version 7.3 onwards, Zenario will automatically trim() the values of fields when they are
                                         validated or saved.
                                         
                                         Set this property to true to disable this.
@@ -2754,7 +2759,7 @@ additionalProperties:
                                     description: |
                                         Sets a maxlength on a text field. (This doesn't work with code or html editors.)
                                         
-                                        From version 7.3 onwards the CMS will automatically apply a substr() when the field is saved.
+                                        From version 7.3 onwards Zenario will automatically apply a substr() when the field is saved.
                                 
                                 tooltip:
                                     type: string
@@ -2819,6 +2824,9 @@ additionalProperties:
                                 onfocus:
                                     type: string
                                     description: Sets the onfocus HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                oninput:
+                                    type: string
+                                    description: Sets the oninput HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
                                 onmousedown:
                                     type: string
                                     description: Sets the onmousedown HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
@@ -2871,7 +2879,39 @@ additionalProperties:
                                 step:
                                     type: string
                                     description: Sets the step HTML 5 attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                
+                                
+                                go:
+                                    type: object
+                                    required:
+                                        - command
+                                    properties:
+                                        command:
+                                            type: string
+                                            description: >
+                                                If the nest conductor is running, issue this command.
+                                        command_animation:
+                                            type: string
+                                            description: >
+                                                Set this property to issue a command but play the animation
+                                                from a different command.
                                                 
+                                                Commands with specific animations are "back" and "refresh".
+                                                
+                                                Any other command has a generic animation.
+                                    additionalProperties:
+                                        type: *variable
+                                        description: >
+                                            A variable to add to the request/URL
+                                    description: >
+                                        When creating a form in a FEA, you can have a "go" button inside the form.
+                                        
+                                        This won't save the contents of the form when clicked so is really only useful
+                                        for creating a "Cancel" button.
+                                        
+                                        This works in FEA forms, from version 10.4 onwards.
+                            
+                            
                             forbidden_if_true:
                                 pick_items:
                                     - checking_child_checks_parents

@@ -4,7 +4,6 @@ zenario__projects:
             panel:
                 key:
                     usage: project_locations
-                enable_close_up_view: Yes
                 title: Images for Project Locations
                 no_items_message: There are no images used in Project Locations
                 grid_view_microtemplate: zenario_grid_view_image
@@ -63,8 +62,6 @@ zenario__projects:
                     [[filename]]
                     [[[width]] × [[height]]]
                 item:
-                    name: Image
-                    names: Images
                     css_class: media_image
                 collection_buttons:
                     upload:
@@ -90,8 +87,6 @@ zenario__projects:
                         label: View image
                         popout:
                             href: zenario/file.php?popout=1
-                            options:
-                                type: image
                 item_buttons:
                 
                     delete:
@@ -120,6 +115,3 @@ zenario__projects:
                         label: Image
                         popout:
                             href: zenario/file.php?popout=1
-                            options:
-                                type: image
-                    

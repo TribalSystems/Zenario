@@ -444,7 +444,7 @@ zenario_conductor.go = function(slot, command, requests, runAfter, scrollToTopOf
 						opacity: 0
 					},
 					options: {
-						duration: 400
+						duration: 200
 					}
 				});
 		
@@ -465,11 +465,10 @@ zenario_conductor.go = function(slot, command, requests, runAfter, scrollToTopOf
 				//Show a fade-out, right scroll, and back in tranisition for any other type of command
 				zenario_conductor.transitionOut(slot, {
 					animate: {
-						opacity: 0,
-						right: '150%'
+						opacity: 0
 					},
 					options: {
-						duration: 400
+						duration: 0
 					}
 				});
 			}
@@ -487,11 +486,10 @@ zenario_conductor.go = function(slot, command, requests, runAfter, scrollToTopOf
 							opacity: 0
 						},
 						animate: {
-							opacity: 1,
-							right: 0
+							opacity: 1
 						},
 						options: {
-							duration: 1000
+							duration: 250
 						}
 					});
 				
@@ -503,15 +501,14 @@ zenario_conductor.go = function(slot, command, requests, runAfter, scrollToTopOf
 					zenario_conductor.transitionIn(slot, {
 						initial: {
 							opacity: 0,
-							left: '150%'
+							left: '45px'
 						},
 						animate: {
 							opacity: 1,
 							left: 0
 						},
 						options: {
-							duration: 800,
-							easing: [.3, .7, 0, 1.05]
+							duration: 250
 						}
 					});
 				}
@@ -793,6 +790,26 @@ zenario_conductor.goBack = function(slot, restoreScrollPosition, confirmed) {
 			}
 			
 			zenario_conductor.go(slot, 'back', {}, runAfter, scrollToTopOfSlot);
+		}
+	}
+};
+
+//As above but for the exit button
+zenario_conductor.exit = function(slot, command, confirmed) {
+	slot = getSlot(slot);
+	if (slot.exists) {
+		
+		//Check if something on this slot has asked for a confirmation before closing it.
+		//If so, show that confirmation and only continue if the visitor okays it.
+		if (!confirmed
+		 && _.isFunction(slot.checkChangedOnClose)
+		 && _.isFunction(slot.confirmOnClose)
+		 && slot.checkChangedOnClose()) {
+			slot.confirmOnClose(function() {
+				zenario_conductor.exit(slot, command, true);
+			});
+		} else {
+			zenario_conductor.go(slot, command, {command_animation: 'back'});
 		}
 	}
 };

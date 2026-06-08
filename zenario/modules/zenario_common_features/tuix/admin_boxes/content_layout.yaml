@@ -63,7 +63,8 @@ zenario_content_layout:
                         disallow_refiners_looping_on_min_path: Yes
                         nothing_selected_phrase: No layout selected
                         one_to_one_choose_phrase: Choose this layout
-                        select_phrase: Select a layout...
+                        nothing_selected_phrase: Select a layout...
+                        select_phrase: Select a different layout...
                         hide_remove_button: Yes
                     format_onchange: Yes
                 skin_name:

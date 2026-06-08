@@ -37,7 +37,6 @@ zenario_videos_manager:
                     link:
                         path: zenario_videos_manager/panels/videos
                         refiner: category
-                        branch: Yes
                     record_count: number_of_videos
                 delete:
                     priv: _PRIV_MANAGE_VIDEOS

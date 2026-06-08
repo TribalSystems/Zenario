@@ -69,12 +69,9 @@ zenario__languages:
                     hide_on_refiner: true
             item:
                 css_class: zenario_country_manager_country
-                name: Country
-                names: Countries
                 tooltip_when_link_is_active: "View this country's regions"
                 link:
                     path: zenario__languages/panels/regions
-                    branch: true
                     refiner: country_code_filter
             collection_buttons:
                 create_country:
@@ -101,7 +98,7 @@ zenario__languages:
                     label: Translated phrases
                     hide_in_select_mode: true
                     with_columns_set:
-                        traits.show_localizations: true
+                        show_localizations: true
                     admin_box:
                         path: zenario_phrase
                         key:
@@ -115,7 +112,7 @@ zenario__languages:
                     priv: _PRIV_MANAGE_COUNTRY
                     label: Activate
                     with_columns_set:
-                        traits.suspended: true
+                        suspended: true
                     hide_in_select_mode: true
                     multiple_select: true
                     multiple_select_tooltip: Activate selected countries
@@ -133,7 +130,7 @@ zenario__languages:
                     priv: _PRIV_MANAGE_COUNTRY
                     label: Suspend
                     with_columns_set:
-                        traits.active: true
+                        active: true
                     hide_in_select_mode: true
                     multiple_select: true
                     multiple_select_tooltip: Suspend selected countries
@@ -197,12 +194,9 @@ zenario__languages:
             refiner_required: false
             item:
                 css_class: zenario_country_manager_region
-                name: Region
-                names: Regions
                 tooltip_when_link_is_active: 'View sub-regions of this region'
                 link:
                     path: zenario__languages/panels/regions
-                    branch: true
                     refiner: parent_id
             collection_buttons:
                 create_region:
@@ -229,7 +223,7 @@ zenario__languages:
                     label: Phrases
                     hide_in_select_mode: true
                     with_columns_set:
-                        traits.show_localizations: true
+                        show_localizations: true
                     admin_box:
                         path: zenario_phrase
                         key:

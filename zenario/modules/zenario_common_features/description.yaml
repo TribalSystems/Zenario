@@ -99,34 +99,6 @@ special_pages:
         logic: create_and_maintain_in_default_language
         allow_hide: true
         allow_search: true
-pagination_types:
-    pagSelectList:
-        function_name: pagSelectList
-        label: Select list
-    pagCurrentWithNP:
-        function_name: pagCurrentWithNP
-        label: Current page number with Next/Previous
-    pagCurrentWithFNPL:
-        function_name: pagCurrentWithFNPL
-        label: Current page number with First/Next/Previous/Last
-    pagAll:
-        function_name: pagAll
-        label: All page numbers
-    pagAllWithNPIfNeeded:
-        function_name: pagAllWithNPIfNeeded
-        label: All page numbers with Next/Previous if needed
-    pagCloseWithNPIfNeeded:
-        function_name: pagCloseWithNPIfNeeded
-        label: Nearby page numbers with Next/Previous if needed
-    pagCloseWithNP:
-        function_name: pagCloseWithNP
-        label: Nearby page numbers with Next/Previous
-    pagCloseWithFNPLIfNeeded:
-        function_name: pagCloseWithFNPLIfNeeded
-        label: Nearby page numbers with First/Next/Previous/Last if needed
-    pagCloseWithFNPL:
-        function_name: pagCloseWithFNPL
-        label: Nearby page numbers with First/Next/Previous/Last
 jobs:
     -
         name: jobCleanDirectories

@@ -18,14 +18,14 @@ plugin_settings:
                             label: ' -- Inactive -- '
                         list_videos:
                             label: List videos
-                        search_videos:
-                            label: Search videos
                         new_video:
                             label: New video
                         view_video:
                             label: View video
                         edit_video:
                             label: Edit video
+                        search_videos:
+                            label: Search videos
         first_tab:
             label: Options
             custom_templates:
@@ -160,12 +160,13 @@ plugin_settings:
                         name: default_image_id
                     label: 'Default image:'
                     upload:
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                     pick_items:

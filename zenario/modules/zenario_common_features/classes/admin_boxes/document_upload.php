@@ -134,7 +134,7 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 			$filename = basename(ze\file::getPathOfUploadInCacheDir($document));
 			
 			if ($filepath && $filename) {
-				$documentId = ze\document::upload($filepath, $filename, $folderId, $privacy);
+				$documentId = ze\document::upload($filepath, $filename, $folderId, $privacy, $adminFacing = true);
 				$documentsCreated[] = $documentId;
 			}
 		}

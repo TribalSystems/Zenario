@@ -6,14 +6,6 @@ zenario__library:
             panel_type: network_graph
             key:
                 instanceId: ''
-            #db_items:
-            #    table: |
-            #        [[DB_PREFIX]]nested_plugins AS np
-            #        LEFT JOIN [[DB_PREFIX]]nested_plugins AS p
-            #           ON p.instance_id = np.instance_id
-            #          AND p.is_slide = 1
-            #          AND p.slide_num = np.slide_num
-            #    id_column: np.id
             refiners:
                 from_nested_plugins:
                     sql: 'np.instance_id = [[REFINER__NEST]]'
@@ -32,14 +24,6 @@ zenario__library:
                     values:
                         show_vars: {}
 
-            #item:
-            #    name: Nested slide/plugin
-            #    names: Nested slides and plugins
-            #    tooltip: >
-            #        To reorder items, simply drag and drop.
-            #        Changes will take effect immediately.
-            
-            
             cytoscape: {}
             quick_filter_buttons:
                 show_labels: 
@@ -63,36 +47,6 @@ zenario__library:
                         If you have created a custom path, you will need to manually enter the variables
                         used in the path's properties.
             
-            collection_buttons:
-                do_save_positions:
-                    hidden: true
-                    ajax:
-                        request:
-                            save_positions: 1
-                save_positions:
-                    css_class: organizer_applyButton
-                    only_show_on_refiner: from_nested_plugins
-                    visible_if: |
-                        zenarioO.tuix.positionsChanged
-                    label: 💾 Save positions
-                    onclick: |
-                        zenarioO.collectionButtonClick('do_save_positions', {positions: JSON.stringify(zenarioO.tuix.positions)});
-                #reset_positions:
-                #    only_show_on_refiner: from_nested_plugins
-                #    visible_if: |
-                #        !_.isEmpty(zenarioO.tuix.positions)
-                #    label: ✘ Reset positions
-                #    ajax:
-                #        confirm:
-                #            button_message: Reset positions
-                #            cancel_button_message: Cancel
-                #            message_type: warning
-                #            message: |
-                #                This will auto-arrange all of the nodes, clearing the saved positions.
-                #                
-                #                Are you sure you wish to continue?
-                #        request:
-                #            reset_positions: 1
             item_buttons:
                 tab_settings:
                     only_show_on_refiner: from_nested_plugins

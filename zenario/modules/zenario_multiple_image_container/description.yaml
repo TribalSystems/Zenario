@@ -9,7 +9,7 @@ display_name: Multiple Image Container
 description: |
     <p>Image galleries can easily be created using Multiple Image Container ("MIC") module. Create an MIC plugin for each gallery page required, and insrt it into a slot on the content item.</p>
     
-    <p>Images can be uploaded into the plugin in JPG or PNG format (for best quality), or GIF (lesser quality but may be animated).</p>
+    <p>Images can be uploaded into the plugin in WEBP, JPG or PNG format (for best quality), SVG, or GIF (lesser quality but may be animated).</p>
     
     <p>In Organizer, there will be an MIC Images panel in the Library area, in which administrators can manage all MIC images in one place.</p>
    
@@ -25,6 +25,12 @@ keywords: >
 vlp_class_name: zenario_multiple_image_container
 is_pluggable: true
 can_be_version_controlled: false
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: true
+    regular_nests: true
+    slideshows: false
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: false
 default_framework: standard
 default_instance_name: Untitled Multiple Image Container

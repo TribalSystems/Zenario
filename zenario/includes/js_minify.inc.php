@@ -431,7 +431,6 @@ class zenario_minify {
 		'zenarioAT.applyMergeFieldsToLabel(',		//'zenarioAT._tsz('
 		'zenarioAT.clickButton(',		//'zenarioAT._y14('
 		'zenarioAT.clickTab(',		//'zenarioAT._mkf('
-		'zenarioAT.customiseOrganizerLink(',		//'zenarioAT._yn2('
 		'zenarioAT.getKey(',		//'zenarioAT._i1('
 		'zenarioAT.getKeyId(',		//'zenarioAT._6ie('
 		'zenarioAT.getLastKeyId(',		//'zenarioAT._v7x('

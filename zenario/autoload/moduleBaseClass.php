@@ -191,19 +191,11 @@ class moduleAPI {
 		$this->zAPICallScriptWhenLoaded($beforeAJAXReload? 0 : 2, $args);
 	}
 	
-	public final function cache($methodName, $expiryTimeInSeconds = 600, $request = '') {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
 	public final function checkPostIsMine() {
 		return !empty($_POST) && (empty($_POST['containerId']) || $_POST['containerId'] == $this->containerId);
 	}
 	public final function checkRequestIsMine() {
 		return !empty($_REQUEST) && (empty($_REQUEST['containerId']) || $_REQUEST['containerId'] == $this->containerId);
-	}
-
-	public final function clearCache($methodName, $request = '', $useLike = false) {
-		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	public final function getCIDAndCTypeFromSetting(&$cID, &$cType, $setting, $getLanguageEquivalent = true) {
@@ -479,17 +471,11 @@ class moduleAPI {
 		return $html;
 	}
 	
-	protected final function pagination($paginationStyleSettingName, $currentPage, $pages, &$html, &$links = [], $extraAttributes = []) {
-		//Attempt to check if the named class exists, and fall back to 'pagCloseWithNPIfNeeded' if not
-		$classAndMethod = explode('::', $this->setting($paginationStyleSettingName) ?: $paginationStyleSettingName, 2);
-		
-		if (!empty($classAndMethod[0]) && !empty($classAndMethod[1]) && \ze\module::inc($classAndMethod[0]) && method_exists($classAndMethod[0], $classAndMethod[1])) {
-			$class = new $classAndMethod[0];
-			$method = $classAndMethod[1];
-		} else {
-			$class = new \zenario_common_features;
-			$method = 'pagCloseWithNPIfNeeded';
-		}
+	protected final function pagination($currentPage, $pages, &$html, &$links = [], $extraAttributes = []) {
+		//Previously, this function would call a class and method.
+		//As of 10.4, there is just 1 class and method .
+		$class = new \zenario_common_features;
+		$method = 'pagCloseWithFNPLAlwaysVisible';
 		
 		$class->setInstanceVariables([
 			$this->cID, $this->cType, $this->cVersion, $this->slotName,
@@ -537,11 +523,14 @@ class moduleAPI {
 	
 	public final function nPhrase($text, $pluralText = false, $n = 1, $replace = []) {
 		$this->checkPhraseOverride($text);
+		$this->checkPhraseOverride($pluralText);
 		return \ze\lang::nPhrase($text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
 	}
 	
 	public final function nzPhrase($zeroText, $text, $pluralText = false, $n = 1, $replace = []) {
+		$this->checkPhraseOverride($zeroText);
 		$this->checkPhraseOverride($text);
+		$this->checkPhraseOverride($pluralText);
 		return \ze\lang::nzPhrase($zeroText, $text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
 	}
 	
@@ -689,6 +678,12 @@ class moduleAPI {
 
 	public final function headerRedirect($link) {
 		\ze::$slotContents[$this->slotName]->headerRedirect($link);
+	}
+
+	public final function pageHeader($header, $replace = true) {
+		if (!$this->isAjaxReload()) {
+			header($header, $replace);
+		}
 	}
 	
 	protected final function showInMenuMode($shownInMenuMode = true) {
@@ -1944,6 +1939,27 @@ class moduleBaseClass extends moduleAPI {
 	}
 
 	public function showStandalonePage() {
+		
+		//...your PHP code...//
+	}
+	
+	
+	
+	  ///////////////////////////////
+	 //  Methods called sitewide  //
+	///////////////////////////////
+
+	public static function addToSitewidePageHead($canSetAnalytics, $canSetSocialMedia) {
+		
+		//...your PHP code...//
+	}
+
+	public static function addToSitewidePageBody($canSetAnalytics, $canSetSocialMedia) {
+		
+		//...your PHP code...//
+	}
+
+	public static function addToSitewidePageFoot($canSetAnalytics, $canSetSocialMedia) {
 		
 		//...your PHP code...//
 	}

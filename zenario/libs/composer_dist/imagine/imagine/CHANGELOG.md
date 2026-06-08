@@ -1,5 +1,11 @@
 # CHANGELOG
 
+### 1.5.2 (2026-01-09)
+- Do not call curl_close on PHP 8.0+ (#875, @dmaicher)
+
+### 1.5.1 (2025-12-09)
+- Don't call imagedestroy on PHP 8.5+ (#873, @mlocati)
+
 ### 1.5.0 (2024-12-03)
 - Minimum supported PHP version raised from 5.5 to 7.1 (#865, @alexander-schranz)
 - Fix PHP 8.4 deprecation warnings (#865, @alexander-schranz)

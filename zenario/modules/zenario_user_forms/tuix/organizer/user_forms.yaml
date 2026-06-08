@@ -138,8 +138,6 @@ zenario__user_forms:
             default_sort_column: name
             
             item:
-                name: Form
-                names: Forms
                 css_class: zenario_user_forms
             
             collection_buttons:
@@ -204,7 +202,6 @@ zenario__user_forms:
                     label: Edit form fields
                     link:
                         path: zenario__user_forms/panels/form_fields_gui
-                        branch: true
                         refiner: user_form_id
                 form_settings:
                     ord: 2

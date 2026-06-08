@@ -73,7 +73,7 @@ zenario__administration:
                     always_show: true
                     disallow_sorting: true
                     width: large
-                is_inactive:
+                is_active:
                     format: yes_or_no
                 csuper:
                     db_column: "IF (a.authtype = 'multi-site', ', multi-site', \'\')"
@@ -149,6 +149,23 @@ zenario__administration:
                     label: 'Multi-site'
                     column: authtype
                     value: super
+                
+                is_active:
+                    label: 'Login activity'
+                any_activity:
+                    parent: is_active
+                    label: 'Any activity'
+                    column: is_active
+                    remove_filter: true
+                active_recently:
+                    parent: is_active
+                    label: 'Active recently'
+                    column: is_active
+                inactive:
+                    parent: is_active
+                    label: 'Inactive'
+                    column: is_active
+                    invert: true
 
             item:
                 css_class: admin_item
@@ -252,7 +269,7 @@ zenario__administration:
             inline_buttons:
                 inactive:
                     visible_if: |
-                        zenario.engToBoolean(item.is_inactive)
+                        zenario.engToBoolean(!item.is_active)
                     css_class: zenario_ib_warning
                     admin_box:
                         path: zenario_admin
@@ -272,4 +289,3 @@ zenario__administration:
                 link:
                     path: zenario__administration/panels/administrators
                     refiner: trashed
-                    branch: true

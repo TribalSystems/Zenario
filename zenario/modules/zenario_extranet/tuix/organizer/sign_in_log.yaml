@@ -7,7 +7,6 @@ zenario__users:
             label: User sign-in log
             tooltip: Log recording when extranet users have signed in to the extranet
             panel:
-                php: Yes
                 title: User sign-in log
                 notice:
                     show: false
@@ -27,61 +26,59 @@ zenario__users:
                         title: Time accessed
                         db_column: usl.login_datetime
                         format: datetime_with_seconds
-                        show_by_default: Yes
+                        show_by_default: true
                         width: large
                     User_Id:
                         width: small
                         title: User ID
                         db_column: "IFNULL(u.id, CONCAT(usl.user_id, ' (account deleted)'))"
                         align_right: true
-                        show_by_default: Yes
+                        show_by_default: true
                     User_Identifier:
                         width: medium
                         title: User Identifier
                         db_column: "IFNULL(u.identifier, CONCAT(usl.user_id, ' (account deleted)'))"
-                        show_by_default: Yes
+                        show_by_default: true
                     Screen_name:
                         width: small
                         title: Screen name
                         db_column: u.screen_name
-                        searchable: Yes
+                        searchable: true
                     First_Name:
                         width: small
                         title: First name
                         db_column: u.first_name
                         hidden: true
-                        searchable: Yes
+                        searchable: true
                     Last_Name:
                         width: small
                         title: Last name
                         db_column: u.last_name
                         hidden: true
-                        searchable: Yes
+                        searchable: true
                     User_Name:
                         width: small
                         title: Name
-                        show_by_default: Yes
+                        show_by_default: true
                     Email:
                         width: large
                         title: Email Address
                         db_column: u.email
-                        show_by_default: Yes
-                        searchable: Yes
+                        show_by_default: true
+                        searchable: true
                     Client_Browser:
                         title: Client Browser
                         width: large
                         db_column: "CONCAT(usl.platform, ' ', usl.browser, ' ', usl.browser_version)"
-                        show_by_default: Yes
-                        searchable: Yes
+                        show_by_default: true
+                        searchable: true
                 
                 default_sort_column: Time
                 label_format_for_grid_view: |
                     [[Time]] [[Screen_name]]
                 default_sort_column: Time
-                default_sort_desc: Yes
+                default_sort_desc: true
                 item:
-                    name: sign-in Log
-                    names: sign-in Logs
                     css_class: log sign_in_log
                 no_items_message: |
                     No user sign-ins have been logged. To log sign-ins, please go to Configuration->Site Settings, open the Data Protection interface, and enable sign-in logging.
@@ -92,9 +89,8 @@ zenario__users:
                 sign_in_log:
                     ord: 0.1
                     parent: view_dropdown
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     label: This user's sign-in log
                     link:
                         path: zenario__users/nav/sign_in_log/panel
-                        branch: Yes
                         refiner: user

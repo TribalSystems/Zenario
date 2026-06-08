@@ -34,7 +34,8 @@ if (!\ze::$cacheBundles) {
 	$w .= '&amp;no_cache=1';
 }
 
-$isWelcome = $mode === true || $mode === 'welcome';
+
+$isWelcome = $mode === 'welcome';
 $isOrganizer = $mode === 'organizer';
 $httpUserAgent = ($_SERVER['HTTP_USER_AGENT'] ?? '');
 $isAdmin = \ze::isAdmin();
@@ -308,11 +309,26 @@ if ($isAdmin) {
 if (\ze::$cID && \ze::$cID !== -1) {
 	$itemHTML = $templateHTML = $familyHTML = false;
 	
+	
+	$canSetAnalytics = ze\cookie::canSet('analytics');
+	$canSetSocialMedia = ze\cookie::canSet('social_media');
+	
+	//Call modules that add HTML to each page.
+	if ($mode == 'page') {
+		foreach (\ze\sql::fetchValues('SELECT class_name FROM '. DB_PREFIX. 'modules WHERE adds_sitewide_html = 1') as $moduleClassName) {
+			if (\ze\module::inc($moduleClassName)) {
+				\ze\content::$sitewideModules[] = $moduleClassName;
+			}
+		}
+		foreach (\ze\content::$sitewideModules as $moduleClassName) {
+			call_user_func([$moduleClassName, 'addToSitewidePageHead'], $canSetAnalytics, $canSetSocialMedia);
+		}
+	}
 
-	//Include the site-wide head first
+	//Include the site-wide head
 	ze\layout::sitewideHTML('sitewide_head', true);
 
-	if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'head') {
+	if ($canSetAnalytics && ze::setting('sitewide_analytics_html_location') == 'head') {
 		ze\layout::sitewideHTML('sitewide_analytics_html');
 	}
 	if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'head') {

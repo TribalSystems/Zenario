@@ -91,9 +91,6 @@ class zenario_blog_news_list extends zenario_content_list {
 				$blogModuleIsRunning = ze\module::isRunning('zenario_ctype_blog');
 				$newsModuleIsRunning = ze\module::isRunning('zenario_ctype_news');
 				
-				$box['tabs']['pagination']['fields']['pagination_style']['values'] = 
-					ze\pluginAdm::paginationOptions();
-				
 				if (!ze::in($box['tabs']['first_tab']['fields']['content_type']['value'], 'blog', 'news')) {
 					if ($blogModuleIsRunning) {
 						$box['tabs']['first_tab']['fields']['content_type']['value'] = 'blog';
@@ -114,6 +111,8 @@ class zenario_blog_news_list extends zenario_content_list {
 				if (!$blogModuleIsRunning && !$newsModuleIsRunning) {
 					$fields['first_tab/content_type']['disabled'] = true;
 				}
+				
+				unset($fields['overall_list/heading_if_no_items']['validation']);
 				
 				break;
 		}
@@ -224,7 +223,7 @@ class zenario_blog_news_list extends zenario_content_list {
 		
 		$paginationLinks = [];
 		if ($this->setting('show_pagination') && count($this->pages) > 1) {
-			$this->pagination('pagination_style', $this->page, $this->pages, $pagination, $paginationLinks);
+			$this->pagination($this->page, $this->pages, $pagination, $paginationLinks);
 		} else {
 			$pagination = false;
 		}

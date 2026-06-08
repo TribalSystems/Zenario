@@ -388,14 +388,14 @@ zenarioO.checkPrefs = function() {
 	
 	//Check a checksum of the prefs as stored on the server.
 	var prefs,
-		url = URLBasePath + 'zenario/admin/quick_ajax.php?_manage_prefs=1',
-		serverChecksum = zenario.nonAsyncAJAX(url + '&_get_checksum=1', true, false);
+		url = URLBasePath + 'zenario/admin/quick_ajax.php?_cms_managePrefs=1',
+		serverChecksum = zenario.nonAsyncAJAX(url + '&_cms_fetchChecksum=1', true, false);
 	
 	//If this doesn't match the checksum on the client attempt to load in the new value.
 	//(If there wasn't anything on the server, if it was corrupt, or we know that
 	//the server's was an old copy, then keep the client's current copy.)
 	if (serverChecksum && serverChecksum != zenarioO.prefsChecksum && !zenarioO.previousPrefChecksums[serverChecksum]) {
-		if ((prefs = zenario.nonAsyncAJAX(url + '&_load_prefs=1', true, true)) && (prefs)) {
+		if ((prefs = zenario.nonAsyncAJAX(url + '&_cms_loadPrefs=1', true, true)) && (prefs)) {
 			zenarioO.prefs = prefs;
 			zenarioO.previousPrefChecksums[zenarioO.prefsChecksum = serverChecksum] = true;
 			return false;
@@ -409,8 +409,8 @@ zenarioO.checkPrefs = function() {
 zenarioO.savePrefs = function(sync) {
 	
 	var request = {
-		_manage_prefs: 1,
-		_save_prefs: 1,
+		_cms_managePrefs: 1,
+		_cms_savePrefs: 1,
 		prefs: JSON.stringify(zenarioO.prefs)};
 	
 	//We'll generate a new checksum so that others can tell that this is a change.
@@ -831,9 +831,8 @@ zenarioO.exportPanelAsCSV = function() {
 	
 	if (url) {
 		zenarioA.doDownload(url, {
-			_export: 1,
-			_csvExport: 1,
-			_exportCols: zenarioO.showableColumns().join(',')
+			_cms_isExport: 1,
+			_cms_exportColumns: zenarioO.showableColumns().join(',')
 		});
 	}
 	
@@ -849,9 +848,9 @@ zenarioO.exportPanelAsExcel = function() {
 	
 	if (url) {
 		zenarioA.doDownload(url, {
-			_export: 1,
+			_cms_isExport: 1,
 			_excelExport: 1,
-			_exportCols: zenarioO.showableColumns().join(',')
+			_cms_exportColumns: zenarioO.showableColumns().join(',')
 		});
 	}
 	
@@ -1183,16 +1182,16 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	if (url) {
 		if (window.zenarioONotFull) {
 			if (window.zenarioOSelectMode) {
-				url += '&_select_mode=1';
+				url += '&_cms_orgSelectMode=1';
 			} else if (window.zenarioOQuickMode) {
-				url += '&_quick_mode=1';
+				url += '&_cms_orgQuickMode=1';
 			}
 		}
 		
 		zenarioO.addWindowParentInfo(requests);
 	
 		if (queued && !lastInQueue) {
-			requests._queued = 1;
+			requests._cms_isQueued = 1;
 		}
 	
 		if (defined(refiner)) {
@@ -1205,7 +1204,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		}
 	
 		if (window.zenarioOCombineItem) {
-			requests._combineItem = window.zenarioOCombineItem;
+			requests._cms_combineItem = window.zenarioOCombineItem;
 		}
 	
 		foreach (lastRefiners as var f) {
@@ -1215,25 +1214,25 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		//Pagination logic
 		if (server_side || zenarioO.CSVExport) {
 			if (thisPageSize) {
-				requests._limit = thisPageSize;
+				requests._cms_limit = thisPageSize;
 		
 				if (zenarioO.refreshToPage) {
-					requests._start = (zenarioO.refreshToPage-1) * thisPageSize;
+					requests._cms_start = (zenarioO.refreshToPage-1) * thisPageSize;
 				} else {
-					requests._start = 0;
+					requests._cms_start = 0;
 				}
 		
 				if (itemToSelect) {
-					requests._item = itemToSelect;
+					requests._cms_selectedID = itemToSelect;
 		
 				//Try to get the previously selected item from the previous panel, if there was one
 				} else if (backwards) {
 					var requestItem;
 			
 					if (typeof backwards == 'object' && backwards.selectedItemFromLastPanel) {
-						requests._item = backwards.selectedItemFromLastPanel;
+						requests._cms_selectedID = backwards.selectedItemFromLastPanel;
 					} else if (requestItem = zenarioO.getSelectedItemFromLastPanel(path)) {
-						requests._item = requestItem;
+						requests._cms_selectedID = requestItem;
 					}
 				}
 			}
@@ -1243,28 +1242,28 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 			//Work out which column to sort on
 			//Sort by the reorder column if we're reordering
 			if (reorder && reorder.column) {
-				requests._sort_col = reorder.column;
+				requests._cms_sortCol = reorder.column;
 		
 			//Look up the user's choice of sort column
 			} else if (prefs.sortBy) {
-				requests._sort_col = prefs.sortBy;
-				requests._sort_desc = prefs.sortDesc? 1 : 0;
+				requests._cms_sortCol = prefs.sortBy;
+				requests._cms_sortDesc = prefs.sortDesc? 1 : 0;
 		
 			//Otherwise sort by the default sort column
 			} else {
-				requests._sort_col = defaultSortColumn;
-				requests._sort_desc = engToBoolean(zenarioO.followPathOnMap(path, 'default_sort_desc', refiner));
+				requests._cms_sortCol = defaultSortColumn;
+				requests._cms_sortDesc = engToBoolean(zenarioO.followPathOnMap(path, 'default_sort_desc', refiner));
 			}
 		}
 		
 		//Send the values of any filters
 		if (filters && !_.isEmpty(filters)) {
-			requests._filters = JSON.stringify(filters);
+			requests._cms_filters = JSON.stringify(filters);
 		}
 	
 		if (server_side || zenarioO.CSVExport) {
 			if (defined(searchTerm)) {
-				requests._search = searchTerm;
+				requests._cms_searchTerm = searchTerm;
 			}
 		}
 	}
@@ -1375,9 +1374,9 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 		panelInstance;
 	
 	//Save filters
-	if (defined(data._filters)) {
-		filters = data._filters;
-		delete data._filters;
+	if (defined(data._cms_filters)) {
+		filters = data._cms_filters;
+		delete data._cms_filters;
 	}
 	zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path] = filters;
 	//zenarioO.branches[zenarioO.branches.length-1].searches[zenarioO.path] = searchTerm;
@@ -1506,7 +1505,7 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 	
 	
 	
-	if (zenarioO.tuix.items && zenarioO.tuix.__item_count__ == 1 && engToBoolean(zenarioO.tuix.allow_bypass)) {
+	if (zenarioO.tuix.items && zenarioO.tuix._cms_itemCount == 1 && engToBoolean(zenarioO.tuix.allow_bypass)) {
 		zenarioO.branches[zenarioO.branches.length-1].bypasses[zenarioO.path] = true;
 	} else {
 		delete zenarioO.branches[zenarioO.branches.length-1].bypasses[zenarioO.path];
@@ -1519,7 +1518,7 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 	}
 	
 	//If there is only one item and "allow_bypass" is enabled, skip right past this panel
-	if (zenarioO.tuix.items && zenarioO.tuix.__item_count__ == 1 && engToBoolean(zenarioO.tuix.allow_bypass)) {
+	if (zenarioO.tuix.items && zenarioO.tuix._cms_itemCount == 1 && engToBoolean(zenarioO.tuix.allow_bypass)) {
 		if (backwards) {
 			if (zenarioO.getBackButtonTitle() !== false) {
 				zenarioO.back();
@@ -1544,7 +1543,7 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 		}
 	
 	//If there are no items in this Panel and the return_if_empty flag is set, attempt to go back
-	} else if ((!zenarioO.tuix.items || !zenarioO.tuix.__item_count__) && engToBoolean(zenarioO.tuix.return_if_empty)) {
+	} else if ((!zenarioO.tuix.items || !zenarioO.tuix._cms_itemCount) && engToBoolean(zenarioO.tuix.return_if_empty)) {
 		if (zenarioO.getBackButtonTitle() !== false) {
 			zenarioO.back();
 			return;
@@ -1685,7 +1684,7 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 				url =
 					URLBasePath +
 					'zenario/admin/organizer.ajax.php?path=' + zenarioO.shallowLinks['content_item'] +
-					'&_get_item_links=' + contentTags[lang][parent] +
+					'&_cms_fetchItemLinks=' + contentTags[lang][parent] +
 					'&languageId=' + encodeURIComponent(lang);
 				
 				++zenarioO.itemLinkRequestsLeft;
@@ -1712,7 +1711,7 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 			url =
 				URLBasePath +
 				'zenario/admin/organizer.ajax.php?path=' + zenarioO.shallowLinks['content_item_translation_chain'] +
-				'&_get_item_links=' + contentTranslationChains[parent];
+				'&_cms_fetchItemLinks=' + contentTranslationChains[parent];
 			
 			++zenarioO.itemLinkRequestsLeft;
 			zenarioO.getDataHack(url, lang, function(lang, data) {
@@ -1736,7 +1735,7 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 			url =
 				URLBasePath +
 				'zenario/admin/organizer.ajax.php?path=' + zenarioO.shallowLinks['menu_item'] +
-				'&_get_item_links=' + encodeURIComponent(values) +
+				'&_cms_fetchItemLinks=' + encodeURIComponent(values) +
 				'&languageId=' + encodeURIComponent(lang) +
 				'&refinerName=language' +
 				'&refinerId=' + encodeURIComponent(lang) +
@@ -1766,7 +1765,7 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 			url =
 				URLBasePath +
 				'zenario/admin/organizer.ajax.php?path=' + encodeURIComponent(path) +
-				'&_get_item_links=' + encodeURIComponent(values);
+				'&_cms_fetchItemLinks=' + encodeURIComponent(values);
 			
 			//if (!(zenarioO.otherItemLinks[path] = zenario.checkSessionStorage(url, {}, true, zenarioO.loadNum))) {
 				++zenarioO.itemLinkRequestsLeft;
@@ -2032,8 +2031,8 @@ zenarioO.searchAndSortItems = function(searchTerm) {
 		//If server side sorting and searching is being used, we can use the sort order from the server as
 		//our searched and sorted list.
 		//(Note that it's not possible to sort on the server but search on the client.)
-		zenarioO.searchedItems = zenarioO.tuix.__item_sort_order__;
-		zenarioO.searchMatches = zenarioO.tuix.__item_count__;
+		zenarioO.searchedItems = zenarioO.tuix._cms_itemSortOrder;
+		zenarioO.searchMatches = zenarioO.tuix._cms_itemCount;
 	
 	} else {
 		
@@ -2057,7 +2056,7 @@ zenarioO.searchAndSortItems = function(searchTerm) {
 	if (zenarioO.thisPageSize) {
 		//Work out the current page number for server-side searching and sorting
 		if (zenarioO.server_side && zenarioO.server_side) {
-			page = zenarioO.tuix.__page__ || zenarioO.refreshToPage || 1;
+			page = zenarioO.tuix._cms_page || zenarioO.refreshToPage || 1;
 	
 		//Work out the current page number for client-side sorting
 		} else {
@@ -2322,8 +2321,8 @@ zenarioO.lookForBranches = function(map, path, panelPath, parentKey) {
 	
 	var isBranch, p, i, link;
 	
-	if (map._path_here) {
-		panelPath = map._path_here;
+	if (map._cms_pathToHere) {
+		panelPath = map._cms_pathToHere;
 	}
 	
 	foreach (map as i) {
@@ -2988,11 +2987,11 @@ zenarioO.itemClickThroughLink = function(id) {
 	}
 	
 	if (panel) {
-		link = {path: panel._path_here};
+		link = {path: panel._cms_pathToHere};
 	}
 	
 	//If there is a max path set, don't allow the administrator to navigate to a different path.
-	//But if the disallow_refiners_looping_on_min_path propery is set, don't allow
+	//But if the disallow_refiners_looping_on_min_path property is set, don't allow
 	//the administrator to navigate regardless of whether the path is different	.
 	if (link
 	 && window.zenarioONotFull
@@ -3348,7 +3347,7 @@ zenarioO.action2 = function() {
 		var goNum = ++zenarioO.goNum;
 		get('organizer_preloader_circle').style.display = 'block';
 		
-		zenario.ajax(zenarioO.actionTarget, zenarioO.actionRequests, false, false, true).after(function(message) {
+		zenario.ajaxWithFlags(zenarioO.actionTarget, zenarioO.actionRequests, false, false, true).after(function(message) {
 			//Check that this isn't an out-of-date request that has come in synchronously via AJAX
 			if (goNum != zenarioO.goNum) {
 				return;
@@ -3838,9 +3837,9 @@ zenarioO.followPathOnMap = function(path, attribute, refiner, getLocation) {
 			from = to;
 			to = focus.link.path;
 		
-		} else if (focus._path_here) {
+		} else if (focus._cms_pathToHere) {
 			from = to;
-			to = focus._path_here;
+			to = focus._cms_pathToHere;
 		}
 	}
 	
@@ -4120,7 +4119,7 @@ zenarioO.setViewOptions = function() {
 						onchange: "zenarioO.updateDateFilters('" + htmlspecialchars(c) + "');",
 						value: dateAfter,
 						hidden: hidden,
-						_was_hidden_before: hiddenPreviously
+						_cms_hidden: hiddenPreviously
 					};
 					fields['date_before_col_' + c] = {
 						ord: 100 * colNo + 8,
@@ -4133,7 +4132,7 @@ zenarioO.setViewOptions = function() {
 						onchange: "zenarioO.updateDateFilters('" + htmlspecialchars(c) + "');",
 						value: dateBefore,
 						hidden: hidden,
-						_was_hidden_before: hiddenPreviously
+						_cms_hidden: hiddenPreviously
 					};
 					fields['v' + c] = {
 						ord: 100 * colNo + 9,
@@ -4141,7 +4140,7 @@ zenarioO.setViewOptions = function() {
 						type: 'hidden',
 						value: value_,
 						hidden: hidden,
-						_was_hidden_before: hiddenPreviously
+						_cms_hidden: hiddenPreviously
 					};
 				
 				} else if (filterFormat == 'yes_or_no') {
@@ -4159,7 +4158,7 @@ zenarioO.setViewOptions = function() {
 							html: invertLink + (zenarioO.getFilterValue('not', c)? (column.no_phrase || phrase.no) : (column.yes_phrase || phrase.yes)) + '</a>'
 						},
 						hidden: hidden,
-						_was_hidden_before: hiddenPreviously
+						_cms_hidden: hiddenPreviously
 					};
 				
 				} else if (
@@ -4210,7 +4209,7 @@ zenarioO.setViewOptions = function() {
 						values: values,
 						value: value_,
 						hidden: hidden,
-						_was_hidden_before: hiddenPreviously
+						_cms_hidden: hiddenPreviously
 					};
 				
 				} else if (engToBoolean(column.searchable)) {
@@ -4232,7 +4231,7 @@ zenarioO.setViewOptions = function() {
 						onkeyup: 'zenarioVO.changeFiltersAfterDelay();',
 						value: value_,
 						hidden: hidden,
-						_was_hidden_before: hiddenPreviously
+						_cms_hidden: hiddenPreviously
 					};
 				}
 				
@@ -4960,9 +4959,9 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 					value
 					&& zenarioO.contentTranslationChains[parent]
 					&& (item = zenarioO.contentTranslationChains[parent].items)
-					&& (item = item[value + '_t'])
+					&& (item = item[value + '_chain'])
 				) {
-					value = value + '_t';
+					value = value + '_chain';
 				} else {
 					if (value) {
 						value = 'Missing translation chain of ' + value;
@@ -5343,7 +5342,7 @@ zenarioO.getFromLastPanel = function(branchLevel, path, thing, branchBelow, time
 
 //Warning: the zenarioO.setBackButton() and zenarioO.getBackButtonTitle() functions both
 //rely on the zenarioO.setNavigation() function being called first!
-zenarioO.setNavigation = function(returnData) {
+zenarioO.setNavigation = function(returnData, isFrontEnd) {
 	var i, j,
 		itemNo, jtemNo,
 		ti = -1,
@@ -5362,7 +5361,12 @@ zenarioO.setNavigation = function(returnData) {
 		//branches, the current path.
 		path = zenarioO.path,
 		navPath = zenarioO.getHash(true),
-		thisNavPath;
+		thisNavPath,
+		orgPath = '';
+	
+	if (isFrontEnd) {
+		orgPath = URLBasePath + (window.zenarioATLinks && zenarioATLinks.organizer || 'organizer.php');
+	}
 	
 	if (!zenarioO.sortedTopLevelItems) {
 		zenarioO.sortedTopLevelItems = zenarioO.getSortedIdsOfTUIXElements(zenarioO.map);
@@ -5380,8 +5384,8 @@ zenarioO.setNavigation = function(returnData) {
 		//There are three exceptions in the map, where we put things in at the top level
 		//that are not top level items. Don't show these.
 		if (i != 'dummy_item'
-		 && i != '__dumps'
-		 && i != '__source_files'
+		 && i != '_cms_dumps'
+		 && i != '_cms_sourceFileList'
 		 && i != 'top_right_buttons'
 		 && typeof zenarioO.map[i] == 'object'
 		 && zenarioO.map[i].nav) {
@@ -5429,7 +5433,7 @@ zenarioO.setNavigation = function(returnData) {
 		//There are three exceptions in the map, where we put things in at the top level
 		//that are not top level items. Don't show these.
 		if (i == 'dummy_item'
-		 || i == '__source_files'
+		 || i == '_cms_sourceFileList'
 		 || i == 'top_right_buttons'
 		 || zenarioT.hidden(undefined, zenarioO, undefined, i, undefined, undefined, undefined, topLevel)) {
 			continue;
@@ -5445,6 +5449,7 @@ zenarioO.setNavigation = function(returnData) {
 			tooltip: topLevel.tooltip,
 			href: topLevel.href,
 			onclick: topLevel.onclick,
+			new_window: topLevel.new_window,
 			youtube_video_id: topLevel.youtube_video_id,
 			youtube_thumbnail_title: topLevel.youtube_thumbnail_title
 		};
@@ -5495,6 +5500,7 @@ zenarioO.setNavigation = function(returnData) {
 					selected: i === selected1st && j === selected2nd,
 					href: secondLevel.href,
 					onclick: secondLevel.onclick,
+					new_window: secondLevel.new_window,
 					css_class: item_css_class,
 					label: secondLevel.label || secondLevel.name,
 					keywords: secondLevel.keywords,
@@ -5505,8 +5511,11 @@ zenarioO.setNavigation = function(returnData) {
 				};
 				
 				if (!secondLevel.href && !secondLevel.onclick) {
-					secondLevelTUIX.href = '#' + path;
-					secondLevelTUIX.onclick = "zenarioO.topLevelClick('" + jsEscape(i) + "', '" + jsEscape(j) + "', " + engToBoolean(si == 0) + "); return false;";
+					secondLevelTUIX.href = orgPath + '#' + path;
+					
+					if (!isFrontEnd) {
+						secondLevelTUIX.onclick = "zenarioO.topLevelClick('" + jsEscape(i) + "', '" + jsEscape(j) + "', " + engToBoolean(si == 0) + "); return false;";
+					}
 				}
 			
 				//The user should be taken to the first second level item if they click on the top level item
@@ -5514,7 +5523,10 @@ zenarioO.setNavigation = function(returnData) {
 					first2nd = false;
 					if (!topLevelTUIX.href && !topLevelTUIX.onclick) {
 						topLevelTUIX.href = secondLevelTUIX.href;
-						topLevelTUIX.onclick = secondLevelTUIX.onclick;
+						
+						if (!isFrontEnd) {
+							topLevelTUIX.onclick = secondLevelTUIX.onclick;
+						}
 					}
 				}
 			}
@@ -5545,8 +5557,8 @@ zenarioO.setNavigation = function(returnData) {
 };
 
 //Add a function for just getting the navigation data
-zenarioO.getNavigation = function() {
-	return zenarioO.setNavigation(true);
+zenarioO.getNavigation = function(isFrontEnd) {
+	return zenarioO.setNavigation(true, isFrontEnd);
 };
 
 //For T12085, Menu links into Organizer from admin toolbar: make the nav 2 columns to avoid long menus
@@ -6811,7 +6823,7 @@ zenarioO.choose = function() {
 		
 		if (!window.zenarioOMultipleSelect && key.id) {
 			row = panel.items[key.id];
-			row.__label_tag__ = zenarioO.defaultSortColumn;
+			row._cms_labelTag = zenarioO.defaultSortColumn;
 		} else {
 			row = {};
 		}
@@ -6870,14 +6882,14 @@ zenarioO.updateYourWorkInProgress = function() {
 		url =
 			URLBasePath + 'zenario/admin/organizer.ajax.php' +
 			'?path=zenario__content/panels/content' +
-			'&_sort_col=last_modified_datetime' +
-			'&_sort_desc=1' +
-			'&_start=0' +
-			'&_limit=' + zenarioO.yourWorkInProgressItemCount +
+			'&_cms_sortCol=last_modified_datetime' +
+			'&_cms_sortDesc=1' +
+			'&_cms_start=0' +
+			'&_cms_limit=' + zenarioO.yourWorkInProgressItemCount +
 			'&refinerId=' +
 			'&refinerName=work_in_progress' +
 			'&refiner__work_in_progress=' +
-			'&_get_item_data=1';
+			'&_cms_fetchItemData=1';
 		
 		zenario.ajax(url, false, true, true).after(function(WiP) {
 			var html = zenarioT.microTemplate('zenario_ywip', WiP);

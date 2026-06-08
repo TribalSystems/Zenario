@@ -36,7 +36,7 @@ zenario_alias:
                         zenarioAB.validateAlias();
                         zenarioAB.removeHttpAndHttpsFromAlias();
                     onchange: |
-                        zenarioAB.tuix.___alias_changed = true;
+                        zenarioAB.tuix._cms_aliasChanged = true;
                         $(lib.get('alias_changed')).val(1);
                     side_note: |
                         An alias uniquely identifies a content item. (On a multi-language site, it uniquely identifies a content item translation chain.)
@@ -50,7 +50,7 @@ zenario_alias:
                     value: 'Suggest alias from title'
                     onclick: |
                         $(lib.get('alias_changed')).val("");
-                        zenarioAB.tuix.___alias_changed = false; 
+                        zenarioAB.tuix._cms_aliasChanged = false; 
                         zenarioAB.contentTitleChange(); 
                     redraw_onchange: true
                     visible_if: |

@@ -118,7 +118,7 @@ plugin_settings:
                 link_type:
                     plugin_setting:
                         name: link_type
-                    label: 'Link'
+                    label: 'Link for more information:'
                     type: radios
                     values:
                         no_link: 

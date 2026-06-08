@@ -56,6 +56,8 @@ var methods = methodsOf(
 	panelTypes.admin_box_builder = extensionOf(panelTypes.form_builder_base_class)
 );
 
+
+
 //Draw the panel, as well as the header at the top and the footer at the bottom
 //This is called every time the panel is loaded, refreshed or when something in the header toolbar is changed.
 methods.showPanel = function($header, $panel, $footer) {
@@ -143,9 +145,13 @@ methods.openEdit = function(itemType, itemId, tuixTabId, stopAnimation) {
 		mergeFields.db_column = item.db_column;
 		mergeFields.label = item.label;
 		
-		var plural = item.record_count == 1 ? '' : 's';
-		var record_count = item.record_count ? item.record_count : 0;
-		mergeFields.record_count = '(' + record_count + ' record' + plural + ')';
+		if (item.record_count === 'encrypted') {
+			mergeFields.record_count = '(cannot estimate count)';
+		} else {
+			var plural = item.record_count == 1 ? '' : 's';
+			var record_count = item.record_count ? item.record_count : 0;
+			mergeFields.record_count = '(' + record_count + ' record' + plural + ')';
+		}
 		
 		mergeFields.type = thus.getFieldReadableType(item.type);
 		if (item.is_system_field) {
@@ -1115,7 +1121,10 @@ methods.loadFieldsList = function(pageId) {
 			message += "<p>If you're sure you want to delete this field then first unprotect it.</p>";
 			zenarioA.floatingBox(message, true, 'warning', true);
 		} else {
-			if (field.record_count && field.record_count >= 1) {
+			if (field.record_count === 'encrypted') {
+				message = "<p><strong>This field may contain data, but the record count cannot be estimated because the column is encrypted.</strong></p>";
+				message += "<p>When you save changes to this dataset, this data will be deleted.</p>";
+			} else if (field.record_count && field.record_count >= 1) {
 				var plural = field.record_count == 1 ? '' : 's';
 				message = "<p><strong>This field contains data on " + field.record_count + " record" + plural + ".</strong></p>";
 				message += "<p>When you save changes to this dataset, this data will be deleted.</p>";

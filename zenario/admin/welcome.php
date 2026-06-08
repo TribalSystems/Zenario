@@ -234,7 +234,7 @@ echo
 	<base href="', ze\link::absolute(), '">';
 
 $v = ze\db::codeVersion();
-ze\content::pageHead('zenario/', 'welcome');
+ze\content::pageHead($scriptPrefix = 'zenario/', $scriptMode = 'welcome');
 
 echo '
 	<link rel="stylesheet" type="text/css" href="zenario/styles/admin_welcome.min.css?v=', $v, '" media="screen" />
@@ -258,13 +258,13 @@ echo '
 </head>';
 
 
-ze\content::pageBody();
-ze\content::pageFoot('zenario/', 'welcome', false, false);
+ze\content::pageBody($scriptPrefix, $scriptMode);
+ze\content::pageFoot($scriptPrefix, $scriptMode, false, false);
 
 $logoURL = $logoWidth = $logoHeight = false;
 if (ze::$dbL
  && ze::setting('brand_logo') == 'custom'
- && (ze\image::specialImageLink($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
+ && (ze\image::specialImageLink($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 300, 60, $mode = 'resize', $offset = 0, $retina = true))) {
 	
 	if (strpos($logoURL, '://') === false) {
 		$logoURL = ze\link::absolute(). $logoURL;

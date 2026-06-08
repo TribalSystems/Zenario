@@ -49,7 +49,7 @@ common_definitions:
         description: >
             This controls the order in which elements are drawn on the screen.
             
-            If not set, it defaults to the order the CMS finds them in.
+            If not set, it defaults to the order Zenario finds them in.
             
             From version 10.1 onwards, we have some logic where you can place a field or a button
             immediately before or after an existing field or button using an offset.
@@ -110,7 +110,9 @@ common_definitions:
             
             See https://zenar.io/visibility-in-tuix for examples.
     table_join: &table_join
-        type: string
+        type:
+            - array
+            - string
         static: true
         preFillOrganizerPanel: true
         description: >
@@ -292,6 +294,22 @@ additionalProperties:
                             This property must be written in your .yaml file.
                             It can't be changed in PHP.
                         #properties: *panel_properties #This will be set in dev_tools.js instead
+                    
+                    
+                    href:
+                        type: string
+                        description: >
+                            Add this property to manually set a hyperlink (instead of linking to a panel).
+                    
+                    onclick:
+                        type: string
+                        description: >
+                            Add this property to manually set an onclick (instead of linking to a panel).
+                    
+                    new_window:
+                        type: boolean
+                        description: >
+                            Set this property to make your link open in a new window if possible.
         
         panels:
             type: object
@@ -398,6 +416,11 @@ additionalProperties:
                         type: boolean
                         description: >
                             This is used in list view. If set, taller rows will be used.
+                    
+                    two_line_list:
+                        type: boolean
+                        description: >
+                            This is used in list view. If set, the first column will contain 2 rows.
                     
                     links:
                         type: array
@@ -861,7 +884,13 @@ additionalProperties:
                                         a value from the list of values is entered. This only effects the display of the column,
                                         not searching/filtering.
                                     additionalProperties:
-                                        type: *variable
+                                        type:
+                                            - boolean
+                                            - number
+                                            - string
+                                            - "null"
+                                            - array
+                                            - object
                                 empty_value:
                                     type: string
                                     description: >
@@ -1021,6 +1050,16 @@ additionalProperties:
                                         If you do set the get_tags_from_column property then the tags will
                                         be displayed below the current value, and the height of each row will
                                         be made larger to accommodate this.
+                                
+                                document_line_number:
+                                    type:
+                                        - number
+                                    description: >
+                                        This property is only used on the Hierarchical documents panel.
+                                        
+                                        Each item row on the panel contains multiple lines of data.
+                                        
+                                        The column's value will be displayed on the line number entered here.
                     
                     default_sort_column:
                         type: string
@@ -1304,7 +1343,7 @@ additionalProperties:
                                 prefs_by_refiner_value:
                                     type: object
                                     description: >
-                                        Use this object to set things such as the sort column and the sort order on a per-refiner value basis.
+                                        Use this property to set things such as the sort column and the sort order on a per-refiner value basis.
                                         If this is enabled, the admin preferences will also be saved in this way.
                                         
                                         This works from version 10.3 onwards.
@@ -2092,6 +2131,38 @@ additionalProperties:
                                 
                                         request: *request
                                         ajax: *ajax
+                                        
+                                        visible_if_for_all_selected_items:
+                                            type: string
+                                            description: >
+                                                A snippet of JavaScript code to be evaluated for each selected item
+                                                in the panel for picking items.
+                                                Each item must match for the button to be shown.
+                                                
+                                                See https://zenar.io/visibility-in-tuix for examples.
+                                        
+                                        visible_if_for_any_selected_items:
+                                            type: string
+                                            description: >
+                                                A snippet of JavaScript code to be evaluated for each selected item
+                                                in the panel for picking items.
+                                                At least one item must match for the button to be shown.
+                                                
+                                                See https://zenar.io/visibility-in-tuix for examples.
+                                        
+                                        disabled_if_for_all_selected_items:
+                                            type: string
+                                            description: >
+                                                A snippet of JavaScript code to be evaluated for each selected item
+                                                in the panel for picking items.
+                                                Items that fail the check will be disabled in the picker.
+                                        
+                                        disabled_if_for_any_selected_items:
+                                            type: string
+                                            description: >
+                                                A snippet of JavaScript code to be evaluated for each selected item
+                                                in the panel for picking items.
+                                                Items that fail the check will be disabled in the picker.
                         
                                 popout: &popout
                                     type: object
@@ -2139,6 +2210,16 @@ additionalProperties:
                                                 video/*
                                                 image/*
                                                 MIME_type)
+                                        extensions:
+                                            type:
+                                                - object
+                                                - array
+                                            description: >
+                                                Tye types of extension(s) to accept (e.g.
+                                                - .jpg
+                                                - .jpeg
+                                                - .png
+                                                - .webp)
                                         multi:
                                             type: boolean
                                             description: >
@@ -2382,8 +2463,9 @@ additionalProperties:
                                         If a panel has column named navigation_path, the value of that column will be used
                                         instead of this property.
                                 frontend_link:
-                                    # Needs a different explanation for item/inline buttons; e.g. it's a boolean that gets its value form the column
-                                    type: string
+                                    type:
+                                        - boolean
+                                        - string
                                     description: >
                                         This property allows you to link to the front end by providing a URL.
                                 
@@ -2391,7 +2473,7 @@ additionalProperties:
                                         or an internal link relative to Zenario's root directory.
                                 
                                         If a panel has column named frontend_link, the value of that column will be used
-                                        instead of this property.
+                                        instead of this property. You should set this property to true in that case.
                                 new_window: *new_window
                                 
                                 help: *help
@@ -2420,7 +2502,36 @@ additionalProperties:
                                         into the panel when they click on it.
                                     #properties: *panel_properties #This will be set in dev_tools.js instead
                         
-                                popout: *popout
+                                popout: &item_level_popout
+                                    type: object
+                                    description: >
+                                        This property allows you to open a Pop-out window when an Admin clicks on your button.
+                                        A typical usage would be to display a bigger version of an image or movie.
+                                
+                                        This is implemented using the Colorbox library.
+                                    properties:
+                                        href:
+                                            type: string
+                                            description: >
+                                                A link to a page/image/animation you wish to be shown. If empty, it will be copied
+                                                from the item "href" property.
+                                        title:
+                                            type: string
+                                            description: >
+                                                Use this property to add a title for the floating box.
+                                            #default: (the item's name)
+                                
+                                        css_class:
+                                            type: string
+                                            description: >
+                                                A CSS class name to place on the floating box.
+                                    additionalProperties:
+                                        type: *variable
+                                        description: >
+                                            Any additional properties will be passed on to the Colorbox library.
+                                    
+                                            You can see http://www.jacklmoore.com/colorbox/ for a description of
+                                            what other properties are available.
                                 upload: *upload
                                 
                                 
@@ -2433,37 +2544,6 @@ additionalProperties:
                             Inline buttons appear next to each item, and are intended to be for actions that apply to the item they are next to.
                         additionalProperties:
                             type: object
-                            anyOf:
-                                -
-                                    required:
-                                        - ajax
-                                -
-                                    required:
-                                        - admin_box
-                                -
-                                    required:
-                                        - alert
-                                -
-                                    required:
-                                        - navigation_path
-                                -
-                                    required:
-                                        - frontend_link
-                                -
-                                    required:
-                                        - help
-                                -
-                                    required:
-                                        - link
-                                -
-                                    required:
-                                        - onclick
-                                -
-                                    required:
-                                        - organizer_quick
-                                -
-                                    required:
-                                        - popout
                             properties:
                                 ord: *ord
                                 copy_of: *copy_of
@@ -2535,8 +2615,9 @@ additionalProperties:
                                         If a panel has column named navigation_path, the value of that column will be used
                                         instead of this property.
                                 frontend_link:
-                                    # Needs a different explanation for item/inline buttons; e.g. it's a boolean that gets its value form the column
-                                    type: string
+                                    type:
+                                        - boolean
+                                        - string
                                     description: >
                                         This property allows you to link to the front end by providing a URL.
                                 
@@ -2544,7 +2625,7 @@ additionalProperties:
                                         or an internal link relative to Zenario's root directory.
                                 
                                         If a panel has column named frontend_link, the value of that column will be used
-                                        instead of this property.
+                                        instead of this property. You should set this property to true in that case.
                                 new_window: *new_window
                                 
                                 help: *help
@@ -2566,9 +2647,12 @@ additionalProperties:
                                         This property must be written in your .yaml file.
                                         It can't be changed in php.
                                 
-                                popout: *popout
+                                popout: *item_level_popout
 
-                    
+                                label:
+                                    type: string
+                                    description: >
+                                        If set, the value will appear as a label of the button.
                     
                     hidden_nav:
                         type: object
@@ -2893,6 +2977,25 @@ additionalProperties:
                             It can't be changed in php.
                         default: (intelligent default)
                     
+                    wip_content_links:
+                        type:
+                            - array
+                        description: >
+                            An array of links to display. May include, for example, the home page or the last page visited.
+                            
+                            Each element should contain the type, title (which will be displayed as a label for the content link)
+                            and href parameter.
+                    
+                    enabled_content_types:
+                        type:
+                            - array
+                            - object
+                        description: >
+                            An array of all enabled content types on the site.
+                            
+                            It is auto-populated. Each element contains the content type, the label (singular and plural),
+                            the default layout ID for that content type and a count of published content items.
+                    
                 #This will be merged with the properties property above in dev_tools.js
                 merge:
                     collection_buttons:
@@ -3012,7 +3115,7 @@ additionalProperties:
                             Set this property to disable the "Item saved, but your filter prevents it from appearing" message
                             from appearing.
                             
-                    __page__:
+                    _cms_page:
                         type: number
                         description: >
                             If pagination is being applied on the server, Zenario will put the current page number
@@ -3021,7 +3124,7 @@ additionalProperties:
                             This might be different than the page you asked for, e.g. if you ask for page three but
                             there are only two pages.
                             
-                    __item_count__:
+                    _cms_itemCount:
                         type: number
                         description: >
                             Zenario will put the count of the total number of items into this variable.
@@ -3037,7 +3140,7 @@ additionalProperties:
                             In hierarchy view, if lazy loading is enabled, Zenario will put an associative
                             array of which items do and do not have children into this variable.
                             
-                    __item_sort_order__:
+                    _cms_itemSortOrder:
                         type:
                             - array
                             - object

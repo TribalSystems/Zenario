@@ -91,7 +91,7 @@ class pluginAdm {
 	}
 	
 	public static function deleteSettingFromInstance($instance, $name) {
-		ze\row::delete('plugin_settings', [
+		\ze\row::delete('plugin_settings', [
 			'instance_id' => $instance['instance_id'],
 			'egg_id' => $instance['egg_id'],
 			'name' => $name]
@@ -388,7 +388,7 @@ class pluginAdm {
 				foreach(scandir(CMS_ROOT. $path) as $fileName) {
 					if (substr($fileName, 0, 1) != '.'
 					 && substr($fileName, -10) == '.twig.html'
-					 && $fileName == \ze\file::safeName($fileName)) {
+					 && $fileName == \ze\file::validName($fileName)) {
 						
 						if ($isCustom) {
 							$label = $fileName. ' '. \ze\admin::phrase('(custom)');
@@ -417,22 +417,6 @@ class pluginAdm {
 		}
 	
 		return $snippets;
-	}
-
-	//Gets a list of pagination options for modules
-	public static function paginationOptions() {
-		$options = [];
-	
-		foreach (\ze\module::runningModules() as $module) {
-			if (\ze\moduleAdm::getPaginationTypesFromDescription($module['class_name'], $paginationTypes)) {
-				foreach ($paginationTypes as $type => $label) {
-					$options[$type] = (string) $label;
-				}
-			}
-		}
-	
-		asort($options, SORT_STRING);
-		return $options;
 	}
 
 	//Remove any Version Controlled plugin settings, that are not actually being used for a Content Item
@@ -523,6 +507,7 @@ class pluginAdm {
 					is_slide,
 					is_inner_slide,
 					show_back,
+					show_back_to_1st,
 					show_refresh,
 					show_auto_refresh,
 					auto_refresh_interval,
@@ -552,6 +537,7 @@ class pluginAdm {
 					is_slide,
 					is_inner_slide,
 					show_back,
+					show_back_to_1st,
 					show_refresh,
 					show_auto_refresh,
 					auto_refresh_interval,
@@ -1311,6 +1297,7 @@ class pluginAdm {
 				is_slide,
 				states,
 				show_back,
+				show_back_to_1st,
 				show_refresh,
 				slide_label,
 				cols, small_screens
@@ -1666,5 +1653,125 @@ class pluginAdm {
 			}
 		}
 	}
-
+	
+	
+	
+	
+	#
+	#	Some functions specifically for migration steps for plugins in the installer
+	#
+	
+	
+	public static function renameSetting(
+		$moduleNames, $oldPluginSettingName, $newPluginSettingName,
+		$checkNonNestedPlugins = true, $checkNestedPlugins = true,
+		$extraSetSQL = '', $extraWhereSQL = ''
+	) {
+		
+		if ($checkNonNestedPlugins) {
+			$sql = "
+				UPDATE IGNORE `". DB_PREFIX. "modules` AS m
+				INNER JOIN `". DB_PREFIX. "plugin_instances` AS pi
+				   ON pi.module_id = m.id
+				INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
+				   ON ps.instance_id = pi.id
+				  AND ps.egg_id = 0
+				  AND ps.name = '". \ze\escape::sql($oldPluginSettingName). "'
+				SET ps.name = '". \ze\escape::sql($newPluginSettingName). "'
+				". $extraSetSQL. "
+				WHERE m.class_name IN (". \ze\escape::in($moduleNames, 'asciiInSQL'). ")
+				". $extraWhereSQL;
+			\ze\sql::update($sql);
+		}
+	
+		if ($checkNestedPlugins) {
+			$sql = "
+				UPDATE IGNORE `". DB_PREFIX. "modules` AS m
+				INNER JOIN `". DB_PREFIX. "nested_plugins` AS np
+				   ON np.module_id = m.id
+				INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
+				   ON ps.instance_id = np.instance_id
+				  AND ps.egg_id = np.id
+				  AND ps.name = '". \ze\escape::sql($oldPluginSettingName). "'
+				SET ps.name = '". \ze\escape::sql($newPluginSettingName). "'
+				". $extraSetSQL. "
+				WHERE m.class_name IN (". \ze\escape::in($moduleNames, 'asciiInSQL'). ")
+				". $extraWhereSQL;
+			\ze\sql::update($sql);
+		}
+	}
+	
+	public static function renameSettingValue(
+		$moduleNames, $pluginSettingName, $oldPluginSettingValue, $newPluginSettingValue,
+		$checkNonNestedPlugins = true, $checkNestedPlugins = true,
+		$extraSetSQL = '', $extraWhereSQL = ''
+	) {
+		
+		if ($checkNonNestedPlugins) {
+			$sql = "
+				UPDATE IGNORE `". DB_PREFIX. "modules` AS m
+				INNER JOIN `". DB_PREFIX. "plugin_instances` AS pi
+				   ON pi.module_id = m.id
+				INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
+				   ON ps.instance_id = pi.id
+				  AND ps.egg_id = 0
+				  AND ps.name = '". \ze\escape::sql($pluginSettingName). "'
+				  AND ps.value = '". \ze\escape::sql($oldPluginSettingValue). "'
+				SET ps.value = '". \ze\escape::sql($newPluginSettingValue). "'
+				". $extraSetSQL. "
+				WHERE m.class_name IN (". \ze\escape::in($moduleNames, 'asciiInSQL'). ")
+				". $extraWhereSQL;
+			\ze\sql::update($sql);
+		}
+	
+		if ($checkNestedPlugins) {
+			$sql = "
+				UPDATE IGNORE `". DB_PREFIX. "modules` AS m
+				INNER JOIN `". DB_PREFIX. "nested_plugins` AS np
+				   ON np.module_id = m.id
+				INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
+				   ON ps.instance_id = np.instance_id
+				  AND ps.egg_id = np.id
+				  AND ps.name = '". \ze\escape::sql($pluginSettingName). "'
+				  AND ps.value = '". \ze\escape::sql($oldPluginSettingValue). "'
+				SET ps.value = '". \ze\escape::sql($newPluginSettingValue). "'
+				". $extraSetSQL. "
+				WHERE m.class_name IN (". \ze\escape::in($moduleNames, 'asciiInSQL'). ")
+				". $extraWhereSQL;
+			\ze\sql::update($sql);
+		}
+	}
+	
+	public static function renameCommand(
+		$moduleNames, $oldCommandName, $newCommandName
+	) {
+		//Rename a command.
+		//Also, don't do a global change. Try to do at least a bit of filtering to catch
+		//the case where a different module might use the a command with the same name.
+		$sql = "
+			UPDATE IGNORE `". DB_PREFIX. "modules` AS m
+			INNER JOIN `". DB_PREFIX. "nested_plugins` AS np
+			   ON np.module_id = m.id
+			  AND np.is_slide = 0
+			INNER JOIN `". DB_PREFIX. "nested_paths` AS ps
+			   ON ps.instance_id = np.instance_id";
+		
+		//N.b. I think we have a core bug where if slide numbers are recalculated, the slide_num
+		//column in the nested_paths table is never updated!
+		//I would like to include this line of code in the logic, but due to this bug I can't!
+		#$sql = "
+		#	  AND ps.slide_num = np.slide_num";
+		
+		$sql .= "
+			  AND ps.command = '". \ze\escape::sql($oldCommandName). "'
+			SET ps.command = '". \ze\escape::sql($newCommandName). "'
+			WHERE m.class_name IN (". \ze\escape::in($moduleNames, 'asciiInSQL'). ")";
+		\ze\sql::update($sql);
+	}
+	
+	public static function renameMode(
+		$moduleNames, $oldPluginSettingValue, $newPluginSettingValue
+	) {
+		\ze\pluginAdm::renameSettingValue($moduleNames, 'mode', $oldPluginSettingValue, $newPluginSettingValue);
+	}
 }

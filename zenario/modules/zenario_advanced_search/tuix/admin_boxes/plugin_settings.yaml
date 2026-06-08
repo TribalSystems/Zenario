@@ -186,14 +186,6 @@ plugin_settings:
                     value: "1"
                     format_onchange: true
                     visible_if: lib.modeIn('search_page')
-                pagination_style:
-                    plugin_setting:
-                        name: pagination_style
-                    indent: 1
-                    label: 'Pagination style:'
-                    type: select
-                    value: zenario_common_features::pagCloseWithNPIfNeeded
-                    visible_if: lib.modeIn('search_page') && lib.value('use_pagination')
                 maximum_results_number:
                     plugin_setting:
                         name: maximum_results_number

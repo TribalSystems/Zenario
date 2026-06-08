@@ -51,9 +51,8 @@ zenario__library:
                     select_mode_title: Select a slideshow
                     sql: |
                         pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow')
-                view_nests_containing:
+                view_nests_containing: {}
                     #The necessary table join and WHERE statement is added in the PHP class.
-                    exists: true
                 
                 plugins_using_form:
                     sql: |
@@ -175,8 +174,9 @@ zenario__library:
                     disallow_filtering: true
                 module_class_name:
                     db_column: m.class_name
-                nestable:
-                    db_column: m.nestable
+                # To do: rework the "Copy plugin" button for the 10.4 database changes
+                #nestable:
+                #    db_column: m.nestable
                 where_used:
                     parent: name
                     title: Usage
@@ -214,8 +214,6 @@ zenario__library:
                     title: Framework
                     db_column: pi.framework
             item:
-                name: Plugin
-                names: Plugins
                 css_class: plugin_album_instance
                 link:
                     path: zenario__library/panels/nested_plugins
@@ -245,6 +243,17 @@ zenario__library:
                     hide_when_children_are_not_visible: true
                     hide_on_refiner: email_address_setting
                     label: Create a ~plugin~
+                import:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    label: Import ~plugin~ specification
+                    upload:
+                        accept: application/x-gzip
+                        extensions:
+                            - .yaml.gz
+                        multi: false
+                        drag_and_drop: false
+                        request:
+                            import: 1
                 help:
                     label: Help
                     hide_in_select_mode: true
@@ -280,7 +289,6 @@ zenario__library:
                     label: Nest contents
                     link:
                         path: zenario__library/panels/nested_plugins
-                        branch: true
                         refiner: nest
                     visible_if: |
                         (item.module_class_name == 'zenario_nest' || item.module_class_name == 'zenario_ajax_nest')
@@ -289,7 +297,6 @@ zenario__library:
                     label: Slideshow contents
                     link:
                         path: zenario__library/panels/images_in_slideshow
-                        branch: true
                         refiner: nest
                     visible_if: |
                         (item.module_class_name == 'zenario_slideshow')
@@ -298,8 +305,6 @@ zenario__library:
                     label: Plugin's image
                     popout:
                         href: zenario/file.php?popout=1
-                        options:
-                            type: image
                     with_columns_set:
                         has_image: true
                     visible_if: |
@@ -313,10 +318,7 @@ zenario__library:
                     hide_in_select_mode: true
                     link:
                         path: zenario__layouts/panels/layouts
-                        branch: true
                         refiner: plugin_instance_usage
-                    width: xsmall
-                    align_right: true
                 usage_item:
                     parent: view_dropdown
                     label: "Items using this ~plugin~"
@@ -324,10 +326,7 @@ zenario__library:
                     hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
-                        branch: true
                         refiner: plugin_instance_usage
-                    width: xsmall
-                    align_right: true
                 view_content_items:
                     parent: view_dropdown
                     label: Effective usage
@@ -335,7 +334,6 @@ zenario__library:
                     hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
-                        branch: true
                         refiner: plugin_instance_effective_usage
                 action_dropdown:
                     label: Actions
@@ -347,6 +345,40 @@ zenario__library:
                     label: Duplicate
                     admin_box:
                         path: zenario_duplicate_plugin
+                export:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    parent: action_dropdown
+                    label: Export ~plugin~ specification
+                    ajax:
+                        confirm:
+                            message: >
+                                Use this to create and download an export containing all of the settings in this ~plugin~.
+                                
+                                
+                                This export contains plugin settings only.
+                                Images and uploaded files are not included.
+                                
+                                
+                                Links to users, groups, and content items will not be preserved when importing to another
+                                site and will need to be reconfigured manually.
+                            button_message: Download
+                            cancel_button_message: Cancel
+                            message_type: info
+                            download: true
+                        request:
+                            export: 1
+                import_overwrite:
+                    parent: action_dropdown
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    label: Import and override ~plugin~ specification
+                    upload:
+                        accept: application/x-gzip
+                        extensions:
+                            - .yaml.gz
+                        multi: false
+                        drag_and_drop: false
+                        request:
+                            import_overwrite: 1
                 delete:
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
                     ord: 99

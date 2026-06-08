@@ -43,8 +43,6 @@ zenario__menu:
             panel_type: hierarchy_with_lazy_load
             reorder:
                 column: order_by
-                hierarchy_view_mode: parent_ids_and_ordinals
-                lazy_load: true
             
             hierarchy:
                 column: parent_id

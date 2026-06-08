@@ -7,7 +7,7 @@ plugin_settings:
             label: Filter
             fields:
                 period_mode:
-                    label: 'Period:'
+                    label: 'Show events in time period:'
                     plugin_setting:
                         name: period_mode
                     type: select
@@ -17,7 +17,7 @@ plugin_settings:
                             label: Any time period
                         date_range:
                             ord: 2
-                            label: Date range
+                            label: Date range...
                         year_period:
                             ord: 3
                             label: >
@@ -114,21 +114,21 @@ plugin_settings:
                         name: future
                     type: checkbox
                     value: "1"
-                    side_note: Show events whose start date is in the future.
+                    side_note: Events whose start date is in the future.
                 ongoing:
-                    label: 'Show current events'
+                    label: 'Show events on today'
                     plugin_setting:
                         name: ongoing
                     type: checkbox
                     value: "1"
-                    side_note: Show today's events (or which have started already and whose end date is in the future).
+                    side_note: Today's events (or which have started already and whose end date is in the future).
                 past:
                     label: 'Show past events'
                     plugin_setting:
                         name: past
                     type: checkbox
                     value: "1"
-                    side_note: Show events whose end date is in the past.
+                    side_note: Events whose end date is in the past.
                 
                 category_list:
                     label: 'Category:'
@@ -223,7 +223,7 @@ plugin_settings:
                 show_headings_if_items:
                     plugin_setting:
                         name: show_headings_if_items
-                    label: 'If some content items match the filter:'
+                    label: 'If some events match the filter:'
                     type: select
                     empty_value: |
                         Don't show a message
@@ -256,7 +256,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_headings_if_no_items
                     label: |
-                        If no content items match the filter:
+                        If no event content items match the filter:
                     type: select
                     empty_value: |
                         Show no output
@@ -271,7 +271,7 @@ plugin_settings:
                         name: heading_if_no_items
                         translate: true
                     label: |
-                        Message if no items to list:
+                        Message if no events to list:
                     type: text
                     value: "There are no events to show"
                     indent: 1
@@ -309,6 +309,77 @@ plugin_settings:
                         most_recent_first: Most recent/latest first
                         older_first: Oldest/earliest first
                     value: most_recent_first
+                
+                pinned_events_icon:
+                    plugin_setting:
+                        name: pinned_events_icon
+                    label: "For pinned events, show an icon:"
+                    type: select
+                    values:
+                        show_to_all:
+                            ord: 1
+                            label: 'Show a "pinned" icon'
+                        show_to_admins_only:
+                            ord: 2
+                            label: 'Show a "pinned" icon to administrators only'
+                        do_not_show:
+                            ord: 3
+                            label: "Don't show an icon"
+                    value: show_to_all
+                pinned_events_text:
+                    plugin_setting:
+                        name: pinned_events_text
+                    label: "For pinned events, show text:"
+                    type: select
+                    values:
+                        show_to_all:
+                            ord: 1
+                            label: 'Show text'
+                        show_to_admins_only:
+                            ord: 2
+                            label: 'Show text to administrators only'
+                        do_not_show:
+                            ord: 3
+                            label: "Don't show text"
+                    value: do_not_show
+                    redraw_onchange: true
+                pinned_events_text_wording:
+                    indent: 1
+                    plugin_setting:
+                        name: pinned_events_text_wording
+                    type: text
+                    show_phrase_icon: true
+                    label: '"Pinned" text:'
+                    value: "Pinned"
+                    visible_if: lib.value('pinned_events_text') != 'do_not_show'
+                    validation:
+                        required_if_not_hidden: 'Please enter the "pinned" text'
+                    maxlength: 20
+                    style: 'width: 10em;'
+                pinned_events_text_html_tag:
+                    indent: 2
+                    plugin_setting:
+                        name: pinned_events_text_html_tag
+                    value: p
+                    visible_if: lib.value('pinned_events_text') != 'do_not_show'
+                    type: select
+                    values:
+                        h1:
+                            label: <h1>
+                        h2:
+                            label: <h2>
+                        h3:
+                            label: <h3>
+                        h4:
+                            label: <h4>
+                        h5:
+                            label: <h5>
+                        h6:
+                            label: <h6>
+                        p:
+                            label: <p>
+                    same_row: true
+                
                 group_events_by_year_and_month:
                     label: 'Group events by year and month'
                     plugin_setting:
@@ -404,12 +475,13 @@ plugin_settings:
                     label: 'Default image:'
                     upload:
                         multi: false
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                         reorder_items: false
@@ -611,7 +683,9 @@ plugin_settings:
                 offset:
                     plugin_setting:
                         name: offset
-                    label: 'Offset results:'
+                    label: 'Skip results:'
+                    note_below: |
+                        You can use more than one event listing per page. If another event listing has leading events according to the filter, you can use this to skip those results and show secondary level events.
                     type: select
                     values:
                         0: 
@@ -627,18 +701,15 @@ plugin_settings:
                         8: "8"
                         9: "9"
                         10: "10"
-                        10: "11"
-                        12: "12"
                         15: "15"
                         20: "20"
-                        50: "50"
                     value: "0"
                     side_below: >
                         e.g. if you select 1 your results will start from the 2nd resulting event
                 page_size:
                     plugin_setting:
                         name: page_size
-                    label: 'Number of results:'
+                    label: 'Number of events to show:'
                     type: select
                     values:
                         1: "1"
@@ -655,8 +726,7 @@ plugin_settings:
                         15: "15"
                         20: "20"
                         50: "50"
-                        999999:
-                            label: All possible
+                        999999: All possible
                     value: "5"
                     side_note: >
                         If pagination is enabled, this number of summaries will be
@@ -668,13 +738,6 @@ plugin_settings:
                     type: checkbox
                     value: "1"
                     format_onchange: Yes
-                pagination_style:
-                    plugin_setting:
-                        name: pagination_style
-                    label: 'Pagination style:'
-                    type: select
-                    value: zenario_common_features::pagCloseWithNPIfNeeded
-                    indent: 1
                 page_limit:
                     plugin_setting:
                         name: page_limit

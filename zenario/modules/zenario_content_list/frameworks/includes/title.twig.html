@@ -1,6 +1,6 @@
 {% if Show_Item_Title %}
 	{% if item.Pinned or item.Pinned_Text %}
-		<div class="pinned {% if item.Pinned %} pinned_icon {% endif %}">{% if item.Pinned_Text %}{{item.Pinned_Text|trans}}{% endif %}</div>
+		<div class="pinned {% if item.Pinned %} pinned_icon {% endif %}">{% if item.Pinned_Text %}<{{item.Pinned_Text_Tags|e}}>{{item.Pinned_Text|trans}}</{{item.Pinned_Text_Tags|e}}>{% endif %}</div>
 	{% endif %}
 	
 	{% if Aws_Link and item.s3_File_Id %}

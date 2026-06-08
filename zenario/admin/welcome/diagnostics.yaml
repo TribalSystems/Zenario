@@ -835,8 +835,6 @@ diagnostics:
                     snippet:
                         html: No warnings to report.
                 administrators_active: *blank_child
-                    snippet:
-                        html: No administrator has been inactive for over 90 days.
                 administrator_inactive_1: *blank_child
                 administrator_inactive_2: *blank_child
                 administrator_inactive_3: *blank_child

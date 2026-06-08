@@ -17,8 +17,6 @@ zenario__content:
             panel_type: hierarchy
             reorder:
                 column: ordinal
-                hierarchy_view_mode: parent_ids_and_ordinals
-                lazy_load: true
             
             hierarchy:
                 column: folder_id

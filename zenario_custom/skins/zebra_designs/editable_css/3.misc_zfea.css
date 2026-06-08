@@ -23,9 +23,26 @@
 	max-width:450px;
 }
 
+.zfea .zfea_top_buttons, 
+.title_with_icons .top_buttons {
+	padding-top:18px;
+}
+
+.zenario_skin input[type="button"].small_button, 
+.zenario_skin input[type="submit"].small_button, 
+.zenario_skin .small_button, .zenario_skin .fea_filter, 
+.nest_buttons a, a.zfea_button, .fea_csvDownload > a {
+	font-size:0.95em;
+}
+
 .zenario_skin .icon_button,
 .zenario_skin .zfea_button.delete {
 	background-color:#B20000;
+}
+
+.zenario_skin .icon_button.zfea_button_disabled,
+.zenario_skin .zfea_button.delete.zfea_button_disabled {
+	background-color:#F2EEEB;
 }
 
 .zenario_slot:not(.zenario_comments) input[type="button"] .icon_button, 
@@ -117,4 +134,11 @@
 
 .zenario_videos_fea .zfea_list_search_sort_wrapper {
 	margin-bottom:20px;
+}
+
+/* Modal window
+--------------------------------------------------------------------------------------------------*/
+
+.modal_window.zfea .zfea_form {
+	font-size:1.1em;
 }

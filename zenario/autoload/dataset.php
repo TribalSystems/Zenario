@@ -468,17 +468,25 @@ class dataset {
 					  AND field_id = ". (int) $field['id'];
 		
 			} elseif (\ze::in($field['type'], 'checkbox', 'group', 'radios', 'select')) {
+				$table = $field['is_system_field']? $dataset['system_table'] : $dataset['table'];
+				if (\ze::$dbL->columnIsEncrypted($table, $field['db_column'])) {
+					return 'encrypted';
+				}
 				$sql = "
 					SELECT COUNT(*)
-					FROM `". DB_PREFIX. \ze\escape::sql($field['is_system_field']? $dataset['system_table'] : $dataset['table']). "`
+					FROM `". DB_PREFIX. \ze\escape::sql($table). "`
 					WHERE `". \ze\escape::sql($field['db_column']). "` != 0";
-		
+					
 			} else {
+				$table = $field['is_system_field']? $dataset['system_table'] : $dataset['table'];
+				if (\ze::$dbL->columnIsEncrypted($table, $field['db_column'])) {
+					return 'encrypted';
+				}
 				$sql = "
 					SELECT COUNT(*)
-					FROM `". DB_PREFIX. \ze\escape::sql($field['is_system_field']? $dataset['system_table'] : $dataset['table']). "`
+					FROM `". DB_PREFIX. \ze\escape::sql($table). "`
 					WHERE `". \ze\escape::sql($field['db_column']). "` IS NOT NULL";
-				
+					
 				//Compatibility code for MySQL 8: do not pass a blank string to a date type field.
 				if ($field['type'] != 'date') {
 					$sql .= "
@@ -595,6 +603,38 @@ class dataset {
 	}
 	
 	
+	
+	//
+	//	Create some shortcut functions for commonly used calls to centralisedListValues().
+	//	These are mainly to make them available for use in Twig Snippets.
+	//
+	
+	const activeCountriesFromTwig = true;
+	public static function activeCountries() {
+		if (\ze\module::inc('zenario_country_manager')) {
+			return \zenario_country_manager::getActiveCountries(\ze\dataset::LIST_MODE_LIST);
+		}
+		return [];
+	}
+	
+	const activeCountriesForVisitorFromTwig = true;
+	public static function activeCountriesForVisitor() {
+		if (\ze\module::inc('zenario_country_manager')) {
+			return \zenario_country_manager::getActiveCountriesForVisitor(\ze\dataset::LIST_MODE_LIST);
+		}
+		return [];
+	}
+	
+	const timezonesFromTwig = true;
+	public static function timezones() {
+		return \ze\dataset::getTimezones(\ze\dataset::LIST_MODE_LIST);
+	}
+	
+	const salutationsFromTwig = true;
+	public static function salutations() {
+		\ze\module::inc('zenario_common_features');
+		return \zenario_common_features::getSalutations(\ze\dataset::LIST_MODE_LIST);
+	}
 	
 	
 	

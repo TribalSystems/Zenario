@@ -6,6 +6,7 @@ zenario__library:
             panel_type: hierarchy
             
             key:
+                isSlideshow: false
                 usesConductor: false
                 instanceId: ''
                 nest_module_class_name: ''
@@ -62,6 +63,8 @@ zenario__library:
                             label: 'Private, only show to extranet users'
                         group_members:
                             label: 'Private, only show to extranet users in group...'
+                        group_members_without_any_group_selected:
+                            label: 'Permissions: Private, disallowing all user access'
                         in_smart_group:
                             label: 'Private, only show to extranet users in smart group...'
                         logged_in_not_in_smart_group:
@@ -186,9 +189,6 @@ zenario__library:
                     title: "Static method"
                     #Values for columns like this one are set in the PHP class file.
             default_sort_column: name_or_slide_label
-            item:
-                name: Nested slide/plugin
-                names: Nested slides and plugins
             disable_periodic_refresh: true
             reorder:
                 column: ordinal
@@ -230,11 +230,10 @@ zenario__library:
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
                     visible_if: |
                         tuix.key.usesConductor
-                    label: Open conductor state diagram
+                    label: Edit state diagram
                     hide_in_select_mode: true
                     link:
                         path: zenario__library/panels/conductor
-                        branch: true
                         refiner: from_nested_plugins
             inline_buttons:
                 no_plugins_warning:
@@ -264,7 +263,7 @@ zenario__library:
                         item.is_inner_slide
                     css_class: inline_warning
                     tooltip: |
-                        Warning: the first slide in a conductor MUST be a key slide.
+                        Warning: the first slide in a conductor must be a key slide.
                 inner_slide_with_no_incoming_path:
                     visible_if: |
                         tuix.key.usesConductor &&
@@ -272,7 +271,7 @@ zenario__library:
                         !tuix.custom__slides_with_incoming_paths[item.slide_num]
                     css_class: inline_warning
                     tooltip: |
-                        Warning: Inner slides MUST have a path going to them.
+                        Warning: Inner slides must have a path going to them, edit state diagram to resolve this.
                 inner_slide_missing_back_path:
                     visible_if: |
                         tuix.key.usesConductor &&
@@ -280,14 +279,14 @@ zenario__library:
                         !item.has_back
                     css_class: inline_warning
                     tooltip: |
-                        Warning: Inner slides MUST have a "back" path going from them.
+                        Warning: Inner slides must have a "back" path going from them, edit state diagram to resolve this.
             item_buttons:
                 add_plugin:
                     hide_on_filter: true
                     only_show_on_refiner: nest
                     hide_when_children_are_not_visible: true
                     css_class: zenario_create_a_new
-                    label: Add a plugin
+                    label: Add a plugin to this slide
                     with_columns_set:
                         is_slide: true
                 #add_twig_snippet:
@@ -297,7 +296,7 @@ zenario__library:
                 #    css_class: zenario_create_a_new
                 #    label: Add twig snippet
                 #    with_columns_set:
-                #        traits.is_slide: true
+                #        is_slide: true
                 copy_plugin_instance:
                     ord: 221
                     parent: add_plugin
@@ -306,8 +305,7 @@ zenario__library:
                     css_class: zenario_create_a_new
                     label: Copy plugin from library...
                     combine_items:
-                        path: zenario__library/panels/modules/refiners/nestable_only////
-                        path_if_wireframe: zenario__library/panels/modules/refiners/nestable_wireframes_only////
+                        path: zenario__library/panels/modules/refiners/can_be_plugged_into_parent////
                         target_path: zenario__library/panels/plugins
                         min_path: zenario__library/panels/modules
                         max_path: ''
@@ -335,6 +333,15 @@ zenario__library:
                         drag_and_drop: true
                         request:
                             upload_banner: 1
+                    with_columns_set:
+                        is_slide: true
+                quick_add_plugin:
+                    #This is a distinct list of modules whose plugins are already in this nest.
+                    hide_on_filter: true
+                    only_show_on_refiner: nest
+                    hide_when_children_are_not_visible: true
+                    css_class: zenario_create_a_new
+                    label: Quick-add a plugin
                     with_columns_set:
                         is_slide: true
                 tab_settings:
@@ -471,8 +478,6 @@ zenario__library:
                     label: View image
                     popout:
                         href: zenario/file.php?popout=1
-                        options:
-                            type: image
                     with_columns_set:
                         image: true
                 duplicate:

@@ -7,13 +7,15 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Extranet Base Module and Login
 description: |
-    <p>This module is the base module for creating an extranet, a secure area for authorised extranet users.</p>
-    <p>When started, this module automatically creates a "Login" special page.</p>
-    <p>The default behaviour is to have a single Login page, but on a multi-language site you may have a login page for each language.</p>
-    <p>This module contains an option to remember the user's login name (by setting a cookie), and to keep the user logged in.</p>
-    <p>Zenario supports groups, and roles (the relationship of users with locations) via the Organization Manager module.</p>
-    <p>There is a User Redirector module, so that when a user logs in they can be redirected to the correct page, based on the User Redirector plugin settings. The redirection is based on group membership and roles.</p>
-    <p>There are further modules, for: Registration, Password Reset, Change Password, Change Email, Edit Profile and Logout.</p>
+    <p>This is the base module for creating an extranet, a secure area for authorised extranet users. It creates a plugin which is the login interface for users.</p>
+    <p>When started, this module automatically creates a "Login" special page, and puts a plugin on that page. Certain features get enabled in different parts of Zenario, such as the ability to set permissions on a content item.</p>
+    <h3>Various options</h3>
+    <p>Please check the "User and Contact data" site setting, which determines various options, such as whether users should be able to log in using their email address or with a screen name.</p>
+    <p>The plugin of this module also contains many options, such as what links to other pages it should show, like the password-reset page.</p>
+    <p>After logging in, a user can in the simplest setup be automatically redirected to a "Welcome" page, while for more advanced setups the user can be redirected to a page based on what group they are a member of.</p>
+    <h3>Other extranet modules</h3>
+    <p>There are further extranet modules, for Registration, Password Reset, Change Password, Change Email, Edit Profile and Logout. These will normally be required for a fully-featured extranet.</p>
+    <p>Zenario can also support roles (the relationship of users with locations), via the Organization Manager module.</p>
 category: management
 keywords: base, extranet, login, password, private, user, users
 
@@ -23,7 +25,13 @@ vlp_class_name: zenario_extranet
 css_class_name: zenario_extranet
 is_pluggable: true
 plugin_must_be_on_public_page: true
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: false
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 default_framework: standard
 special_pages:
     special_page:

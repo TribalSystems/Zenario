@@ -560,12 +560,13 @@ plugin_settings:
                     format_onchange: true
                     upload:
                         multi: false
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                         reorder_items: false

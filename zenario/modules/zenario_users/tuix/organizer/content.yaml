@@ -23,7 +23,7 @@ zenario__content:
                     admin_box:
                         path: zenario_content_privacy
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                 
@@ -35,12 +35,11 @@ zenario__content:
                     label: Access log for this content item
                     link:
                         path: zenario__users/panels/access_log
-                        branch: Yes
                         refiner: content
                     with_columns_set:
-                        traits.log_access: true
+                        log_access: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
 
         trashed_content_items:
             item_buttons: *itemButtons

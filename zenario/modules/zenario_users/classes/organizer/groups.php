@@ -72,6 +72,9 @@ class zenario_users__organizer__groups extends zenario_users {
 		if (ze::post('action') == 'delete') {
 			ze\priv::exitIfNot('_PRIV_MANAGE_GROUP');
 			ze\datasetAdm::deleteField($ids);
+			
+			//If this group was part of any content item or slide permissions, delete the association.
+			ze\row::delete('group_link', ['link_to' => 'group', 'link_to_id' => $ids]);
 		}
 	}
 }

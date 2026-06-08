@@ -723,7 +723,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					for ($j = 0; $j < $fileCount; $j++) {
 						if (!empty($file['tmp_name'][$j]) && ze\fileAdm::isUploadedFile($file['tmp_name'][$j]) && ze\cache::cleanDirs()) {
 							$randomDir = ze\cache::createRandomDir(30, 'private/uploads', $onlyForCurrentVisitor = true);
-							$newName = $randomDir. ze\file::safeName($file['name'][$j], true);
+							$newName = $randomDir. ze\file::validName($file['name'][$j], true);
 							
 							if (!$randomDir) {
 								exit('Could not create cache directory in private/uploads');
@@ -4105,7 +4105,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 								if (!$randomDir) {
 									exit('Could not create cache directory in private/uploads');
 								}
-								$cacheDir = $randomDir. ze\file::safeName($_FILES[$name]['name'], true);
+								$cacheDir = $randomDir. ze\file::validName($_FILES[$name]['name'], true);
 								if (\ze\fileAdm::moveUploadedFile($_FILES[$name]['tmp_name'], CMS_ROOT. $cacheDir)) {
 									\ze\cache::chmod(CMS_ROOT. $cacheDir, 0666);
 									$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $cacheDir;
@@ -5369,84 +5369,112 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		foreach ($this->datasetFieldsLink as $fieldId => $datasetFieldId) {
 			$field = $this->fields[$fieldId];
 			
-			//Only save linked fields when the field is not readonly, the "email" system field, and not hidden with "visible_on_condition"
-			if (!$field['is_readonly'] && $field['db_column'] != 'email' && ($field['visibility'] != 'visible_on_condition' || !$this->isFieldHidden($field))) {
-				$value = $this->getFieldCurrentValue($fieldId);
-				
+			/*
+				Only save linked fields when the field is:
+				- editable (i.e. NOT readonly),
+				- NOT the "email" system field,
+				- NOT hidden (also NOT hidden while "visible on condition")
+			*/
+			if (($field['is_readonly'] && $field['type'] != 'file_picker') || $field['db_column'] == 'email') {
+				continue;
+			}
+			
+			$fieldIsHidden = $this->isFieldHidden($field);
+			
+			if ($fieldIsHidden) {
+				$value = false;
 				if ($field['type'] == 'checkboxes') {
-					$lov = ze\dataset::fieldLOV($datasetFieldId);
-					$canSave = true;
-					if ($merge) {
-						foreach ($lov as $valueId => $valueDetails) {
-							if (ze\row::exists('custom_dataset_values_link', ['dataset_id' => $dataset['id'], 'value_id' => $valueId, 'linking_id' => $userId])) {
-								$canSave = false;
-								break;
-							}
-						}
-					}
-					if ($canSave) {
-						$userCustomCheckboxValues[$datasetFieldId] = ['all' => $lov, 'set' => []];
-						foreach ($value as $valueId) {
-							if (isset($lov[$valueId])) {
-								$userCustomCheckboxValues[$datasetFieldId]['set'][] = $valueId;
-							}
-						}
-					}
+					$value = [];
 				} elseif ($field['type'] == 'file_picker') {
-					$canSave = true;
-					if ($merge) {
-						$canSave = !ze\row::exists('custom_dataset_files_link', ['dataset_id' => $dataset['id'], 'field_id' => $datasetFieldId, 'linking_id' => $userId]);
+					if ($field['is_readonly']) {
+						$value = $this->getFieldCurrentValue($fieldId);
+					} else {
+						$value = '';
 					}
-					if ($canSave) {
+				} elseif ($field['type'] == 'repeat_start') {
+					$value = 0;
+				}
+			} else {
+				$value = $this->getFieldCurrentValue($fieldId);
+			}
+			
+			if ($field['type'] == 'checkboxes') {
+				$lov = ze\dataset::fieldLOV($datasetFieldId);
+				$canSave = true;
+				if ($merge) {
+					foreach ($lov as $valueId => $valueDetails) {
+						if (ze\row::exists('custom_dataset_values_link', ['dataset_id' => $dataset['id'], 'value_id' => $valueId, 'linking_id' => $userId])) {
+							$canSave = false;
+							break;
+						}
+					}
+				}
+				if ($canSave) {
+					$userCustomCheckboxValues[$datasetFieldId] = ['all' => $lov, 'set' => []];
+					foreach ($value as $valueId) {
+						if (isset($lov[$valueId])) {
+							$userCustomCheckboxValues[$datasetFieldId]['set'][] = $valueId;
+						}
+					}
+				}
+			} elseif ($field['type'] == 'file_picker') {
+				$canSave = true;
+				if ($merge) {
+					$canSave = !ze\row::exists('custom_dataset_files_link', ['dataset_id' => $dataset['id'], 'field_id' => $datasetFieldId, 'linking_id' => $userId]);
+				}
+				if ($canSave) {
+					if (!$fieldIsHidden || $field['is_readonly']) {
 						$value = static::getFieldStorableValue($field, $value);
-						$values = static::getFieldValueFromStored($field, $value);
-						$userCustomFilePickerValues[$datasetFieldId] = [];
-						foreach ($values as $fileId => $file) {
-							$userCustomFilePickerValues[$datasetFieldId][] = $fileId;
-						}
 					}
-				} elseif ($field['db_column'] && (!$merge || empty($userDetails[$field['db_column']]))) {
-					$dbColumn = $field['db_column'];
-					if (!empty($field['repeat_start_id']) && isset($field['row'])) {
-						$rows = $this->fields[$field['repeat_start_id']]['rows'];
-						$row = array_search($field['row'], $rows);
-						if ($row === false) {
-							continue;
-						} else {
-							$row++;
-						}
-						$dbColumn = ze\dataset::repeatRowColumnName($dbColumn, $row);
+					$values = static::getFieldValueFromStored($field, $value);
+					$userCustomFilePickerValues[$datasetFieldId] = [];
+					foreach ($values as $fileId => $file) {
+						$userCustomFilePickerValues[$datasetFieldId][] = $fileId;
 					}
-					
-					if ($field['type'] == 'repeat_start') {
+				}
+			} elseif ($field['db_column'] && (!$merge || empty($userDetails[$field['db_column']]))) {
+				$dbColumn = $field['db_column'];
+				if (!empty($field['repeat_start_id']) && isset($field['row'])) {
+					$rows = $this->fields[$field['repeat_start_id']]['rows'];
+					$row = array_search($field['row'], $rows);
+					if ($row === false) {
+						continue;
+					} else {
+						$row++;
+					}
+					$dbColumn = ze\dataset::repeatRowColumnName($dbColumn, $row);
+				}
+				
+				if ($field['type'] == 'repeat_start') {
+					if (!$fieldIsHidden) {
 						$value = static::getFieldStorableValue($field, $value);
 					}
+				}
+				
+				if ($field['invert_dataset_result']) {
+					$value = !$value;
+				}
+				
+				if ($field['is_system_field']) {
+					//Special case for first_name and last_name dataset fields where they have an option to show both names in one
+					if ($field['split_first_name_last_name']) {
+						$userData['first_name'] = trim(substr($value, 0, strpos($value, ' ')));
+						$userData['last_name'] = trim(substr($value, strpos($value, ' ')));
 					
-					if ($field['invert_dataset_result']) {
-						$value = !$value;
-					}
-					
-					if ($field['is_system_field']) {
-						//Special case for first_name and last_name dataset fields where they have an option to show both names in one
-						if ($field['split_first_name_last_name']) {
-							$userData['first_name'] = trim(substr($value, 0, strpos($value, ' ')));
-							$userData['last_name'] = trim(substr($value, strpos($value, ' ')));
-						
-						//All other fields
-						} else {
-							if (ze::in($field['type'], 'checkbox', 'group', 'consent')) {
-								$value = (bool) $value;
-							}
-							
-							$userData[$dbColumn] = $value;
-						}
+					//All other fields
 					} else {
 						if (ze::in($field['type'], 'checkbox', 'group', 'consent')) {
 							$value = (bool) $value;
 						}
 						
-						$userCustomData[$dbColumn] = $value;
+						$userData[$dbColumn] = $value;
 					}
+				} else {
+					if (ze::in($field['type'], 'checkbox', 'group', 'consent')) {
+						$value = (bool) $value;
+					}
+					
+					$userCustomData[$dbColumn] = $value;
 				}
 			}
 		}

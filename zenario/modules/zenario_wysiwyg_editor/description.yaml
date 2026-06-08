@@ -7,12 +7,14 @@ start_running_on_install: true  # N.b. changing this property won't do anything 
 license_info: 'Modified BSD License'
 display_name: WYSIWYG Editor
 description: |
-            <p>This is an essential module which displays and allows editing of content.</p>
-            <p>This module will render the HTML in the page, and will allow authors to edit the content in a slot.</p>
-            <p>Authors may add images, animations, hyperlinks and other regular HTML to their content.</p>
-            <p>Any content entered into a slot is unique to that slot; a WYSIWYG Editor placed in a different slot, or on a different content item,
-                will display different content. (However if you move a plugin to a different slot, the content will also be moved.)</p>
-            <p>If you wish to use the same content across multiple slots, or multiple content items, you can create a plugin in the plugin library.</p>
+    <p>The WYSIWYG Editor ("what you see is what you get") module is usually placed on a layout, and then can be used for version-controlled content editing.</p>
+    <p>The editor allows administrators to enter formatted content, with images, hyperlinks and other HTML.</p>
+    <p>In such a situation - when not stored as a plugin - the content that is written within the editor is specific to each content item that uses that layout (which can be HTML Pages, News, Events, and other content types). The content is version-controlled, going live when the content item it's on is published.</p>
+    <h3>Usage as a plugin</h3>
+    <p>It is also possible to create a WYSIWYG Editor as a plugin.</p>
+    <p>When a plugin of this module is created, the content written in the editor is stored in a centralised way (i.e. not version-controlled), and the same content can then appear on one or more content items. The administrator just needs to pick the plugin and insert it into a nest.</p>
+    <h3>Usage in a nest</h3>
+    <p>A further usage is to create a plugin that goes in a nest. This can be helpful, for example, if you would like an accordion, or a tabbed nest, with formatted text (i.e. one plugin with a block of HTML) on each slide of the nest.</p>
 category: pluggable
 keywords: edit, editor, format, html, page, toolbar, wysiwyg
 
@@ -21,9 +23,15 @@ keywords: edit, editor, format, html, page, toolbar, wysiwyg
 css_class_name: zenario_html_snippet
 is_pluggable: true
 can_be_version_controlled: true
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: true
+    regular_nests: true
+    slideshows: false
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: true
 default_framework: standard
-default_instance_name: Untitled WYSIWYG Editor
+default_instance_name: Untitled Block of HTML
 
 # Warning: adding a new dependency to an existing module will break any existing sites
 # where the dependency is not running.

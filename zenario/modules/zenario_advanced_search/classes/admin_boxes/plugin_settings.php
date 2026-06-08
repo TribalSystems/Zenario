@@ -33,8 +33,6 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$fields['first_tab/pagination_style']['values'] = ze\pluginAdm::paginationOptions();
-
 				if (!$values['first_tab/specific_search_results_page']) {
 					$cID = $cType = $state = false;
 					ze\content::pluginPage($cID, $cType, $state, 'zenario_advanced_search');

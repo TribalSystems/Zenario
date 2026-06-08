@@ -155,7 +155,7 @@ class miscAdm {
 		
 		//If this isn't full mode, make sure all Organizer links use the full path. Otherwise we can just use a #.
 		if (is_null($fullPath)) {
-			$fullPath = !empty($_GET['_quick_mode']) || !empty($_GET['_select_mode']);
+			$fullPath = !empty($_GET['_cms_orgQuickMode']) || !empty($_GET['_cms_orgSelectMode']);
 		}
 		
 		if ($fullPath) {
@@ -457,7 +457,7 @@ class miscAdm {
 					$cID = $cType = false;
 					\ze\content::getEquivIdAndCTypeFromTagId($cID, $cType, $usage['content_translation_chain']);
 					
-					$translationChain = $usage['content_translation_chain'] . '_t';
+					$translationChain = $usage['content_translation_chain'] . '_chain';
 				
 					if (\ze\row::exists('translation_chains', ['equiv_id' => $cID, 'type' => $cType])) {
 						$translationsCount = 0;

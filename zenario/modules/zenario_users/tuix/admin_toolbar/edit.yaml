@@ -10,6 +10,8 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Change permissions
+                appears_in_toolbars:
+                    edit: true
                 multiple_select: true
                 admin_box:
                     path: zenario_content_privacy

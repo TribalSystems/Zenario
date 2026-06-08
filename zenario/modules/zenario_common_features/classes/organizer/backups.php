@@ -96,7 +96,7 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 		}
 		
 		if ($ids) {
-			$filename = ze::setting('backup_dir') . '/'. ze\file::safeName(ze\ring::decodeIdForOrganizer($ids));
+			$filename = ze::setting('backup_dir') . '/'. ze\file::validName(ze\ring::decodeIdForOrganizer($ids));
 		}
 		
 		if (ze::post('delete') && ze\priv::check('_PRIV_RESTORE_SITE')) {

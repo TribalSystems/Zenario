@@ -34,6 +34,12 @@ zenario_module_info:
                     hidden: true
                     snippet:
                         html: ''
+                
+                pluggable:
+                    label: 'Pluggable:'
+                    type: text
+                    show_as_a_span: true
+                
                 path:
                     label: 'Path:'
                     type: text
@@ -90,11 +96,15 @@ zenario_module_info:
                     label: 'Has plugins:'
                     type: text
                     show_as_a_span: true
-                nestable:
-                    hidden: true
-                    label: 'Nestable:'
-                    type: text
-                    show_as_a_span: true
+                
+                #To do - add a list of places the plugin can be put into
+                
+                #nestable:
+                #    hidden: true
+                #    label: 'Nestable:'
+                #    type: text
+                #    show_as_a_span: true
+                
                 fea_info:
                     hidden: true
                     snippet:

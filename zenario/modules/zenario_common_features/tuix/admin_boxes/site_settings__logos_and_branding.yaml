@@ -195,7 +195,7 @@ site_settings:
                         target_path: zenario__library/panels/special_images
                         select_phrase: Select from special images library...
                     note_below: >
-                        If your image is larger than 500p× wide by 250px high, it will be scaled down to fit.
+                        If your image is larger than 300px wide by 60px high, it will be scaled down to fit.
                     validation:
                         required_if_not_hidden: >
                             Please upload or select an image.

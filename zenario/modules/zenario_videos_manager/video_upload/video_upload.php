@@ -7,8 +7,7 @@ echo
 <head>
 	<title>',  ze\admin::phrase('Add a video'), '</title>';
 
-$prefix = '../../zenario/';
-ze\content::pageHead($prefix);
+ze\content::pageHead($scriptPrefix = '../../zenario/', $scriptMode = 'other');
 
 
 ze\skinAdm::checkForChangesInFiles($runInProductionMode = true);
@@ -17,7 +16,7 @@ echo '
 	<link rel="stylesheet" type="text/css" href="zenario_extra_modules/zenario_videos_manager/video_upload/styles.css?v=', $v, '" media="screen"/>';
 
 echo '</head>';
-ze\content::pageBody();
+ze\content::pageBody($scriptPrefix, $scriptMode);
 
 $string =  
 '<div>
@@ -83,7 +82,7 @@ $string .= '
 
 echo $string;
 
-ze\content::pageFoot($prefix, false, false, false);
+ze\content::pageFoot($scriptPrefix, $scriptMode, false, false);
 
 ?>
 

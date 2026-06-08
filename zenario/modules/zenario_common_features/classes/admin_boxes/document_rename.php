@@ -33,16 +33,20 @@ class zenario_common_features__admin_boxes__document_rename extends ze\moduleBas
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$documentId = $box['key']['id'];
 		
-		$isfolder=ze\row::get('documents', 'type', ['type' => 'folder','id' => $documentId]);
+		$isfolder = ze\row::get('documents', 'type', ['type' => 'folder','id' => $documentId]);
 		
 		if ($isfolder){
-			$documentName=ze\row::get('documents', 'folder_name', ['type' => 'folder','id' => $documentId]);
+			$documentDetails = ze\row::get('documents', ['folder_name', 'created', 'created_admin_id', 'created_user_id', 'created_username', 'last_edited', 'last_edited_admin_id', 'last_edited_user_id', 'last_edited_username'], ['type' => 'folder','id' => $documentId]);
+			$documentName = $documentDetails['folder_name'];
 			$box['title'] = 'Renaming the folder "'.$documentName.'"';
-		}else{
-			$documentName=ze\row::get('documents', 'filename', ['type' => 'file','id' => $documentId]);
+		} else {
+			$documentDetails = ze\row::get('documents', ['filename', 'created', 'created_admin_id', 'created_user_id', 'created_username', 'last_edited', 'last_edited_admin_id', 'last_edited_user_id', 'last_edited_username'], ['type' => 'file','id' => $documentId]);
+			$documentName = $documentDetails['filename'];
 			$box['title'] = 'Renaming the file "'.$documentName.'"';
 		}
 		$values['details/document_name'] = $documentName;
+		
+		$box['last_updated'] = ze\admin::formatLastUpdated($documentDetails);
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -86,14 +90,31 @@ class zenario_common_features__admin_boxes__document_rename extends ze\moduleBas
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$documentId = $box['key']['id'];
+		
+		$lastUpdated = [];
+		$row = [];
+        ze\admin::setLastUpdated($lastUpdated, !$documentId);
+
+        if ($documentId) {
+            $row['last_edited'] = $lastUpdated['last_edited'];
+            $row['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
+            $row['last_edited_user_id'] = $lastUpdated['last_edited_user_id'];
+            $row['last_edited_username'] = $lastUpdated['last_edited_username'];
+        } else {
+            $row['created'] = $lastUpdated['created'];
+            $row['created_admin_id'] = $lastUpdated['created_admin_id'];
+        }
+		
 		$documentName = trim($values['details/document_name']);
-		$isfolder=ze\row::get('documents', 'type', ['type' => 'folder','id' => $documentId]);
-		if ($isfolder){
-			ze\row::update('documents', ['folder_name' => $documentName], ['id' => $documentId]);
-		}else{
+		$isfolder = ze\row::get('documents', 'type', ['type' => 'folder','id' => $documentId]);
+		if ($isfolder) {
+			$row['folder_name'] = $documentName;
+		} else {
 			//file
-			ze\row::update('documents', ['filename' => $documentName], ['id' => $documentId]);
+			$row['filename'] = $documentName;
 		}
+		
+		ze\row::update('documents', $row, ['id' => $documentId]);
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {

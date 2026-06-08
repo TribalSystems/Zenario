@@ -521,6 +521,17 @@ plugin_settings:
                     visible_if: lib.value('show_pinned_text') != 'do_not_show'
                     validation:
                         required_if_not_hidden: 'Please enter the "pinned" text'
+                    maxlength: 20
+                    style: 'width: 10em;'
+                pinned_text_html_tag:
+                    indent: 2
+                    plugin_setting:
+                        name: pinned_text_html_tag
+                    value: p
+                    type: select
+                    values: *tags
+                    same_row: true
+                    visible_if: lib.value('show_pinned_text') != 'do_not_show'
                 highlight_new_items:
                     plugin_setting:
                         name: highlight_new_items
@@ -959,12 +970,13 @@ plugin_settings:
                     label: 'Fall-back image:'
                     upload:
                         multi: false
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                         reorder_items: false
@@ -1150,13 +1162,6 @@ plugin_settings:
                     type: checkbox
                     value: 1
                     format_onchange: true
-                pagination_style:
-                    plugin_setting:
-                        name: pagination_style
-                    label: 'Pagination style:'
-                    type: select
-                    value: zenario_common_features::pagCloseWithNPIfNeeded
-                    indent: 1
                 page_limit:
                     plugin_setting:
                         name: page_limit

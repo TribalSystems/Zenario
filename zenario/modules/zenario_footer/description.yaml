@@ -23,7 +23,13 @@ keywords: footer, menu, navigation
 # latest_revision_no.inc.php file if you change any of the fields below:
 css_class_name: zenario_footer
 is_pluggable: true
-nestable: true
+can_be_plugged_into:
+    content_items: false
+    layouts: true
+    regular_nests: true
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 default_framework: standard
 default_instance_name: Footer Menu
 

@@ -301,11 +301,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		}
 
 		//Hack to stop a buggy error message from appearing if the admin never opens the second tab on the branding FAB,
-		//as the _was_hidden_before property was never set by the JavaScript on the client side.
-		//Fix this problem by setting the _was_hidden_before property for the field.
+		//as the _cms_hidden property was never set by the JavaScript on the client side.
+		//Fix this problem by setting the _cms_hidden property for the field.
 		if (isset($fields['og/organizer_favicon'])) {
 			if ($values['og/organizer_favicon'] != 'custom') {
-				$fields['og/custom_organizer_favicon']['_was_hidden_before'] = true;
+				$fields['og/custom_organizer_favicon']['_cms_hidden'] = true;
 			}
 		}
 		
@@ -1420,7 +1420,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 						
 						//Don't save a value for a field if it was hidden.
 						if (ze\ring::engToBoolean($field['hidden'] ?? false)
-						 || ze\ring::engToBoolean($field['_was_hidden_before'] ?? false)) {
+						 || ze\ring::engToBoolean($field['_cms_hidden'] ?? false)) {
 							$value = '';
 							$clearSiteSetting = true;
 						} else {

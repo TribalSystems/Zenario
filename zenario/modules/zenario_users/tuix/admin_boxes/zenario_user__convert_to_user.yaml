@@ -14,7 +14,7 @@ zenario_user__convert_to_user:
                     ord: 1
                     full_width: 1
                     snippet:
-                        html: "You are about to change this contact into an active user; this means that the user will be able to log in to a password-protected area of your site."
+                        html: "You are about to convert this contact into an active user, so they will be able to log into this site's password-protected area."
                 email: 
                     label: "Email:"
                     type: text

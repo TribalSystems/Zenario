@@ -7,7 +7,7 @@ zenario__locations:
             db_items:
                 table: '[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s'
                 id_column: s.id
-                client_side: Yes
+                client_side: true
             default_sort_column: path
             refiners:
                 location_sectors:
@@ -23,24 +23,23 @@ zenario__locations:
                         [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
                                                     ON lssl.sector_id = s.id
                                                     AND lssl.location_id = [[REFINER__LOCATION_SECTORS]]
-                    show_by_default: Yes
+                    show_by_default: true
                     width: xsmall
                 label_name:
                     db_column: s.name
-                    searchable: Yes
+                    searchable: true
                 label_name2:
                     db_column: s.name
-                    searchable: Yes
+                    searchable: true
                 path:
                     title: Sector path
-                    php: Yes
-                    show_by_default: Yes
+                    show_by_default: true
                     width: xlarge
                 name:
                     title: Sector name
                     db_column: s.name
                     table_join: '[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS ps ON s.parent_id = ps.id'
-                    searchable: Yes
+                    searchable: true
                     width: medium
                 score:
                     title: Score
@@ -49,13 +48,12 @@ zenario__locations:
                         [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl
                                                     ON lssl.sector_id = s.id
                                                     AND lssl.location_id = [[REFINER__LOCATION_SECTORS]]
-                    show_by_default: Yes
-                    align_right: Yes
+                    show_by_default: true
+                    align_right: true
                     width: xsmall
             default_sort_column: label_name
             item:
                 css_class: zenario_location_manager_sector
-            disable_close_up_view: Yes
             collection_buttons:
                 add:
                     label: Assign to a sector
@@ -66,7 +64,7 @@ zenario__locations:
                         max_path: zenario__locations/nav/sectors/panel
                         request:
                             action: add_sector
-                        multiple_select: Yes
+                        multiple_select: true
             item_buttons:
                 increase_score:
                     ord: 2
@@ -75,7 +73,7 @@ zenario__locations:
                         request:
                             action: increase_score
                     with_columns_set:
-                        traits.not_at_max: true
+                        not_at_max: true
                 decrease_score:
                     ord: 2
                     label: Decrease score
@@ -83,12 +81,12 @@ zenario__locations:
                         request:
                             action: decrease_score
                     with_columns_set:
-                        traits.not_at_min: true
+                        not_at_min: true
                 sticky:
                     ord: 1000
                     label: Make primary
                     with_columns_set:
-                        traits.not_sticky: true
+                        not_sticky: true
                     ajax:
                         confirm:
                             message: 'Are you sure you wish to make sector "[[label_name2]]" the primary for this location?'

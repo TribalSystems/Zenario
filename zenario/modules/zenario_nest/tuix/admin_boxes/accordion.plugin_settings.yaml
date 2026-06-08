@@ -32,3 +32,21 @@ plugin_settings:
                     note_below: 'If not set, when one slide opens, the open one will close.'
                     type: checkbox
                     value: ''
+                accordion_duration:
+                    plugin_setting:
+                        name: accordion_duration
+                    label: 'Animation duration:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an animation duration.
+                        numeric: The animation duration must be a number.
+                    value: 600
+                    slider:
+                        min: 100
+                        max: 1000
+                        step: 50
+                        range: min
+                        before_field: true
+                    style: |
+                        width: 4em;
+                    post_field_html: ms

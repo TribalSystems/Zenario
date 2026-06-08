@@ -5,12 +5,26 @@
 <a
     title="{{m.tooltip|escape}}"
     
-    <% if (m._isDisabled) { %>
-		class="zfea_button zfea_button_disabled {{m.css_class|escape}}"
-	
+    <% if (m._cms_buttonIsDisabled) { %>
+		class="
+			zfea_button zfea_button_disabled
+			
+			{{m.css_class|escape}}
+			
+			<% if (m.multiple_select) { %>
+				zfea_button_multiple_select
+			<% } %>
+		"
 	<% } else { %>
-		class="zfea_button {{m.css_class|escape}}"
-		
+		class="
+			zfea_button
+			
+			{{m.css_class|escape}}
+			
+			<% if (m.multiple_select) { %>
+				zfea_button_multiple_select
+			<% } %>
+		"
 		<% if (m.href) { %>
 			href="{{m.href|escape}}"
 			

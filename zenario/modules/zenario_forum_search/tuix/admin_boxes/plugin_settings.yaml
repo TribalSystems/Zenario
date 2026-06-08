@@ -58,12 +58,6 @@ plugin_settings:
         pagination:
             label: Pagination
             fields:
-                pagination_style_search:
-                    plugin_setting:
-                        name: pagination_style_search
-                    label: 'Pagination style:'
-                    type: select
-                    value: zenario_common_features::pagCloseWithNPIfNeeded
                 page_size_search:
                     plugin_setting:
                         name: page_size_search

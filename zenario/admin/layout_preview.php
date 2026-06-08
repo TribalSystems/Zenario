@@ -91,9 +91,7 @@ echo
 <title>', htmlspecialchars(ze::$pageTitle), '</title>';
 
 
-$mode = 'layout_preview';
-$prefix = '../';
-ze\content::pageHead($prefix, $mode);
+ze\content::pageHead($scriptPrefix = '../', $scriptMode = 'layout_preview');
 
 echo '</head>';
 
@@ -124,7 +122,7 @@ $skinDiv .= '">';
 
 
 
-ze\content::pageBody('zenario_layout_preview');
+ze\content::pageBody($scriptPrefix, $scriptMode, 'zenario_layout_preview');
 echo $skinDiv, $templateDiv, $contentItemDiv;
 
 if ($tplFile = ze\layout::htmlPath($layout['layout_id'])) {
@@ -133,7 +131,7 @@ if ($tplFile = ze\layout::htmlPath($layout['layout_id'])) {
 
 
 echo "\n", '</div></div></div>';
-ze\content::pageFoot($prefix, $mode, $includeOrganizer = true, $includeAdminToolbar = false);
+ze\content::pageFoot($scriptPrefix, $scriptMode, $includeOrganizer = true, $includeAdminToolbar = false);
 
 
 echo '

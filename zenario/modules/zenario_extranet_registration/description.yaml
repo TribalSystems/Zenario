@@ -40,6 +40,13 @@ keywords: extranet, new, register, sign, signup, user
 vlp_class_name: zenario_extranet_registration
 css_class_name: zenario_extranet_registration
 is_pluggable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: false
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 plugin_must_be_on_public_page: true
 can_be_version_controlled: false
 default_framework: personal

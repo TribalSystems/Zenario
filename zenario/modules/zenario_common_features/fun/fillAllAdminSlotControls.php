@@ -50,6 +50,7 @@ $pageMode = [];
 $slot = ze::$slotContents[$slotName];
 $isNest = $slot->isNest();
 $isSlideshow = $slot->isSlideshow();
+$missing = $slot->missing();
 
 
 //Check to see if an entry on the item layer is overwriting an entry on a layer above
@@ -171,13 +172,13 @@ if (!$moduleId) {
 			
 			foreach (ze\sql::fetchAssocs($sql) as $module) {
 				if ($slot->isHeader()) {
-					$label = ze\admin::phrase('Insert a version-controlled [[display_name]] into the site-wide header...', $module);
+					$label = ze\admin::phrase('Insert version-controlled [[display_name]]', $module);
 				
 				} elseif ($slot->isFooter()) {
-					$label = ze\admin::phrase('Insert a version-controlled [[display_name]] into the site-wide footer...', $module);
+					$label = ze\admin::phrase('Insert version-controlled [[display_name]]', $module);
 				
 				} else {
-					$label = ze\admin::phrase('Insert a version-controlled [[display_name]]', $module);
+					$label = ze\admin::phrase('Insert version-controlled [[display_name]]', $module);
 				}
 				
 				$controls['actions'][] = [
@@ -437,4 +438,20 @@ if (ze::$locked) {
 	} else {
 		unset($controls['no_perms']['cant_design']);
 	}
+}
+
+
+
+//Some options are not appropriate to show on missing slots
+if ($missing) {
+	unset($controls['re_move_place']['copy_plugin_placement_on_item_layer']);
+	unset($controls['re_move_place']['replace_reusable_on_item_layer']);
+	unset($controls['re_move_place']['replace_nest_on_item_layer']);
+	unset($controls['re_move_place']['replace_slideshow_on_item_layer']);
+	unset($controls['re_move_place']['hide_plugin']);
+	unset($controls['re_move_place']['replace_reusable_on_layout_layer']);
+	unset($controls['re_move_place']['replace_nest_on_layout_layer']);
+	unset($controls['re_move_place']['replace_slideshow_on_layout_layer']);
+	unset($controls['re_move_place']['replace_fab_item_layer']);
+	unset($controls['re_move_place']['replace_fab_layout_layer']);
 }

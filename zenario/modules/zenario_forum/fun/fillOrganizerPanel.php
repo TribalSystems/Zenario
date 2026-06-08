@@ -39,21 +39,20 @@ switch ($path) {
 			$item['title'] = ze\content::title($cTypeAndCID[1], $cTypeAndCID[0]);
 			$item['frontend_link'] = ze\link::toItem($cTypeAndCID[1], $cTypeAndCID[0]);
 			
-			$item['traits'] = [];
 			if (!$item['thread_count'] && !$item['post_count']) {
-				$item['traits']['empty'] = true;
+				$item['empty'] = true;
 			}
 			if ($item['thread_link'] && $item['thread_link'] != '_0') {
-				$item['traits']['has_thread_page'] = true;
+				$item['has_thread_page'] = true;
 			}
 			if ($item['new_thread_link'] && $item['new_thread_link'] != '_0') {
-				$item['traits']['has_new_thread_page'] = true;
+				$item['has_new_thread_page'] = true;
 			}
 			
 			if ($item['locked']) {
-				$item['traits']['locked'] = true;
+				$item['locked'] = true;
 			} else {
-				$item['traits']['unlocked'] = true;
+				$item['unlocked'] = true;
 			}
 			
 			$item['categories'] = '';

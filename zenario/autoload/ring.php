@@ -400,7 +400,16 @@ class ring {
 				if ($item->attributes
 				 && $item->attributes->length) {
 					foreach ($item->attributes as $a => $b) {
-						$item->setAttribute($a, str_replace('%7B', '~c', str_replace('%7D', '~v', str_replace('%5B', '~l', str_replace('%5D', '~r', str_replace('%20', '~s', $item->getAttribute($a)))))));
+						
+						$av = $item->getAttribute($a);
+						
+						//Check for a double bracket pattern that looks like it's got mangled by being URL escaped.
+						//(Warning: we'll only want to remove the escaping if this actually looks like a merge field.
+						// Otherwise we should leave it in, as things like URLs do need to be escaped for legitimate reasons!)
+						if ((false !== strpos($av, '%5B%5B') && false !== strpos($av, '%5D%5D'))
+						 || (false !== strpos($av, '%7B%7B') && false !== strpos($av, '%7D%7D'))) {
+							$item->setAttribute($a, str_replace('%7B', '~c', str_replace('%7D', '~v', str_replace('%5B', '~l', str_replace('%5D', '~r', str_replace('%20', '~s', $av))))));
+						}
 					}
 				}
 			}

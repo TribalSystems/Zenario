@@ -39,8 +39,8 @@ body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-widget-header .ui-state-active
 body:not(.zenario_fbAdminFloatingBox__isOpen) a.ui-button:active, 
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-button:active, 
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-button.ui-state-active:hover {
-	border: 1px solid #cd1919;
-	background: #be2222;
+	border: 1px solid #00659b;
+	background: #00659b;
   	color: #fff;
 }
 

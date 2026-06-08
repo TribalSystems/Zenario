@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //Add a new Plugin to the nest, placing it in the right-most slide
 if (($instance = ze\plugin::details($addPluginInstance))
- && (ze\row::get('modules', 'nestable', $instance['module_id']))) {
+ && (ze\row::get('modules', 'is_pluggable', $instance['module_id']))) {
 	
 	if ($slideNum && $inputIsSlideId) {
 		$slideNum = ze\row::get('nested_plugins', 'slide_num', ['instance_id' => $instanceId, 'id' => $slideNum]);

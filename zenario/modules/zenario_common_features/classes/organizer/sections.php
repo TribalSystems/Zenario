@@ -58,7 +58,7 @@ class zenario_common_features__organizer__sections extends ze\moduleBaseClass {
 		//don't allow the Admin to navigate back up to the panel containing  the list of
 		//menu sections in English, as this is copied into the second-level nav.
 		if ($mode == 'full'
-		 && !empty($_GET['_queued'])
+		 && !empty($_GET['_cms_isQueued'])
 		 && ($_GET['refiner__language'] ?? '') == ze::$defaultLang) {
 			$panel['no_return'] = true;
 		}

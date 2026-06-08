@@ -77,7 +77,8 @@ class zenario_nest__animation_libraries__accordion extends zenario_nest {
 			$tabOrd,
 			(bool) $this->setting('accordion_1st_open'),
 			(bool) $this->setting('accordion_all_can_close'),
-			(bool) $this->setting('accordion_open_multiple')
+			(bool) $this->setting('accordion_open_multiple'),
+			(int) $this->setting('accordion_duration') ?: 600
 		);		
 		
 		return true;

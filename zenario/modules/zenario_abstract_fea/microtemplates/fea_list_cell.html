@@ -1,17 +1,19 @@
-<% if (m.col.pre_value_microtemplate) { %>
-	{{m.lib.microTemplate(m.col.pre_value_microtemplate, m)}}
+<% var col = m.col, item = m.item; %>
+
+<% if (col.pre_value_microtemplate) { %>
+	{{m.lib.microTemplate(col.pre_value_microtemplate, m)}}
 <% } %>
-<% if (m.col.pre_value_html) { %>
-	{{m.col.pre_value_html}}
+<% if (col.pre_value_html) { %>
+	{{col.pre_value_html}}
 <% } %>
 
 
-<% var b, val = m.item[m.col.id], isSet = zenario.defined(val) && val !== ""; %>
-<% if (b = m.item.__columnButtons && m.item.__columnButtons[m.col.id]) { %>
+<% var b, val = item[col.id], isSet = zenario.defined(val) && val !== ""; %>
+<% if (b = item._cms_columnButtons && item._cms_columnButtons[col.id]) { %>
 	<a
 		title="{{b.tooltip|escape}}"
 	
-		<% if (b._isDisabled) { %>
+		<% if (b._cms_buttonIsDisabled) { %>
 			class="zfea_link_on_column zfea_link_on_column_disabled {{b.css_class|escape}}"
 	
 		<% } else { %>
@@ -33,63 +35,62 @@
 <% } %>
 
 
-<% if (m.col.sparkline) { %>
-	{% m.lib.hadSparkline = true; %}
+<% if (col.sparkline) { %>
 
-<% } else if (m.col.microtemplate) { %>
-	{{m.lib.microTemplate(m.col.microtemplate, m)}}
+<% } else if (col.microtemplate) { %>
+	{{m.lib.microTemplate(col.microtemplate, m)}}
 
-<% } else if ((m.col.html || m.col.twig_snippet) && !m.col.convert_to_percentage_of_total) { %>
+<% } else if ((col.html || col.twig_snippet) && !col.convert_to_percentage_of_total) { %>
 	{{val}}
 
-<% } else if (m.col.is_icon) { %>
+<% } else if (col.is_icon) { %>
 	<span class="fea_icon {{val|escape}}"></span>
     
-<% } else if (val && m.col.values && m.col.show_multiple_values) { %>
+<% } else if (val && col.values && col.show_multiple_values) { %>
 	<span class="fea_multiple_values">
 		<% foreach (('' + val).split(',') as var fi => var frag) { %>
 			<% frag = $.trim(frag); %>
 			
-			<% if (zenario.defined(m.col.values[frag])) { %>
-				<span class="fea_value fea_known_value">{{zenarioT.valueLabel(m.col.values[frag])|escape}}</span>
+			<% if (zenario.defined(col.values[frag])) { %>
+				<span class="fea_value fea_known_value">{{zenarioT.valueLabel(col.values[frag])|escape}}</span>
 			<% } else { %>
 				<span class="fea_value fea_unknown_value">{{frag|escape}}</span>
 			<% } %>
 		<% } %>
 	</span>
     
-<% } else if (val && m.col.values && m.col.values[val]) { %>
-	<span class="fea_value fea_single_value fea_known_value">{{zenarioT.valueLabel(m.col.values[val])|escape}}</span>
+<% } else if (val && col.values && col.values[val]) { %>
+	<span class="fea_value fea_single_value fea_known_value">{{zenarioT.valueLabel(col.values[val])|escape}}</span>
 
-<% } else if (m.col.convert_to_percentage_of_total && m.lib.pcOfTotal[m.col.id] && isSet) { %>
-	{{zenario.round(100 * val / m.lib.pcOfTotal[m.col.id], 1)}} %
+<% } else if (col.convert_to_percentage_of_total && m.lib.pcOfTotal[col.id] && isSet) { %>
+	{{zenario.round(100 * val / m.lib.pcOfTotal[col.id], 1)}} %
 
 <!--
 	If a column is empty, and the column has an empty value defined,
 	then show the empty value
 -->
-<% } else if (!val && m.col.empty_value) { %>
-	<span class="fea_empty_value">{{m.col.empty_value|escape}}</span>
+<% } else if (!val && col.empty_value) { %>
+	<span class="fea_empty_value">{{col.empty_value|escape}}</span>
     
 <!--
 	Show a CSS class name when you define a LoV, but a specific value is not in the LoV, and is just being displayed as-is.
 -->
-<% } else if (val && m.col.values) { %>
+<% } else if (val && col.values) { %>
 	<span class="fea_value fea_single_value fea_unknown_value">{{val|escape}}</span>
 
 <!--
 	Watch out for columns that should be date-formated
 -->
-<% } else if (val && (m.col.format || m.col.type) == 'date') { %>
+<% } else if (val && (col.format || col.type) == 'date') { %>
 	<span class="fea_date">{{zenario.formatDate(val, false, m.lib.defaultDatePickerFormat())|escape}}</span>
-<% } else if (val && (m.col.format || m.col.type) == 'datetime') { %>
+<% } else if (val && (col.format || col.type) == 'datetime') { %>
 	<span class="fea_datetime">{{zenario.formatDate(val, true, m.lib.defaultDatePickerFormat())|escape}}</span>
 
 <!--
 	Otherwise, just display the value of the column
 -->
 <% } else { %>
-	{{val|escape}}<% if (isSet && m.col.units) { %><label class="fea_post_field_label">{{m.col.units|escape}}</label><% } %>
+	{{val|escape}}<% if (isSet && col.units) { %><label class="fea_post_field_label">{{col.units|escape}}</label><% } %>
 <% } %>
 
 
@@ -98,9 +99,9 @@
 <% } %>
 
 
-<% if (m.col.post_value_html) { %>
-	{{m.col.post_value_html}}
+<% if (col.post_value_html) { %>
+	{{col.post_value_html}}
 <% } %>
-<% if (m.col.post_value_microtemplate) { %>
-	{{m.lib.microTemplate(m.col.post_value_microtemplate, m)}}
+<% if (col.post_value_microtemplate) { %>
+	{{m.lib.microTemplate(col.post_value_microtemplate, m)}}
 <% } %>

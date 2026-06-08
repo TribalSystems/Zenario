@@ -176,8 +176,15 @@ class zenario_common_features__admin_boxes__copy_to_hierarchical_documents exten
 				'type' => 'file', 
 				'file_id' => $documentData['file_id'], 
 				'folder_id' => $folder_id,
-				'file_datetime' => $documentData['created_datetime'],
-				'filename' => $documentData['filename']];
+				'filename' => $documentData['filename']
+			];
+			
+			$lastUpdated = [];
+			ze\admin::setLastUpdated($lastUpdated, $creating = true);
+	
+			$documentProperties['created'] = $lastUpdated['created'];
+			$documentProperties['created_admin_id'] = $lastUpdated['created_admin_id'];
+			
 			$extraProperties = ze\document::addExtract($documentProperties['file_id']);
 			
 			$properties = array_merge($documentProperties, $extraProperties);

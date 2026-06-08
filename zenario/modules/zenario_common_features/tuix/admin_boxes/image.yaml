@@ -107,6 +107,11 @@ zenario_image:
                         If image is displayed in an enlarged box, use this caption.
                     visible_if:
                         lib.value: add_a_gallery_caption
+                enable_site_setting:
+                    hidden: true
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">[[Enable_site_setting_to_use_captions]]</div>
 
             show_errors_after_field: image
         

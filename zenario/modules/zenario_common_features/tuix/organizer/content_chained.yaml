@@ -9,7 +9,6 @@ zenario__content:
                 language: ""
                 layoutId: ''
                 equivId: ""
-            enable_close_up_view: true
             hide_filter_warning: true
             db_items:
                 table: >
@@ -49,8 +48,6 @@ zenario__content:
                             WHERE id = [[REFINER__ZENARIO_TRANS__CHAINED_IN_LINK__FROM_MENU_NODE]]
                         )
             item:
-                name: Content item
-                names: Content items
                 css_class: language
             columns:
                 tag:
@@ -296,8 +293,6 @@ zenario__content:
                     label: View picture
                     popout:
                         href: 'zenario/file.php?usage=content&popout=1'
-                        options:
-                            type: image
                     with_columns_set:
                         has_picture: true
                     without_columns_set:

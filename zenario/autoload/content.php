@@ -54,18 +54,19 @@ class content {
 
 
 
-
+	private static $sitewideModules = [];
+	
 	//Write the URLBasePath, and other related JavaScript variables, to the page
-	public static function pageHead($prefix, $mode = false, $includeOrganizer = false, $overrideFrameworkAndCSS = false) {
+	public static function pageHead($prefix, $mode, $includeOrganizer = false, $overrideFrameworkAndCSS = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	public static function pageBody($extraClassNames = '', $attributes = '', $showSitewideBodySlot = false, $includeAdminToolbar = false) {
+	public static function pageBody($prefix, $mode, $extraClassNames = '', $attributes = '', $showSitewideBodySlot = false, $includeAdminToolbar = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
 	//Write the URLBasePath, and other related JavaScript variables, to the page
-	public static function pageFoot($prefix, $mode = false, $includeOrganizer = true, $includeAdminToolbar = true, $defer = false) {
+	public static function pageFoot($prefix, $mode, $includeOrganizer = true, $includeAdminToolbar = true, $defer = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 

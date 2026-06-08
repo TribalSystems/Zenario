@@ -1,12 +1,5 @@
 <% if (!m.tuix.hide_pagination) { %>
-	<div class="zfea_i_and_p">
-	
-		<% if (m.tuix.__items_phrase__ && !m.tuix.hide_item_count_message && !_.isEmpty(m.tuix.columns)) { %>
-			<div class="zfea_item_count">
-				{{m.tuix.__items_phrase__|e}}
-			</div>
-		<% } %>
-	
+	<div class="zfea_i_and_p zfea_pagination_wrap {{m._position}}">
 		<div
 			class="zfea_pagination"
 			id="pagination_{{m.lib.containerId}}"

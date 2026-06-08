@@ -53,8 +53,6 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 		
 		
 		foreach ($panel['items'] as $id => &$item) {
-			$item['traits'] = [];
-			
 			if ($item['id']){
 				$sql =" SELECT count(id) as number_of_categories
 						FROM ". DB_PREFIX."categories 
@@ -71,7 +69,6 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 			$accessType = ' (private) ';
 			if ($item['public']) {
 				$accessType = ' (public) ';
-				$item['traits']['public'] = true;
 				
 				foreach($langs as $lang) {
 						$item['lang_'. $lang['id']] =

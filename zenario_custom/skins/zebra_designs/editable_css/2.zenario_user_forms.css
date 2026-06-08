@@ -188,7 +188,19 @@ body.ff .zenario_user_forms .field_radios input[type=radio] + label:before {
 .zenario_user_forms.zenario_user_forms__default_style .form_buttons {
 	overflow:hidden;
 	margin-top:3em;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .top_buttons,
+.zenario_user_forms.zenario_user_forms__default_style .form_buttons {
 	text-align:center;
+	display:flex;
+	gap:20px;
+	justify-content: center;
+	align-items: center;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .top_buttons {
+	margin:0.5em 0;
 }
 
 .zenario_user_forms.zenario_user_forms__default_style .form_buttons .next,

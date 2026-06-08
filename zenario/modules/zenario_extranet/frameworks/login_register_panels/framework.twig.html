@@ -201,7 +201,7 @@
 				
 				{% if Is_Admin %}
 					<div class="extranet_error">
-						{{"You are an administrator impersonating a user. If you click the Continue button to accept the T&Cs, this will not be recorded in the database."|trans}}
+						{{"You are an administrator impersonating a user; checkbox disabled as you may not accept T&Cs on their behalf."|trans}}
 					</div>
 				{% endif %}
 				
@@ -210,10 +210,23 @@
 				{% endfor %}
 				
 				<div class="extranet_terms_and_conditions">
-					{{this.frameworkField({'type': "checkbox", 'name': "extranet_terms_and_conditions", 'id': "extranet_terms_and_conditions"})}}
+					{% if Is_Admin %}
+						<input id="extranet_terms_and_conditions" type="checkbox" disabled>
+					{% else %}
+						{{this.frameworkField({'type': "checkbox", 'name': "extranet_terms_and_conditions", 'id': "extranet_terms_and_conditions"})}}
+					{% endif %}
 					<label for="extranet_terms_and_conditions">{{Ts_And_Cs_Link}}</label>
 				</div>
-				<div class="extranet_btn"><input type="submit" name="extranet_login" class="login_entry_button" value="{{login_button_text}}" /></div>
+				
+				{% if not Is_Admin %}
+					<div class="extranet_btn"><input type="submit" name="extranet_login" class="login_entry_button" value="{{login_button_text}}" /></div>
+				{% endif %}
+				
+				{% if Logout_Link_Section_If_User_Doesnt_Accept_Terms %}
+					<div>
+						<a {{Logout_Link_If_User_Doesnt_Accept_Terms}}>{{"Logout"|trans}}</a>
+					</div>
+				{% endif %}
 			</div>
 		{% endif %}
 		

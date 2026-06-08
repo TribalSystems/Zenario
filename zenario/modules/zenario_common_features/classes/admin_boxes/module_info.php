@@ -37,7 +37,7 @@ class zenario_common_features__admin_boxes__module_info extends ze\moduleBaseCla
 		}
 		
 		$box['title'] = ze\admin::phrase(
-			'Module details for "[[module_display_name]]" ([[module_class_name]])',
+			'Information for [[module_display_name]] module ([[module_class_name]])',
 			['module_display_name' => $module['display_name'], 'module_class_name' => $module['class_name']]
 		);
 
@@ -163,12 +163,11 @@ class zenario_common_features__admin_boxes__module_info extends ze\moduleBaseCla
 				$values['module_info/special_page'] = $moduleSpecialPages[$module['class_name']];
 			}
 			
+			$values['module_info/pluggable'] = ze\moduleAdm::pluggableDesc($module);
+			
 			$hasPlugins = '';
-			$nestable = false;
 			if ($desc['is_pluggable'] || $desc['can_be_version_controlled']) {
 				$hasPlugins = 'Yes';
-				$nestable = $desc['nestable'] ? 'Yes' : 'No';
-				$fields['module_info/nestable']['hidden'] = false;
 				
 				if ($desc['is_pluggable'] && $desc['can_be_version_controlled']) {
 					$hasPlugins .= ' (Library plugin and version controlled plugin)';
@@ -181,7 +180,6 @@ class zenario_common_features__admin_boxes__module_info extends ze\moduleBaseCla
 				$hasPlugins = 'No';
 			}
 			$values['module_info/has_plugins'] = ze\admin::phrase($hasPlugins);
-			$values['module_info/nestable'] = ze\admin::phrase($nestable);
 			
 			if ($module['is_pluggable'] && is_dir(CMS_ROOT. ze::moduleDir($module['class_name'], 'tuix/visitor'))) {
 					$fields['module_info/fea_info']['hidden'] = false;

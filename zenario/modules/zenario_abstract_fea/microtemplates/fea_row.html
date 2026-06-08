@@ -24,8 +24,8 @@
 			ff = m.fields[0],
 			fl = m.fields.length,
 			lf = m.fields[fl-1],
-			pgf = ff._lastVisibleGroupingField,
-			lgf = lf._lastVisibleGroupingField,
+			pgf = ff._cms_lastVisibleGroupingField,
+			lgf = lf._cms_lastVisibleGroupingField,
 			rowHasError = false;
 	%>
 	
@@ -36,7 +36,7 @@
 		<% } %>	
 	<% } %>
 	
-	<% if (ff._lastVisibleGrouping !== ff.grouping) { %>
+	<% if (ff._cms_lastVisibleGrouping !== ff.grouping) { %>
 		<% if (pgf) { %>
 			</fieldset>
 			<% if (pgf.post_grouping_html) { %>
@@ -92,7 +92,7 @@
 		<% } %>
 	<% } %>
 	<% if (ff.legend) { %>
-		<legend class="zfea_form_legend zfea_form_legend_for__{{ff._id|escape}}"><span>{{ff.legend}}</span></legend>
+		<legend class="zfea_form_legend zfea_form_legend_for__{{ff._cms_fieldID|escape}}"><span>{{ff.legend}}</span></legend>
 	<% } %>
 	
 	<% if (ff.error_on_form_message && m.thus.errorOnForm) { %>
@@ -101,15 +101,15 @@
 		</div>
 	<% } %>
 	
-	<div id="{{m.lib.idPrefix()|escape}}row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
+	<div id="{{m.lib.idPrefix()|escape}}row__{{ff._cms_fieldID|escape}}" style="{{ff.row_style|escape}}" class="
 		zfea_form_row
-		zfea_form_row__{{ff._id|escape}}
+		zfea_form_row__{{ff._cms_fieldID|escape}}
 		{{rowHasError? 'zenario_row_with_error' : ''}}
 		{{ff.error? 'zenario_row_with_error_on_first_field' : ''}}
 		{{ff.row_class|escape}}
 		{{ff.pressed? 'zfea_row_pressed' : ''}}
 		{{ff.onoff? 'zenario_onoffswitch zenario_onoffswitch_visitor' : ''}}
-		{{ff._hideOnOpen? 'zfea_form_hide_row_on_open' : ''}}
+		{{ff._cms_hideOnOpen? 'zfea_form_hide_row_on_open' : ''}}
 		{{ff.indent? 'zfea_form_indent_level zfea_form_indent_level_' +  (1*ff.indent) : ''}}
 		zfea_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
 		
@@ -127,12 +127,12 @@
 	">
 		<div class="
 			zfea_row_fields
-			{{ff._hideOnOpen? 'zfea_form_hide_on_open' : ''}}
-			{{ff._showOnOpen? 'zfea_form_show_on_open' : ''}}
+			{{ff._cms_hideOnOpen? 'zfea_form_hide_on_open' : ''}}
+			{{ff._cms_showOnOpen? 'zfea_form_show_on_open' : ''}}
 		">	
 			<% if (ff.label !== undefined && !(ff.type == 'checkbox' || ff.type == 'radio')) { %>
 				<div class="title">
-					<label for="{{ff._id|escape}}">{{ff.label|escape}}</label>
+					<label for="{{ff._cms_fieldID|escape}}">{{ff.label|escape}}</label>
 					
 					<% if (ff.pre_field_post_label_html) { %>
 						{{ff.pre_field_post_label_html}}
@@ -141,8 +141,8 @@
 			<% } %>
 			<div class="
 				zfea_row_fields_inner
-				{{ff._hideOnOpen? 'zfea_form_hide_on_open' : ''}}
-				{{ff._showOnOpen? 'zfea_form_show_on_open' : ''}}
+				{{ff._cms_hideOnOpen? 'zfea_form_hide_on_open' : ''}}
+				{{ff._cms_showOnOpen? 'zfea_form_show_on_open' : ''}}
 			">
 				{{m.lib.microTemplate(m.lib.mtPrefix + '_field', m.fields)}}
 			</div>
@@ -156,7 +156,7 @@
 		</div>
 	</div>
 	
-	<% if (ff._isLastRow) { %>
+	<% if (ff._cms_fieldIsOnLastRow) { %>
 		<% if (ff.grouping) { %>
 			</fieldset>
 			<% if (lgf && lgf.post_grouping_html) { %>

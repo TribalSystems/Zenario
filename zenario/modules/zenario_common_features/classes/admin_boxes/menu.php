@@ -100,7 +100,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				$values['text/hyperlink_anchor'] = $menu['anchor'];
 			}
 	
-			$values['advanced/accesskey'] = $menu['accesskey'];
 			$values['advanced/rel_tag'] = $menu['rel_tag'];
 			$values['advanced/css_class'] = $menu['css_class'];
 			$values['advanced/add_registered_get_requests'] = $menu['add_registered_get_requests'];
@@ -649,29 +648,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		}
 
 		if (ze\ring::engToBoolean($box['tabs']['advanced']['edit_mode']['on'] ?? false)) {
-			if (!empty($values['advanced/accesskey'])) {
-				$ord = ord($values['advanced/accesskey']);
-				if ($ord < 48 || ($ord > 57 && $ord < 65) || $ord > 90) {
-					$box['tabs']['advanced']['errors'][] = ze\admin::phrase('Access Keys may only be the capital letters A-Z, or the digits 0-9.');
-		
-				} else {
-					$sql = "
-						SELECT id
-						FROM ". DB_PREFIX ."menu_nodes
-						WHERE accesskey = '" . ze\escape::sql($values['advanced/accesskey']) . "'";
-			
-					if ($box['key']['id']) {
-						$sql .= "
-						  AND id != ". (int) $box['key']['id'];
-					}
-			
-					if (($result = ze\sql::select($sql)) && ($row = ze\sql::fetchAssoc($result))) {
-						$box['tabs']['advanced']['errors'][] =
-							ze\admin::phrase('The access key "[[accesskey]]" is in use! It is currently assigned to the menu node "[[menuitem]]".',
-								['accesskey' => $values['advanced/accesskey'], 'menuitem' => ze\menu::name($row['id'], $box['key']['languageId'])]);
-					}
-				}
-			}
 			if (!empty($values['advanced/call_static_method'])) {
 				if (!$values['advanced/menu__module_class_name']) {
 					$box['tabs']['advanced']['errors'][] = ze\admin::phrase("Please enter a module's class name");
@@ -776,7 +752,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		}
 
 		if (ze\ring::engToBoolean($box['tabs']['advanced']['edit_mode']['on'] ?? false)) {
-			$submission['accesskey'] = $values['advanced/accesskey'];
 			$submission['rel_tag'] = $values['advanced/rel_tag'];
 			$submission['css_class'] = $values['advanced/css_class'];
 			$submission['add_registered_get_requests'] = $values['advanced/add_registered_get_requests'];

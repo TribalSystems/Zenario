@@ -446,6 +446,7 @@ class cache {
 	
 	//Packing/unpacking functions for converting shallow objects into strings.
 	//This is basicly a slightly more compact, but also much more limited, alternative to JSON encoding.
+	const packFromTwig = true;
 	public static function pack($array) {
 		$output = [];
 		foreach ($array as $k => $v) {
@@ -453,6 +454,7 @@ class cache {
 		}
 		return implode('-', $output);
 	}
+	const unpackFromTwig = true;
 	public static function unpack($string) {
 		$output = [];
 		$array = explode('-', $string);

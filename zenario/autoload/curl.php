@@ -76,7 +76,6 @@ class curl {
 		}
 	
 		$result = curl_exec($curl);
-		curl_close($curl);
 	
 		if ($saveToFile) {
 			fclose($fp);

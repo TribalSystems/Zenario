@@ -234,8 +234,6 @@ class zenario_forum_search extends zenario_forum {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['pagination']['fields']['pagination_style_search']['values'] = 
-					ze\pluginAdm::paginationOptions();
 				
 				break;
 		}

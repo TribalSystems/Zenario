@@ -224,7 +224,7 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 		
 		//Offer one of the previously saved database backups for download	
 		} else {
-			$filename = ze\file::safeName(ze\ring::decodeIdForOrganizer($box['key']['id']));
+			$filename = ze\file::validName(ze\ring::decodeIdForOrganizer($box['key']['id']));
 			$filepath = ze::setting('backup_dir'). '/'. $filename;
 			
 			if (!is_file($filepath)

@@ -19,21 +19,6 @@ zenario_create_newsletter:
                 priv: _PRIV_EDIT_NEWSLETTER
                 enabled: true
             fields:
-                create_empty_newsletter_grouping:
-                    type: grouping
-                    name: create_empty_newsletter_grouping
-                    grouping_css_class: zenario_vertical_radio
-                    grouping_wrapper_css_class: zenario_vertical_radios
-                    grouping_onclick: |
-                        zenarioAB.clickingGroupingChecksBox('create_empty_newsletter');
-                create_empty_newsletter:
-                    grouping: create_empty_newsletter_grouping
-                    type: radio
-                    name: action
-                    value: 1
-                    label: Create an empty newsletter
-                    format_onchange: true
-                
                 create_newsletter_from_template_grouping:
                     type: grouping
                     name: create_empty_newsletter_grouping
@@ -45,6 +30,7 @@ zenario_create_newsletter:
                     grouping: create_newsletter_from_template_grouping
                     type: radio
                     name: action
+                    value: 1
                     label: Create a newsletter from a template
                     format_onchange: true
                 newsletter_template:
@@ -62,6 +48,20 @@ zenario_create_newsletter:
                         required_if_not_hidden: 'Please select a newsletter template.'
                     format_onchange: true
                 
+                create_empty_newsletter_grouping:
+                    type: grouping
+                    name: create_empty_newsletter_grouping
+                    grouping_css_class: zenario_vertical_radio
+                    grouping_wrapper_css_class: zenario_vertical_radios
+                    grouping_onclick: |
+                        zenarioAB.clickingGroupingChecksBox('create_empty_newsletter');
+                create_empty_newsletter:
+                    grouping: create_empty_newsletter_grouping
+                    type: radio
+                    name: action
+                    label: Create an empty newsletter
+                    format_onchange: true
+                
                 create_newsletter_from_previous_newsletter_grouping:
                     type: grouping
                     name: create_empty_newsletter_grouping
@@ -73,7 +73,7 @@ zenario_create_newsletter:
                     grouping: create_newsletter_from_previous_newsletter_grouping
                     type: radio
                     name: action
-                    label: Create based on a previous newsletter
+                    label: Create a newsletter based on a previous one
                     format_onchange: true
                 previous_newsletter:
                     grouping: create_newsletter_from_previous_newsletter_grouping

@@ -15,7 +15,12 @@
 		>
 			<a class="organizer_top_level_image {{m.css_class|escape}}"
 				href="{{m.href|escape}}"
-				onclick="{{m.onclick|escape}}">
+				onclick="{{m.onclick|escape}}"
+				
+				<% if (m.new_window) { %>
+					target="_blank"
+				<% } %>
+			>
 					<span></span>
 			</a>
 		</div>

@@ -1,6 +1,8 @@
 {% if mp3 %}
 	<p class="audio_title">{{title|e}}</p>
-	<p class="audio_size">{{"File size:"|trans}} {{size|e}}</p>
+	{% if size %}
+		<p class="audio_size">{{"File size:"|trans}} {{size|e}}</p>
+	{% endif %}
 	<audio src="{{mp3Path}}" controls
 		{% if autostart %} autoplay {% endif %}
 		{% if loop %} loop {% endif %}

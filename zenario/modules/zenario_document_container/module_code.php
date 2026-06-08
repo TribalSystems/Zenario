@@ -107,7 +107,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 	public function getDocumentContainerDocuments($documentId) {
 		$this->data['Documents'] = [];
 		
-		if (!$document = ze\row::get('documents', ['id', 'file_id', 'type', 'thumbnail_id', 'folder_name', 'filename', 'privacy', 'file_datetime', 'title'], $documentId)) {
+		if (!$document = ze\row::get('documents', ['id', 'file_id', 'type', 'thumbnail_id', 'folder_name', 'filename', 'privacy', 'created', 'title'], $documentId)) {
 			$this->data['error'] = 'no_file';
 			return false;
 		}
@@ -160,7 +160,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 				$document['Document_Filename'] = htmlspecialchars($document['filename']);
 				$document['Document_Link'] = ze\file::createPrivateLink($document['file_id'], $document['filename']);
 				$document['Document_Type'] = 'file';
-				$document['file_datetime'] = $document['document_datetime'];
+				$document['created'] = $document['created'];
 			}
 			$document['Document_Mime'] = str_replace('/', '_', ze\file::mimeType($document['Document_Link']));
 			
@@ -204,7 +204,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 				$document['File_Size'] = ze\file::fileSizeConvert($file['size']);
 			}
 			if ($this->setting('show_upload_date')) {
-				$uploadDate = ze\date::formatDateTime($document['file_datetime']);
+				$uploadDate = ze\date::formatDateTime($document['created']);
 				$document['Upload_Date'] = $this->phrase('Uploaded: [[date]]', ['date' => $uploadDate]);
 			}
 			
@@ -252,7 +252,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 	public function getFilesInFolder($folderId, $includeFolders = false) {
 		$files = [];
 		$sql = '
-			SELECT d.id, d.file_id, d.type, d.thumbnail_id, d.folder_name, d.filename, d.privacy, d.file_datetime, d.title
+			SELECT d.id, d.file_id, d.type, d.thumbnail_id, d.folder_name, d.filename, d.privacy, d.created, d.title
 			FROM ' . DB_PREFIX . 'documents d
 			LEFT JOIN ' . DB_PREFIX . 'documents_custom_data dcd
 				ON d.id = dcd.document_id';
@@ -373,7 +373,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 				break;
 			case 'created_date':
 				$sql .= '
-					ORDER BY d.document_datetime ' . ze\escape::sql($sortSQL);
+					ORDER BY d.created ' . ze\escape::sql($sortSQL);
 				break;
 			case 'manual_order':
 			default:
@@ -414,7 +414,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 			return false;
 		}
 		
-		$result = ze\row::query(ZENARIO_USER_DOCUMENTS_PREFIX . 'user_documents', ['id', 'type', 'file_id', 'title', 'folder_name', 'thumbnail_id', 'document_datetime'], ['user_id' => $userId], 'ordinal');
+		$result = ze\row::query(ZENARIO_USER_DOCUMENTS_PREFIX . 'user_documents', ['id', 'type', 'file_id', 'title', 'folder_name', 'thumbnail_id', 'created'], ['user_id' => $userId], 'ordinal');
 		//Must be at least one file
 		if (!ze\sql::numRows($result)) {
 			$this->data['error'] = 'no_files';

@@ -96,9 +96,7 @@ switch ($path) {
 			$values['first_tab/content_type'] != 'all'
 		 && $values['first_tab/content_type'] != 'document';
 		
-		$fields['pagination/page_limit']['hidden'] = 
-		$fields['pagination/pagination_style']['hidden'] = 
-			!$values['pagination/show_pagination'];
+		$fields['pagination/page_limit']['hidden'] = !$values['pagination/show_pagination'];
 		
 		
 		//Don't show notes about translations if a phrase won't be translated
@@ -112,7 +110,6 @@ switch ($path) {
 			$fields['overall_list/more_link_text']['side_note'] = '';
 		
 		} else {
-			
 			$mrg = [
 				'def_lang_name' => htmlspecialchars(ze\lang::name(ze::$defaultLang)),
 				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')

@@ -14,10 +14,6 @@ zenario_content_type_details:
                 priv: _PRIV_EDIT_CONTENT_TYPE
                 enabled: true
             fields:
-                tooltip_text:
-                    label: ''
-                    type: text
-                    show_as_a_span: true
                 module_id:
                     label: 'Module:'
                     readonly: true

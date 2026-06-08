@@ -423,17 +423,13 @@ methods.setupReordering = function($panel) {
 					actionRequests.dropped_item = $(ui.item).data('id');
 					
 					//Send these results via AJAX
-					var actionTarget =
-						'zenario/ajax.php?' +
-							'__pluginClassName__=' + thus.tuix.reorder.class_name +
-							'&__path__=' + zenarioO.path +
-							'&method_call=handleOrganizerPanelAJAX';
+					var actionTarget = zenario.ajaxURL('handleOrganizerPanelAJAX', thus.tuix.reorder.class_name, zenarioO.path);
 				
 					//Clear the local storage, as there have probably just been changes
 					delete zenario.rev;
 				
 					$.post(
-						zenario.addBasePath(actionTarget),
+						actionTarget,
 						actionRequests,
 						//Refresh the panel to show the new order
 						function () {

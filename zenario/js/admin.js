@@ -71,6 +71,7 @@ zenarioA.adminSettings = zenarioA.adminSettings || {};
 zenarioA.adminPrivs = zenarioA.adminPrivs || {};
 zenarioA.showGridOn = false;
 zenarioA.showEmptySlotsOn = false;
+zenarioA.showLinkStatusOn = false;
 
 
 
@@ -127,7 +128,7 @@ zenarioA.infoBox = function() {
 	var html,
 		moduleClassName = 'zenario_common_features',
 		requests = {infoBox: 1},
-		url = URLBasePath + 'zenario/ajax.php?__pluginClassName__=' + moduleClassName + '&method_call=handleAJAX' + zenario.urlRequest(requests);
+		url = zenario.ajaxURL('handleAJAX', moduleClassName) + zenario.urlRequest(requests);
 	
 	
 	zenarioA.showAJAXLoader();
@@ -475,7 +476,7 @@ zenarioA.clickOtherTutorialVideo = function(id, title, index) {
 
 zenarioA.toggleShowHelpTourNextTime = function() {
 	var val = $('#zenario_show_help_tour_next_time').prop('checked') ? 1 : 0,
-		url = URLBasePath + 'zenario/admin/quick_ajax.php?_show_help_tour_next_time=' + val;
+		url = URLBasePath + 'zenario/admin/quick_ajax.php?_cms_showHelpTourNextTime=' + val;
 	zenario.ajax(url);
 };
 
@@ -496,14 +497,14 @@ zenarioA.getItemFromOrganizer = function(path, id, async, request) {
 		first = false,
 		url =
 			URLBasePath +
-			'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=' + encodeURIComponent(path.path);
+			'zenario/admin/organizer.ajax.php?_cms_start=0&_get_item_name=1&path=' + encodeURIComponent(path.path);
 	
 	if (defined(request)) {
 		url += zenario.urlRequest(request);
 	}
 	
 	if (defined(id)) {
-		url += '&_item=';
+		url += '&_cms_selectedID=';
 		
 		if (typeof id == 'object') {
 			foreach (id as i) {
@@ -515,7 +516,7 @@ zenarioA.getItemFromOrganizer = function(path, id, async, request) {
 				url += encodeURIComponent(id[i]);
 			}
 		} else {
-			url += encodeURIComponent(id) + '&_limit=1';
+			url += encodeURIComponent(id) + '&_cms_limit=1';
 		}
 	}
 	
@@ -637,6 +638,25 @@ zenarioA.toggleShowEmptySlots = function(show, displayToastMessage) {
 	}
 };
 
+
+zenarioA.toggleShowLinkStatus = function(show) {
+	zenarioA.showLinkStatusOn = show;
+	
+	if (show) {
+		//Re-scan for any new links
+		zenarioA.scanHyperlinksAndDisplayStatus();
+		
+		$(document.body).addClass('zenario_show_link_status');
+	} else {
+		$(document.body).removeClass('zenario_show_link_status');
+	}
+
+	//Save the preference
+	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?_cms_saveLinkStatusPref=1', {show_link_status: show ? 1 : 0}, true);
+
+	zenarioAT.clickTab(zenarioA.toolbar);
+};
+
 zenarioA.checkSpecificPerms = function(id) {
 	
 	if (!zenarioA.adminHasSpecificPerms) {
@@ -649,7 +669,7 @@ zenarioA.checkSpecificPerms = function(id) {
 		if (!zenarioO.tuix
 		 || !zenarioO.tuix.items
 		 || !zenarioO.tuix.items[id]
-		 || !zenarioO.tuix.items[id]._specific_perms) {
+		 || !zenarioO.tuix.items[id]._cms_hasSpecificPerms) {
 			return false;
 		}
 	}
@@ -1280,7 +1300,11 @@ zenarioA.pickNewPlugin = function(el, slotName, level, isNest, preselectCurrentC
 			path += instanceId;
 		}
 	} else {
-		path = 'zenario__library/panels/modules/refiners/slotable_only////';
+		if (level == 1) {
+			path = 'zenario__library/panels/modules/refiners/plugins_slotable_into_content_items////';
+		} else {
+			path = 'zenario__library/panels/modules/refiners/plugins_slotable_into_layouts////';
+		}
 		chooseButtonPhrase = phrase.insertPlugin;
 	
 		//Select the existing module and plugin if possible
@@ -2442,8 +2466,8 @@ zenarioA.enableDragDropUploadInTinyMCE = function(enableImages, prefix, el) {
 			var url = URLBasePath + 'zenario/ajax.php',
 				request = {
 					method_call: 'handleOrganizerPanelAJAX',
-					__pluginClassName__: 'zenario_common_features',
-					__path__: 'zenario__library/panels/image_library',
+					_cms_class: 'zenario_common_features',
+					path: 'zenario__library/panels/image_library',
 					upload: 1};
 			
 			zenarioT.setHTML5UploadFromDragDrop(
@@ -2731,7 +2755,7 @@ zenarioA.showPagePreview = function(width, height, description, id) {
 		preloading: false,
 		open: true,
 		title: title,
-		href: URLBasePath + 'index.php?cID=' + id + '&_show_page_preview=1',
+		href: URLBasePath + 'index.php?cID=' + id + '&_cms_showPagePreview=1',
 		className: 'zenario_admin_cb zenario_page_preview_colorbox'
 	});
 };
@@ -3257,7 +3281,7 @@ zenarioA.showSourceFiles = function(globalName, orgMap, doIt, editor) {
 			tuix = lib.tuix;
 		}
 		
-		if (source = tuix && tuix.__source_files) {
+		if (source = tuix && tuix._cms_sourceFileList) {
 		
 			if (!_.isEmpty(source.paths)) {
 			
@@ -3542,9 +3566,9 @@ zenarioA.savePageMode = function(async, data) {
 	if (!data) {
 		data = {};
 	}
-	data._save_page_mode = zenarioA.pageMode;
-	data._save_page_toolbar = zenarioA.toolbar;
-	data._save_page_show_grid = zenarioA.showGridOn? 1 : '';
+	data._cms_savePageMode = zenarioA.pageMode;
+	data._cms_saveToolbar = zenarioA.toolbar;
+	data._cms_saveGridPref = zenarioA.showGridOn? 1 : '';
 	
 	$.ajax({
 		type: 'POST',
@@ -3556,8 +3580,8 @@ zenarioA.savePageMode = function(async, data) {
 
 zenarioA.draftSetCallback = function(aId) {
 	zenarioA.savePageMode(false, {
-		_draft_set_callback: aId,
-		_scroll_pos: zenario.scrollTop()
+		_cms_setCallback: aId,
+		_cms_scrollPos: zenario.scrollTop()
 	});
 };
 
@@ -3575,8 +3599,8 @@ zenarioA.draftDoCallback = function(aId, scrollPos) {
 
 zenarioA.toggleAdminToolbar = function(hide) {
 	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php', {
-		_toggleAdminToolbar: 1,
-		_hide: hide? 1 : ''
+		_cms_toggleAdminToolbar: 1,
+		hide: hide? 1 : ''
 	}).after(function() {
 		zenarioA.reloadPage();
 	});
@@ -3805,82 +3829,101 @@ zenarioA.checkCookiesEnabled = function() {
 	return cb;
 };
 
+//Try and get a list of all the links on a page
+zenarioA.scanLinksOnPage = function(links, $links, appendedElement, containerId, makeURLsUnfriendly) {
+	
+    var isAbsolutePath = new RegExp('^(?:[a-z]+:)?//', 'i'),
+        query =
+        	'x-zenario-admin-slot-wrapper:not(.zenario_slot_being_edited) div' + (!defined(containerId)? '' : '#' + containerId) + '.zenario_slot a[href][href!="#"]';
+
+    $(query).not('.pag_pagination a, .nest_tabs a, .nest_buttons a, .sorted_buttons a, .buttons a, .zfea_buttons a, a.prev, a.next').each(function(ei, el) {
+    	
+        var relativePath, match, resolvedURL, requestURI, index,
+        	$el = $(el),
+        	url = $el.prop('href');
+        
+        //Double check that this is actually a link with a hyperlink, and not an <a> tag used for something else
+        if (!url) {
+        	return;
+        }
+        
+		//Don't include "mailto:" links.
+		if (url.includes("mailto:"))  {
+        	return;
+		}
+		
+		//Check if this link is internal and get the relative link
+		if (!isAbsolutePath.test(url)) {
+			relativePath = url;
+		} else if (url.indexOf(URLBasePath) === 0) {
+			relativePath = url.substr(URLBasePath.length - 1);
+		}
+		
+		if (!relativePath) {
+			return;
+		}
+		
+		//We don't want a memory leak where we keep repeatedly appending the same element to our links.
+		//If this call to zenarioA.scanLinksOnPage() will be for appending something to a link, have the
+		//option to check if it's already there and exclude this link if so.
+		if (appendedElement && $el.children(appendedElement).length) {
+			return;
+		}
+		
+		//Make sure link is to a content item (following .htaccess rules for aliases)
+		//and not a link to something like the admin login or Organizer.
+		requestURI = relativePath.split('?')[0].split('#')[0];
+		
+		if (requestURI.match(/\/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)\//)
+		 || requestURI.match(/\/(admin|organizer)\.php/)) {
+			return;
+		}
+		
+		//Have an option to take any friendly URL we see and try and convert it to remove the mod-rewrite logic.
+		//This is needed to let the ze\content::resolveFromRequest() function read it.
+		if (makeURLsUnfriendly && (match = requestURI.match(/^([\/,A-Za-z0-9~_-]+)(|\.htm|\.html|\.download|download=1)$/))) {
+			resolvedURL = '/?cID=' + match[1];
+		} else {
+			resolvedURL = relativePath;
+		}
+		
+		//Store this link and a reference of its jquery object
+		if ((index = links.indexOf(resolvedURL)) === -1) {
+			links.push(resolvedURL);
+			$links.push([$el]);
+		} else {
+			$links[index].push($el);
+		}
+    });
+};
+
 //Check all hyperlinks on the page and add its status
 zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
+
+    //Don't scan if link status is turned off
+    if (!zenarioA.showLinkStatusOn) {
+        return;
+    }
+
+    var post = {},
+        ajaxURL = URLBasePath + 'zenario/admin/quick_ajax.php?_cms_fetchLinkStatus=1',
+        links = [], $links = [];
     
-    var url, relativePath, i, j, match, resolvedURL, requestURI, index, editor,
-        post = {},
-        ajaxURL = URLBasePath + 'zenario/admin/quick_ajax.php?_get_link_statuses=1',
-        links = [], $links = [],
-        isAbsolutePath = new RegExp('^(?:[a-z]+:)?//', 'i'),
-        query = 'x-zenario-admin-slot-wrapper:not(.zenario_slot_being_edited) div' + (!defined(containerId)? '' : '#' + containerId) + '.zenario_slot a[href][href!="#"]';
-    
-    $(query).each(function(ei, el) {
-        
-        var $el = $(el);
-        
-        if (url = $el.prop('href')) {
-            relativePath = false;
-            
-            //Check if this link is internal and get the relative link
-            if (!isAbsolutePath.test(url)) {
-                relativePath = url;
-            } else if (url.indexOf(URLBasePath) === 0) {
-                relativePath = url.substr(URLBasePath.length - 1);
-            }
-            
-            if (relativePath) {
-                //Make sure link is to a content item (following .htaccess rules for aliases)
-                //and not a link to something like the admin login or Organizer.
-                requestURI = relativePath.split('?')[0].split('#')[0];
-                
-                if (!requestURI.match(/\/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)\//)
-                 && !requestURI.match(/\/(admin|organizer)\.php/)) {
-                    if (match = requestURI.match(/^([\/,A-Za-z0-9~_-]+)(|\.htm|\.html|\.download|download=1)$/)) {
-                        resolvedURL = '/?cID=' + match[1];
-                    } else {
-                        resolvedURL = relativePath;
-                    }
-                    
-                    //Store this link and a reference of its jquery object
-                    if ((index = links.indexOf(resolvedURL)) === -1) {
-                        links.push(resolvedURL);
-                        $links.push([$el]);
-                    } else {
-                        $links[index].push($el);
-                    }
-                }
-            }
-        }
-    });
+    zenarioA.scanLinksOnPage(links, $links, 'x-zenario-link-status', containerId, true);
     
     //Get statuses of content items and append status identifiers
     post.links = links;
     zenario.ajax(ajaxURL, post, true, true).after(function(statuses) {
+    	
+	    var i, j, $link, el;
+	    
         for (i = 0; i < statuses.length; ++i) {
             for (j = 0; j < $links[i].length; ++j) {
             	
-            	//Don't show a status triangle where the target page is this page,
-            	//or on "mailto:" links.
-            	if (!$links[i][j][0].href.includes("mailto:")
-            		&& (
-						$links[i][j][0].pathname != document.location.pathname
-						|| (
-							(
-								$links[i][j][0].offsetParent
-								&& $links[i][j][0].offsetParent.classList
-								&& $links[i][j][0].offsetParent.classList.contains("zenario_menu_node")
-							)
-							|| (
-								$links[i][j][0].parentNode
-								&& $links[i][j][0].parentNode.classList
-								&& $links[i][j][0].parentNode.classList.contains("zenario_menu_node")
-							)
-						)
-            		)
-            	) {
-                	zenarioA.addLinkStatus($links[i][j], statuses[i]);
-                }
+            	$link = $links[i][j];
+            	el = $link[0];
+            	
+            	zenarioA.addLinkStatus($link, statuses[i]);
             }
         }
 		
@@ -3900,10 +3943,10 @@ zenarioA.addLinkStatus = function($el, status) {
     	msg = phrase[code],
     	thisId = 'zenario_link_status__' + ++lsCount;
     
-    $el.append(_$html('del', 'class', 'zenario_link_status zenario_' + code, 'id', thisId, _$html('del')));
+    $el.append(_$html('x-zenario-link-status', 'class', 'zenario_' + code, 'id', thisId, _$html('x-zenario-status-icon')));
     
     if (msg) {
-    	zenarioA.tooltips('#' + thisId + ' > del', {content: msg, items: '*'});
+    	zenarioA.tooltips('#' + thisId + ' > x-zenario-status-icon', {content: msg, items: '*'});
 	}
 };
 
@@ -3922,24 +3965,25 @@ var missingSlotsToast;
 zenarioA.init = function(
 	cVersion,
 	adminId,
-	
+
 	includeAdminToolbar,
 	toolbar,
 	pageMode,
-	
+
 	minPasswordLength,
 	minPasswordScore,
-	
+
 	showEmptySlotsOn,
 	showGridOn,
+	showLinkStatusOn,
 	siteSettings,
 	adminSettings,
 	adminPrivs,
-	
+
 	importantGetRequests,
 	adminHasSpecificPerms,
 	adminHasSpecificPermsOnThisPage,
-	
+
 	lang,
 	draftMessage
 ) {
@@ -3959,8 +4003,14 @@ zenarioA.init = function(
 		zenarioA.showEmptySlotsOn = true;
 		$(document.body).addClass('zenario_show_empty_slots_and_mobile_only_slots');
 	}
-	
+
 	zenarioA.showGridOn = showGridOn;
+
+	if (showLinkStatusOn) {
+		zenarioA.showLinkStatusOn = true;
+		$(document.body).addClass('zenario_show_link_status');
+	}
+
 	zenarioA.siteSettings = siteSettings;
 	zenarioA.adminSettings = adminSettings;
 	zenarioA.adminPrivs = adminPrivs;

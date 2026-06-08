@@ -15,8 +15,6 @@ keywords: user
 # latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_users
 is_pluggable: false
-default_framework: standard
-default_instance_name: Untitled User
 
 # Warning: adding a new dependency to an existing module will break any existing sites
 # where the dependency is not running.

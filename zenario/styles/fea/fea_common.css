@@ -65,12 +65,50 @@ table .nowrap {
 	white-space: nowrap;
 }
 
+table .aligncenter {
+	text-align: center;
+}
+
+table .alignright {
+	text-align: right;
+}
+
+.zenario_slot:not(.zenario_comments) .zfea input[type="button"] {
+	min-width:0;
+}
+
+.zfea_list_search_sort_wrapper {
+	display: inline-block;
+  	width: 78%;
+}
+
+.zfea_list_search_sort_wrapper + .zfea_at_top {
+	width:20%;
+}
+
+.zfea_list_search_sort_wrapper + .zfea_table_list_wrap,
+.zfea_list_search_sort_wrapper + .zfea_at_top + .zfea_table_list_wrap,
+.zfea_top_buttons + .zfea_i_and_p.zfea_at_top + .zfea_table_list_wrap {
+	display: inline-block;
+  	width: 100%;
+}
+
+.zfea_list_search_sort_wrapper + .zfea_i_and_p.zfea_at_top {
+	padding-top:10px;
+}
+
+.zfea_i_and_p.zfea_item_count_wrap {
+	font-size:0.9em;
+	color:#000;
+}
+
 /* Form
 --------------------------------------------------------------------------------------------------*/
 
 .zenario_skin .zenario_textbox_with_autocomplete {
 	display:inline-block;
 	overflow:hidden;
+	width:100%;
 }
 
 .zenario_skin .zenario_textbox_with_autocomplete input[type="text"] {
@@ -90,6 +128,10 @@ table .nowrap {
 	border-bottom-left-radius: 0;
 }
 
+.zenario_skin div[class*="fea"] .zenario_textbox_with_autocomplete input[type="button"] {
+	height:42px;
+}
+
 .zenario_skin .zenario_textbox_with_autocomplete input[type="text"],
 .zenario_skin .zenario_textbox_with_autocomplete input[type="button"] {
 	float:left;
@@ -98,6 +140,13 @@ table .nowrap {
 .zfea_form_row .zenario_textbox_with_autocomplete ul.ui-menu {
 	max-height:40vh;
 	overflow-y: auto;
+	overflow-x: hidden;
+	padding:0;
+	margin:0;
+}
+
+.zfea_form_row .zenario_textbox_with_autocomplete ul.ui-menu .ui-menu-item-wrapper {
+	padding:3px 12px 3px 12px;
 }
 
 /* Tables
@@ -534,6 +583,11 @@ table tr td div.col_child_value.col_value_for__as_of {
 	margin-top:10px;
 }
 
+.block_after_field {
+	display: inline-block;
+	padding: 0;
+}
+
 /* Common styles, date picker
 --------------------------------------------------------------------------------------------------*/
 
@@ -728,7 +782,6 @@ table tr td div.col_child_value.col_value_for__as_of {
 
 .zfea_form_row {
 	padding-bottom:10px;
-	overflow:hidden;
 	clear:both;
 }
 
@@ -1317,7 +1370,6 @@ table.table_list tr th.zfea_col_sorted {
 
 .zenario_skin .zfea .search_form {
 	overflow:hidden;
-	display:inline;
 }
 
 .zenario_skin .zfea .search_form,
@@ -1335,6 +1387,7 @@ table.table_list tr th.zfea_col_sorted {
 
 .zenario_skin .zfea .search_form input[type="search"],
 .zenario_skin .zfea .search_form input.search_term {
+	width:calc(100% - 57px);
 	max-width:600px;
 	padding:0 0 0 15px;
 	line-height:36px;
@@ -2548,7 +2601,8 @@ body.mobile .zfea_search_buttons {
 }
 
 .modal_window .confirm_warning,
-.zfea.confirm_warning .messageDisplay div {
+.zfea.confirm_warning .messageDisplay div,
+.modal_window .warning {
 	background:url("../images/icon-warning-triangle.svg") no-repeat scroll 0 0 / 47px 40px;
     min-height: 40px;
     padding: 5px 0 0 60px;
@@ -2564,6 +2618,13 @@ body.mobile .zfea_search_buttons {
 .zfea .message_in_form .warning {
 	display: inline-block;
     width: auto;
+}
+
+.modal_window.zfea .warning {
+	min-height: 20px;
+	background-size:20px;
+	padding:0 0 0 40px;
+	color:#000;
 }
 
 
@@ -3597,6 +3658,11 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 #colorbox .zfea_confirm_question .zfea_colorbox_body {
 	min-height:40px;
 	padding:5px 0 0 60px;
+}
+
+#colorbox.zfea_colorbox_content .zfea_confirm,
+#colorbox.zfea_colorbox_content .zfea_confirm_warning {
+	min-width:350px;
 }
 
 #colorbox .zfea_confirm_warning .zfea_colorbox_body {
@@ -4740,4 +4806,9 @@ body.mobile .zenario_videos_fea .zfea_zenario_list_videos .column_image .field_v
 .zenario_skin .onoffswitch-label,
 .zenario_skin .onoffswitch-switch {
 	border:1px solid #687780;
+}
+
+/*	A hack to force tooltips to be visible on Sparkline charts	*/
+td.zfea_col_with_sparkline {
+	overflow: visible !important;
 }

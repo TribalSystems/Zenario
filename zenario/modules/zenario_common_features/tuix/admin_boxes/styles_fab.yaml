@@ -233,12 +233,13 @@ styles_fab_white: &styles_fab
                     label: Image
                     upload:
                         multi: false
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                     pick_items:
@@ -250,12 +251,13 @@ styles_fab_white: &styles_fab
                     label: Multiple images
                     upload:
                         multi: true
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                     pick_items:
@@ -267,12 +269,13 @@ styles_fab_white: &styles_fab
                     label: Multiple, rearrangable images
                     upload:
                         multi: true
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                     pick_items:

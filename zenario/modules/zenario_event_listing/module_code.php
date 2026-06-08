@@ -49,7 +49,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				$periodName = 'all_time';
 				$periodShift = 0;
 				break;
-			case 'year_period';
+			case 'year_period':
 				$periodName = 'year';
 				if ($this->isLastDayOfYear()) {
 					$periodShift = 1;
@@ -81,6 +81,13 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				break;
 		}
 
+		$allowPinnedContent = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => 'event']);
+		
+		$isAdmin = false;
+		if (ze\admin::id()) {
+			$isAdmin = true;
+		}
+		
 		$eventRows = [];
 		if ($sql = $this->buildQuery($periodName, $periodShift)){
 			
@@ -199,7 +206,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 						$datetime['start_date'] = '';
 						$datetime['end_date'] = '';
 						break;
-					case 'show_start_time_only':
+					case 'show_start_date_only':
 						$datetime['start_date'] = $row['start_date'];
 						$datetime['end_date'] = '';
 						break;
@@ -217,13 +224,13 @@ class zenario_event_listing extends ze\moduleBaseClass {
 						$datetime['end_time'] = '';
 						break;
 					case 'show_start_time_only':
-						if ($row['specify_time'] ?? false){
+						if ($row['specify_time'] ?? false) {
 							$datetime['start_time'] = $row['start_time'];
 						}
 						$datetime['end_time'] = '';
 						break;
 					case 'show_start_and_end_time':
-						if ($row['specify_time'] ?? false){
+						if ($row['specify_time'] ?? false) {
 							$datetime['start_time'] = $row['start_time'];
 							
 							if ($row['start_time'] != $row['end_time']) {
@@ -302,6 +309,22 @@ class zenario_event_listing extends ze\moduleBaseClass {
 					$eventRow['start_month_label'] = ze\lang::phrase('_MONTH_LONG_' . $startMonth, []);
 				}
 				
+				if ($allowPinnedContent) {
+					if ($row['pinned']) {
+						$showPinnedIcon = $this->setting('pinned_events_icon');
+						if ($showPinnedIcon == 'show_to_all' || ($showPinnedIcon == 'show_to_admins_only' && $isAdmin)) {
+							$eventRow['Show_Pinned_Icon'] = true;
+						}
+						
+						$showPinnedText = $this->setting('pinned_events_text');
+						if ($showPinnedText == 'show_to_all' || ($showPinnedText == 'show_to_admins_only' && $isAdmin)) {
+							$eventRow['Show_Pinned_Text'] = true;
+							$eventRow['Pinned_Text'] = $this->phrase($this->setting('pinned_events_text_wording'));
+							$eventRow['Pinned_Text_Html_Tag'] = $this->setting('pinned_events_text_html_tag');
+						}
+					}
+				}
+				
 				if ( ($this->cType != 'event' || $eventRow['equiv_id'] != ze\content::equivId($this->cID, $this->cType))  && (!isset($eventRows[$eventRow['equiv_id']]) || ($eventRows[$eventRow['equiv_id']]['language_id'] != ze::$langId)) ){
 					$eventRows[$eventRow['equiv_id']] = $eventRow;
 				}
@@ -325,7 +348,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 		
 		if ($eventRows) {
 			if ($this->setting('show_pagination') && count($pages) > 1) {
-				$this->pagination('pagination_style', $this->page, $pages, $this->data['Pagination']);
+				$this->pagination($this->page, $pages, $this->data['Pagination']);
 			}
 			
 			if ($this->setting('make_event_elements_equal_height')) {
@@ -364,16 +387,16 @@ class zenario_event_listing extends ze\moduleBaseClass {
 		return true;
 	}
 
-	public function showSlot(){
+	public function showSlot() {
 		$this->twigFramework($this->data);
 	}
 
-	protected function displayForAsSQLDateString(){
+	protected function displayForAsSQLDateString() {
 		return "NOW()";
 		//return "'2010-01-01'";
 	}
 
-	protected function isLastDayOfWeek(){
+	protected function isLastDayOfWeek() {
 		$sql = "SELECT DAYOFWEEK( " .   $this->displayForAsSQLDateString() . " ) as dow";
 		$result = ze\sql::select($sql);
 		if ($row=ze\sql::fetchAssoc($result)){
@@ -383,7 +406,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 		}
 	}
 	
-	protected function isLastDayOfMonth(){
+	protected function isLastDayOfMonth() {
 		$sql = "SELECT DAYOFMONTH(DATE_ADD( " .   $this->displayForAsSQLDateString() . " ,INTERVAL 1 DAY)) as dom";
 		$result = ze\sql::select($sql);
 		if ($row=ze\sql::fetchAssoc($result)){
@@ -393,7 +416,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 		}
 	}
 	
-	protected function isLastDayOfYear(){
+	protected function isLastDayOfYear() {
 		$sql = "SELECT DAYOFYEAR(DATE_ADD( " .   $this->displayForAsSQLDateString() . " ,INTERVAL 1 DAY)) as doy";
 		$result = ze\sql::select($sql);
 		if ($row=ze\sql::fetchAssoc($result)){
@@ -403,7 +426,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 		}
 	}
 
-	protected function getDayNumber($date){
+	protected function getDayNumber($date) {
 		$sql = "SELECT TO_DAYS('" . ze\escape::sql($date) . "') AS day_no";
 		$result = ze\sql::select($sql);
 		if ($row=ze\sql::fetchAssoc($result)){
@@ -413,7 +436,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 		}
 	}
 
-	protected function expandPeriodAsSQLSafeArray($periodBegin,$periodEnd,$periodName){
+	protected function expandPeriodAsSQLSafeArray($periodBegin,$periodEnd,$periodName) {
 		
 		$rv=[];
 		if (($startDay= $this->getDayNumber($periodBegin)) && ($endDay= $this->getDayNumber($periodEnd)) && ($startDay<=$endDay) ) {
@@ -617,6 +640,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 								v.title,
 								v.content_summary,
 								v.feature_image_id,
+								v.pinned,
 								c.equiv_id,
 								c.type,
 								c.language_id,
@@ -754,7 +778,6 @@ class zenario_event_listing extends ze\moduleBaseClass {
 					$values['first_tab/period_end_date'] = gmdate('Y-m-d', strtotime($values['first_tab/period_start_date'] . ' + 2 years UTC'));
 				}
 				
-				$fields['pagination/pagination_style']['values'] = ze\pluginAdm::paginationOptions();
 				break;
 		}
 	}
@@ -780,9 +803,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				$fields['first_tab/past']['hidden'] = 
 					in_array($values['first_tab/period_mode'], ['today_only', 'date_range']);
 				
-				$fields['pagination/page_limit']['hidden'] = 
-				$fields['pagination/pagination_style']['hidden'] = 
-					!$values['pagination/show_pagination'];
+				$fields['pagination/page_limit']['hidden'] = !$values['pagination/show_pagination'];
 
 				$fields['overall_list/heading_text']['hidden'] =
 					$values['overall_list/heading'] != 'show_heading';

@@ -97,7 +97,7 @@ class zenario_pro_features__admin_boxes__trash extends ze\moduleBaseClass {
 						$targetTagId = $values['trash/hyperlink_target__' . $i];
 						if ($targetTagId) {
 							$cID = $cType = false;
-							ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+							ze\content::getCIDAndCTypeFromTagId($cID, $cType, $targetTagId);
 							$values['trash/redirect_target_url__' . $i] = ze\link::toItemWithAlias($targetTagId, $cType, true);
 						}
 					} elseif ($values['trash/target_loc__' . $i] == 'ext') {

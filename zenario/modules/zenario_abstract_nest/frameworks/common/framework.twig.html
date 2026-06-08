@@ -80,8 +80,36 @@
 		<div class="nest_plugins_wrap">
 			{% for Tab in Tabs %}
 				{% if Tab.Plugins %}
-					{% if Tab.Show_Back or Tab.Show_Refresh %}
+					{% if Tab.Show_Exit or Tab.Show_Back_To_1st or Tab.Show_Back or Tab.Show_Refresh %}
 						<div class="nest_buttons">
+							{% if Tab.Show_Exit %}
+								<a
+									class="nest_exit"
+									href="{{Tab.Exit_Link|escape}}"
+								>
+									<span class="label">
+										<i class="fa-solid fa-grip" aria-hidden="true"></i>
+										{{this.phraseFromSetting('exit_text')|escape}}
+									</span>
+								</a>
+							{% endif %}
+							
+							{% if Tab.Show_Back_To_1st %}
+								{% set command = Tab.Back_To_1st_Command %}
+								{% if this.cCommandEnabled(command) %}
+									<a
+										class="nest_back_to_1st"
+										href="{{this.cLink(command)|escape}}"
+										onclick="zenario_conductor.exit('{{slotName|escape}}', '{{command|escape}}'); return false;"
+									>
+										<span class="label">
+											<i class="fa-solid fa-xmark" aria-hidden="true"></i>
+											{{this.phrase('Back to first slide')|escape}}
+										</span>
+									</a>
+								{% endif %}
+							{% endif %}
+							
 							{% if Tab.Show_Back %}
 								{% if this.cCommandEnabled('back') %}
 									<a
@@ -89,8 +117,11 @@
 										href="{{this.cBackLink()|escape}}"
 										onclick="zenario_conductor.goBack('{{slotName|escape}}', {{this.setting('restore_scroll_pos')? 1 : 0}}); return false;"
 									>
-									<i class="fa fa-caret-left" aria-hidden="true"></i>
-									{{this.phrase('Back')}}</a>
+										<span class="label">
+											<i class="fa fa-caret-left" aria-hidden="true"></i>
+											{{this.phrase('Back')|escape}}
+										</span>
+									</a>
 								{% endif %}
 							{% endif %}
 							

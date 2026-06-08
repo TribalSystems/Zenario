@@ -23,7 +23,7 @@ common_definitions:
         description: >
             This controls the order in which elements are drawn on the screen.
             
-            If not set, it defaults to the order the CMS finds them in.
+            If not set, it defaults to the order Zenario finds them in.
             
             From version 10.1 onwards, we have some logic where you can place a field or a button
             immediately before or after an existing field or button using an offset.
@@ -66,13 +66,9 @@ common_definitions:
         description: >
             A snippet of JavaScript code to be evaluated.
             
-            From version 7.5 onwards, to avoid using an inefficent eval(), you can also call a function
-            by using an object of the form:
-                lib.methodName => arg1, arg2, arg3, ...
+            The format is the same as the visible_if property.
             
             If the code provided evaluates to <code>true</code> the button will be disabled.
-            
-            See https://zenar.io/visibility-in-tuix for examples.
 
 
 $schema: 'http://json-schema.org/draft-04/schema#'
@@ -289,7 +285,7 @@ additionalProperties:
                         html_description: |
                             <p>You can set errors&nbsp;using your <code>validateAdminBox()</code> method to show that there are errors on a tab.</p>
                             <p>If edit mode is enabled for a tab, an Admin will not be able to leave that tab or save the form whilst there are errors on that tab.</p>
-                            <p>The CMS will automatically initialise the <code>errors</code> property to an empty array each time the tab is validated. This means that any errors from a previous validation will be cleared and must be re-added if the error is still present.</p>
+                            <p>Zenario will automatically initialise the <code>errors</code> property to an empty array each time the tab is validated. This means that any errors from a previous validation will be cleared and must be re-added if the error is still present.</p>
                         additionalProperties:
                             type: string
                             description: >
@@ -298,7 +294,7 @@ additionalProperties:
                         type: object
                         html_description: |
                             <p>Notices display like errors, but do not have any special functionality.&nbsp;If visible, they are displayed one after the other just below the error messages on a tab.</p>
-                            <p>The CMS never automatically sets or removes them, and a notice will not stop an Admin from leaving a tab or saving.</p>
+                            <p>Zenario never automatically sets or removes them, and a notice will not stop an Admin from leaving a tab or saving.</p>
                         additionalProperties:
                             type: object
                             required:
@@ -337,7 +333,7 @@ additionalProperties:
                     #disable_autofocus:
                     #    type: boolean
                     #    description: >
-                    #        When a tab is displayed/redrawn/formatted, the CMS will try to focus on the
+                    #        When a tab is displayed/redrawn/formatted, Zenario will try to focus on the
                     #        first field on that tab.
                     #        This is usually convenient, but can cause problems for tabs with scrollbars
                     #        as the browser will scroll to show the focused field.
@@ -357,16 +353,16 @@ additionalProperties:
                                 type: boolean
                                 modified_by_cms: true
                                 description: >
-                                    The CMS will automatically set this property when this tab is in edit mode.
+                                    Zenario will automatically set this property when this tab is in edit mode.
                     
+                    # Please see the tuix_form_schema.yaml file for field definitions.
                     # The fields property here will be array_merge_recursive() with the fields property
-                    # from admin_box_schema.yaml by the dev tools when this file is loaded.
+                    # from tuix_form_schema.yaml by the dev tools when this file is loaded.
                     fields:
                         additionalProperties:
                             properties:
                                 confirm: &confirm
                                     type: object
-                                    hide_in_editor: true
                                     description: >
                                         Use this to display a confirmation prompt before performing the button's action.
                                     properties:
@@ -382,6 +378,7 @@ additionalProperties:
                                             type: boolean
                                             description: >
                                                 If this is set, the message will not be html-escaped.
+                                        
                                         button_message:
                                             type: string
                                             description: >
@@ -443,10 +440,47 @@ additionalProperties:
                                                 
                                                 Otherwise items will be displayed in alphabetical order.
                         
+        confirm:
+            type: object
+            description: >
+                Use this property to display a confirmation prompt before saving a FEA form.
+                
+                This works from version 10.4 onwards.
+            properties:
+                show:
+                    type: boolean
+                    description: >
+                        The confirmation will only be shown if this is set.
+                title:
+                    type: string
+                    description: >
+                        A title for the confirmation prompt.
+                message:
+                    type: string
+                    description: >
+                        A message for the confirmation prompt.
+                html:
+                    type: boolean
+                    description: >
+                        If this is set, the message will not be html-escaped.
+                
+                button_message:
+                    type: string
+                    description: >
+                        A message for the confirm button
+                button_css_class:
+                    type: string
+                    description: >
+                        A css class for the confirm button
+                cancel_button_message:
+                    type: string
+                    description: >
+                        A message for the cancel button
         
         
+        # Please see the tuix_form_schema.yaml file for LoV definitions.
         # The lovs property here will be array_merge_recursive() with the lovs property
-        # from admin_box_schema.yaml by the dev tools when this file is loaded.
+        # from tuix_form_schema.yaml by the dev tools when this file is loaded.
         lovs: {}
         
         phrases:
@@ -488,7 +522,26 @@ additionalProperties:
         hide_pagination:
             type: boolean
             description: >
-                Use this to hide the pagination at the bottom of the list
+                Use this to hide the pagination at the bottom of the list.
+        hide_item_count:
+            type: boolean
+            description: >
+                Use this to hide the item count at the top and bottom of the list.
+                This works from version 10.4 onwards.
+        hide_item_count_at_top:
+            type: boolean
+            description: >
+                Use this to hide the item count at the top of the list.
+                This works from version 10.4 onwards.
+        hide_item_count_at_bottom:
+            type: boolean
+            description: >
+                Use this to hide the item count at the bottom of the list.
+                
+                Note: The count at the bottom will be hidden regardless of this setting if there
+                are less than 10 items.
+                
+                This works from version 10.4 onwards.
         
         
         columns:
@@ -654,9 +707,7 @@ additionalProperties:
                             the units of the field.
                     
                     pre_value_microtemplate:
-                        type: object
-                        additionalProperties:
-                            type: string
+                        type: string
                         description: >
                             This allows you to enter a microtemplate (this can either be the code for the template,
                             or the name of a pre-defined template), that will be run on the client
@@ -676,15 +727,29 @@ additionalProperties:
                             
                             This works from version 10.3 onwards.
                     post_value_microtemplate:
-                        type: object
-                        additionalProperties:
-                            type: string
+                        type: string
                         description: >
                             This allows you to enter a microtemplate (this can either be the code for the template,
                             or the name of a pre-defined template), that will be run on the client
                             to display some HTML just after the value of the column.
                             
                             This works from version 10.3 onwards.
+                    
+                    sparkline:
+                        type: object
+                        description: >
+                            Use this to show a Highcharts Sparkline Chart in this column.
+                            
+                            To get the chart working, you need to provide two things.
+                             - This property should be set to an object containing options for the chart.
+                             - The value for this column on each item should be set to another object containing series data for the chart.
+                            
+                            The two objects will be merged together, then merged with some sensible default options,
+                            to provide the config for the chart/graph shown in each row.
+                            
+                            All of these options are documented at https://api.highcharts.com/highcharts/
+                            
+                            This works from version 10.4 onwards.
                     
                     mirror_field:
                         type: object
@@ -1023,7 +1088,6 @@ additionalProperties:
                     
                     ajax: &ajax
                         type: object
-                        hide_in_editor: true
                         description: >
                             Send an AJAX request to your <code>handlePluginAJAX()</code> method.
 
@@ -1318,6 +1382,7 @@ additionalProperties:
                                 type: boolean
                                 description: >
                                     If this is set, the message will not be html-escaped.
+                                
                             multiple_select_title:
                                 type: string
                                 description: >
@@ -1517,53 +1582,88 @@ additionalProperties:
         
         
         
-        __page__:
+        _cms_page:
             type: number
             description: >
-                If pagination is being applied on the server, the CMS will put the current page number
+                If pagination is being applied on the server, Zenario will put the current page number
                 into this variable.
                 
                 This might be different than the page you asked for, e.g. if you ask for page three but
                 there are only two pages.
                 
-        __page_size__:
+        _cms_pageSize:
             type: number
             description: >
-                If pagination is being applied on the server, the CMS will put the page size
+                If pagination is being applied on the server, Zenario will put the page size
                 into this variable.
                 
-        __item_count__:
+        _cms_itemCount:
             type: number
             description: >
-                The CMS will put the count of the total number of items into this variable.
+                Zenario will put the count of the total number of items into this variable.
                 
                 This includes searches, filters and refiners, but does not include pagination.
                 I.e. it's a count of all of the *matched* rows.
                 
-        __item_sort_order__:
+        _cms_itemSortOrder:
             type:
                 - array
                 - object
             additionalProperties:
                 type: *stringy
             description: >
-                If sorting is being done on the server, the CMS will put an array of ids
+                If sorting is being done on the server, Zenario will put an array of ids
                 (sorted into the correct order) into this variable.
         
-        
-        
-        
-
-        js:
+        js_before_first_load:
             type:
                 - string
                 - object
             description: >
-                Runs some JavaScript code before the FEA is displayed or redisplayed,
-                or before any the navigation logic is followed if you're about to navigate away
-                using the go property.
+                Runs some JavaScript code just before the FEA or form is first displayed.
                 
                 The format is the same as the visible_if property.
+                
+                This works from version 10.4 onwards.
+        js_on_first_load:
+            type:
+                - string
+                - object
+            description: >
+                Runs some JavaScript code just after the FEA or form is first displayed.
+                
+                The format is the same as the visible_if property.
+                
+                This works from version 10.4 onwards.
+        js_on_reformat:
+            type:
+                - string
+                - object
+            description: >
+                Runs some JavaScript code after the form is reformatted/redrawn.
+                e.g. due to the format_onchange or validate_onchange property being placed on a field.
+                
+                This also triggers if the user tries to save but the form wasn't saved due to it
+                failing validation.
+                
+                Important note: the code will be run every time the form is reformatted/redrawn.
+                If you don't want this to happen, you need to unset() this the next time your
+                formatVisitorTUIX() method is called.
+                
+                The format is the same as the visible_if property.
+                
+                This works from version 10.4 onwards.
+        js_on_save:
+            type:
+                - string
+                - object
+            description: >
+                Runs some JavaScript code after the form has saved and the user is about to navigate away
+                because you have just set either the go or close_popout property.
+                
+                The format is the same as the visible_if property.
+                
+                This works from version 10.4 onwards.
         
         close_popout:
             type: boolean

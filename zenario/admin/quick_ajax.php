@@ -34,29 +34,29 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	//from timing out
 
 
-} elseif (isset($_POST['_draft_set_callback'])) {
+} elseif (isset($_POST['_cms_setCallback'])) {
 	
-	$_SESSION['zenario_draft_callback'] = $_POST['_draft_set_callback'];
-	$_SESSION['zenario_draft_callback_scroll_pos'] = $_POST['_scroll_pos'] ?? 0;
-	$_SESSION['page_toolbar'] = $_POST['_save_page_toolbar'] ?? '';
-	$_SESSION['page_mode'] = $_POST['_save_page_mode'] ?? '';
+	$_SESSION['zenario_draft_callback'] = $_POST['_cms_setCallback'];
+	$_SESSION['zenario_draft_callback_scroll_pos'] = $_POST['_cms_scrollPos'] ?? 0;
+	$_SESSION['page_toolbar'] = $_POST['_cms_saveToolbar'] ?? '';
+	$_SESSION['page_mode'] = $_POST['_cms_savePageMode'] ?? '';
 
 
-} elseif (isset($_POST['_save_page_mode'])) {
+} elseif (isset($_POST['_cms_savePageMode'])) {
 	
-	$_SESSION['page_toolbar'] = $_POST['_save_page_toolbar'];
-	$_SESSION['page_mode'] = $_POST['_save_page_mode'];
+	$_SESSION['page_toolbar'] = $_POST['_cms_saveToolbar'];
+	$_SESSION['page_mode'] = $_POST['_cms_savePageMode'];
 
 
-} elseif (isset($_POST['_toggleAdminToolbar'])) {
-	
+} elseif (isset($_POST['_cms_toggleAdminToolbar'])) {
+
 	$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
-	
-	if (empty($_POST['_hide'])) {
+
+	if (empty($_POST['hide'])) {
 		unset($_SESSION['hide_admin_toolbar']);
 	} else {
 		$_SESSION['hide_admin_toolbar'] = true;
-		
+
 		$_SESSION['_remember_toast'] = json_encode([
 			'message_type' => 'info',
 			'message' => ze\admin::phrase('The admin toolbar is being hidden, click <span class="zenario_icon_to_show_the_admin_toolbar"></span> to restore it.')
@@ -64,7 +64,19 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	}
 
 
-} elseif (isset($_REQUEST['_get_link_statuses'])) {
+} elseif (isset($_REQUEST['_cms_saveLinkStatusPref'])) {
+
+	ze\db::loadSiteConfig();
+	ze\priv::exitIfNot();
+
+	if (!empty($_POST['show_link_status'])) {
+		$_SESSION['admin_show_link_status'] = true;
+	} else {
+		$_SESSION['admin_show_link_status'] = false;
+	}
+
+
+} elseif (isset($_REQUEST['_cms_fetchLinkStatus'])) {
     $statuses = [];
     if (isset($_POST['links']) && ($links = $_POST['links'])) {
         
@@ -249,14 +261,14 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 
 
 //Check, load or save an admin's Storekeeper preferences
-} elseif (!empty($_REQUEST['_manage_prefs'])) {
+} elseif (!empty($_REQUEST['_cms_managePrefs'])) {
 	
 	
 	
 	ze\db::connectLocal();
 	
 	if (ze::isAdmin()) {
-		if (!empty($_POST['_save_prefs']) && !empty($_POST['prefs'])) {
+		if (!empty($_POST['_cms_savePrefs']) && !empty($_POST['prefs'])) {
 			$sql = "
 				REPLACE INTO ". DB_PREFIX. "admin_organizer_prefs SET
 					prefs = '". ze\escape::sql($_POST['prefs']). "',
@@ -265,10 +277,10 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 			ze\sql::update($sql);
 		
 		} else {
-			if (!empty($_REQUEST['_get_checksum'])) {
+			if (!empty($_REQUEST['_cms_fetchChecksum'])) {
 				$sql = "SELECT checksum";
 			
-			} elseif (!empty($_REQUEST['_load_prefs'])) {
+			} elseif (!empty($_REQUEST['_cms_loadPrefs'])) {
 				$sql = "SELECT prefs";
 			
 			} else {
@@ -313,7 +325,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	echo $suggestedScreenName;
 
 
-} elseif (isset($_POST['_validate_alias'])) {
+} elseif (isset($_POST['_cms_validate_alias'])) {
 	
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	
@@ -425,9 +437,9 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	
 	echo json_encode($lines);
 
-} elseif (isset($_REQUEST['_show_help_tour_next_time'])) {
+} elseif (isset($_REQUEST['_cms_showHelpTourNextTime'])) {
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
-	ze\admin::setSetting('show_help_tour_next_time', (bool) $_REQUEST['_show_help_tour_next_time']);
+	ze\admin::setSetting('show_help_tour_next_time', (bool) $_REQUEST['_cms_showHelpTourNextTime']);
 }
 
 

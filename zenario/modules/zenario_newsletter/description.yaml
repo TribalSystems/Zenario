@@ -7,9 +7,8 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Newsletter
 description: |
-            <p>Design and send HTML Newsletters to extranet users and contacts.</p>
-            <p>You can create an HTML formatted newsletter using the usual Zenario WYSIWYG editor.</p>
-            <p>You can choose from a number of pre-formatted emails (you'll find these in your Email Templates), or design your own.</p>
+            <p>Design and send email newsletters to contacts and extranet users.</p>
+            <p>You can choose from a number of pre-formatted email templates, or design your own. You can use the usual WYSIWYG editor to make newsletters look good.</p>
             <p>It's possible to preview the newsletter on-screen when editing, and there is a "Send test" button to send a test email to yourself or your colleagues.</p>
             <p>When the content is complete, you can select the recipients, these being defined via a smart group, of extranet users and/or contacts.</p>
             <p>Press the "Live send" button to send the newsletter. Once started, you can check progress, and see which recipients have opened the email.</p>

@@ -162,6 +162,28 @@ methods.defaultDatePickerFormat = function() {
 	return zenario.dpf;
 };
 
+//Standard function for reading a message from a confirm object.
+methods.messageHTML = function(confirm) {
+	
+	//Not currently implemented, and might scrap this idea:
+	//var message,
+	//	microtemplate = confirm.message_microtemplate;
+	//
+	//if (microtemplate) {
+	//	message = thus.microTemplate(microtemplate, {});
+	//} else {
+	//	message = confirm.message;
+	//}
+	
+	var message = confirm.message;
+	
+	if (!confirm.html) {
+		message = htmlspecialchars(message, true, false, true);
+	}
+	
+	return message;
+};
+
 //zenario.microTemplate = function(template, data, filter, microTemplates, i, preMicroTemplate, postMicroTemplate) {
 methods.microTemplate = function(template, data, filter, preMicroTemplate, postMicroTemplate) {
 	
@@ -712,7 +734,7 @@ methods.drawTabs = function(microTemplate) {
 	
 	foreach (thus.sortedTabs as i => tab) {
 		if (tabTUIX = thus.tuix.tabs[tab]) {
-			if (!(tabTUIX._was_hidden_before = zenarioT.hidden(undefined, thus, undefined, tab, undefined, undefined, undefined, undefined, tabTUIX))) {
+			if (!(tabTUIX._cms_hidden = zenarioT.hidden(undefined, thus, undefined, tab, undefined, undefined, undefined, undefined, tabTUIX))) {
 			
 				//Only allow this tab to be clicked if it looks like there's something on it
 				//Dummy tabs this only exist to be the parents in drop-down menus should not be clickable
@@ -896,20 +918,20 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			forceNewRowForNewGrouping = true;
 		}
 		
-		field._id = fieldId;
-		field._html = thus.drawField(cb, tab, fieldId, field, visibleFieldsOnIndent, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden);
+		field._cms_fieldID = fieldId;
+		field._cms_fieldHTML = thus.drawField(cb, tab, fieldId, field, visibleFieldsOnIndent, hiddenFieldsByIndent, fieldValuesByIndent, scanForHiddenFieldsWithoutDrawingThem, groupingIsHidden);
 		
 		//Don't add completely hidden fields, or if we're just scanning fields and not drawing them
 		if (scanForHiddenFieldsWithoutDrawingThem
 		 || groupingIsHidden
-		 || field._html === false) {
+		 || field._cms_fieldHTML === false) {
 			continue;
 		}
 		
 		thus.drawnSortedFields.push(fieldId);
 		
 		if (forceNewRowForNewGrouping
-		 || field._startNewRow
+		 || field._cms_fieldStartsNewRow
 		 || !data.rows.length) {
 			data.rows.push({fields: [], grouping: groupingField});
 		}
@@ -919,13 +941,13 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		 && groupingField
 		 && (groupingField.legend || groupingField.snippet)) {
 			groupingField = _.extend({grouping: groupingName}, groupingField);
-			groupingField._id = groupingName;
-			groupingField._html = thus.drawField(cb, tab, groupingName, groupingField);
-			groupingField._hideOnOpen = true;
-			groupingField._showOnOpen = true;
+			groupingField._cms_fieldID = groupingName;
+			groupingField._cms_fieldHTML = thus.drawField(cb, tab, groupingName, groupingField);
+			groupingField._cms_hideOnOpen = true;
+			groupingField._cms_showOnOpen = true;
 			
-			groupingField._lastVisibleGrouping = lastVisibleGrouping;
-			groupingField._lastVisibleGroupingField = lastVisibleGroupingField;
+			groupingField._cms_lastVisibleGrouping = lastVisibleGrouping;
+			groupingField._cms_lastVisibleGroupingField = lastVisibleGroupingField;
 			lastVisibleGrouping = groupingName;
 			lastVisibleGroupingField = groupingField;
 			
@@ -942,8 +964,8 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			errorsDrawn = true;
 		}
 		
-		field._lastVisibleGrouping = lastVisibleGrouping;
-		field._lastVisibleGroupingField = lastVisibleGroupingField;
+		field._cms_lastVisibleGrouping = lastVisibleGrouping;
+		field._cms_lastVisibleGroupingField = lastVisibleGroupingField;
 		lastVisibleGrouping = groupingName;
 		lastVisibleGroupingField = groupingField;
 		
@@ -959,8 +981,8 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 	foreach (data.fields as fieldId => field) {
 		if (groupingName = field.grouping) {
 			if (groupingField = groupingsDrawn[groupingName]) {
-				groupingField._hideOnOpen &= field._hideOnOpen;
-				groupingField._showOnOpen &= field._showOnOpen;
+				groupingField._cms_hideOnOpen &= field._cms_hideOnOpen;
+				groupingField._cms_showOnOpen &= field._cms_showOnOpen;
 			}
 		}
 	}
@@ -969,7 +991,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 	if (!scanForHiddenFieldsWithoutDrawingThem) {
 	
 		if (data.rows.length) {
-			data.rows[data.rows.length-1].fields[0]._isLastRow = true;
+			data.rows[data.rows.length-1].fields[0]._cms_fieldIsOnLastRow = true;
 		}
 	
 		if (!errorsDrawn) {
@@ -987,14 +1009,14 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 	
 	foreach (sortedFields as f => fieldId) {
 		
-		delete fields[fieldId]._lastVisibleGroupingField;
-		delete fields[fieldId]._lastVisibleGrouping;
-		delete fields[fieldId]._startNewRow;
-		delete fields[fieldId]._hideOnOpen;
-		delete fields[fieldId]._showOnOpen;
-		delete fields[fieldId]._isLastRow;
-		delete fields[fieldId]._html;
-		delete fields[fieldId]._id;
+		delete fields[fieldId]._cms_lastVisibleGroupingField;
+		delete fields[fieldId]._cms_lastVisibleGrouping;
+		delete fields[fieldId]._cms_fieldStartsNewRow;
+		delete fields[fieldId]._cms_hideOnOpen;
+		delete fields[fieldId]._cms_showOnOpen;
+		delete fields[fieldId]._cms_fieldIsOnLastRow;
+		delete fields[fieldId]._cms_fieldHTML;
+		delete fields[fieldId]._cms_fieldID;
 	}
 	
 	return html;
@@ -1159,10 +1181,10 @@ methods.focusFirstField = function() {
 		if ((domField = thus.get(fieldId))
 		 && (field = thus.field(fieldId))) {
 			
-			//The drawField() function will set the "_was_hidden_before" property on a field if it doesn't
+			//The drawField() function will set the "_cms_hidden" property on a field if it doesn't
 			//draw it due to a visibility rule.
 			//Don't try to focus fields we didn't actually draw
-			if (field._was_hidden_before) {
+			if (field._cms_hidden) {
 				continue;
 			}
 			
@@ -1318,9 +1340,9 @@ methods.checkValues = function(wipeValues) {
 						}
 					
 						if (field.multiple_edit
-						 && !defined(field.multiple_edit._changed)
+						 && !defined(field.multiple_edit._cms_changed)
 						 && defined(field.multiple_edit.changed)) {
-							field.multiple_edit._changed =
+							field.multiple_edit._cms_changed =
 							field.multiple_edit.changed;
 						}
 					}
@@ -1682,7 +1704,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		} else {
 			newRow = !engToBoolean(field.same_row);
 		}
-		field._startNewRow = newRow;
+		field._cms_fieldStartsNewRow = newRow;
 		
 		//Check if this field should be hidden
 		indent = 1 * field.indent || 0;
@@ -1763,37 +1785,37 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		
 		//Include an animation to show newly unhidden fields
-		if (field._startNewRow
+		if (field._cms_fieldStartsNewRow
 		 && thus.shownTab !== false
 		 && thus.shownTab == thus.tuix.tab
 		 && fieldType != 'editor'
 		 && fieldType != 'code_editor'
-		 && field._was_hidden_before
+		 && field._cms_hidden
 		 && !hidden) {
-			field._showOnOpen = true;
+			field._cms_showOnOpen = true;
 		
 		//Include an animation to hide newly hidden fields
 		} else
-		if (field._startNewRow
+		if (field._cms_fieldStartsNewRow
 		 && thus.shownTab !== false
 		 && thus.shownTab == thus.tuix.tab
 		 && fieldType != 'editor'
 		 && fieldType != 'code_editor'
-		 && !field._was_hidden_before
+		 && !field._cms_hidden
 		 && hidden) {
-			field._hideOnOpen = hideOnOpen = true;
-			field._was_hidden_before = true;
+			field._cms_hideOnOpen = hideOnOpen = true;
+			field._cms_hidden = true;
 		}
 		
 		if (hidden) {
-			field._was_hidden_before = true;
+			field._cms_hidden = true;
 			
 			//Don't show hidden fields, unless we need to draw them for the "hiding" animation
 			if (!hideOnOpen) {
 				return false;
 			}
 		} else {
-			delete field._was_hidden_before;	
+			delete field._cms_hidden;	
 		}
 		
 		if (scanForHiddenFieldsWithoutDrawingThem) {
@@ -1817,8 +1839,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				changed,
 				hideUI;
 		
-			if (!readOnly && defined(field.multiple_edit._changed)) {
-				changed = engToBoolean(field.multiple_edit._changed);
+			if (!readOnly && defined(field.multiple_edit._cms_changed)) {
+				changed = engToBoolean(field.multiple_edit._cms_changed);
 			} else {
 				changed = field.multiple_edit.changed;
 			}
@@ -1997,11 +2019,11 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		
 		if (snippet.html) {
-			html += _$span('id', idPrefix + 'snippet__' + id, zenario.unfun(snippet.html));
+			html += _$span('id', idPrefix + 'snippet__' + id, 'class', field.css_class, zenario.unfun(snippet.html));
 		}
 		
 		if (snippet.microtemplate) {
-			html += _$div('id', idPrefix + 'microtemplate__' + id, thus.microTemplate(snippet.microtemplate, field));
+			html += _$div('id', idPrefix + 'microtemplate__' + id, 'class', field.css_class, thus.microTemplate(snippet.microtemplate, field));
 			thus.fieldsWithMicrotemplates[id] = true;
 		}
 		
@@ -2687,7 +2709,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				
 				if (defined(field.pre_button_text)) {
 					html += _$span('class', 'zenario_pre_button zenario_pre_' + fieldType + '_button', '>');
-					html += _$label('class', 'zenario_pre_button_text', htmlspecialchars(field.pre_button_text));
+					
+					if (field.pre_button_onclick) {
+						html += _$label('class', 'zenario_pre_button_text zenario_pre_button_onclick', 'onclick', thus.defineLibVarBeforeCode('onclick', id) + field.pre_button_onclick, htmlspecialchars(field.pre_button_text));
+					} else {
+						html += _$label('class', 'zenario_pre_button_text', htmlspecialchars(field.pre_button_text));
+					}
 				}
 				
 				if (engToBoolean(field.use_button_tag)) {
@@ -3546,14 +3573,10 @@ methods.outputAtts = function(fieldCodeName, atts, extraAtt, extraAttAfter, over
 			
 			} else {
 				//Declare some variables for any JavaScript-based attribute, so the code has some context to work with.
-				definitions = thus.defineLibVarBeforeCode(att);
-				
-				if (definitions !== '') {
-					definitions += "var fieldCodeName = '" + htmlspecialchars(fieldCodeName) + "', field = lib.field(fieldCodeName); ";
-				}
+				definitions = thus.defineLibVarBeforeCode(att, fieldCodeName);
 				
 				//Write down the attribute.
-				html += ' ' + att + '="' + definitions;
+				html += ' ' + att + '="' + htmlspecialchars(definitions);
 				
 				//Check if there are any core attributes to also add, and remove them from the list
 				//after we've added them.
@@ -3603,7 +3626,9 @@ methods.outputAtts = function(fieldCodeName, atts, extraAtt, extraAttAfter, over
 };
 
 //Make sure thus the "lib" variable points towards this library
-methods.defineLibVarBeforeCode = function(att) {
+methods.defineLibVarBeforeCode = function(att, fieldCodeName) {
+	
+	var js = '';
 	
 	//Attributes such as onclick/onchange/onkeyup/etc. always need the lib var defined,
 	//but other attributes this aren't for JavaScript (e.g. id, class, value...) shouldn't have it.
@@ -3615,10 +3640,16 @@ methods.defineLibVarBeforeCode = function(att) {
 			window[thus.globalName = zenarioT.generateGlobalName()] = thus;
 		}
 		
-		return 'var lib = ' + htmlspecialchars(thus.globalName) + '; '
-	} else {
-		return '';
+		js = 'var lib = ' + thus.globalName;
+		
+		if (defined(fieldCodeName)) {
+			js += ', fieldCodeName = ' + JSON.stringify(fieldCodeName) + ', field = lib.field(fieldCodeName)';
+		}
+		
+		js += '; ';
 	}
+	
+	return js;
 };
 
 
@@ -3793,7 +3824,7 @@ methods.typeaheadSearchAJAXURL = function(field, id, tab) {
 methods.parseTypeaheadSearch = function(field, id, tab, readOnly, data) {
 };
 
-//methods._tokenizeNoRecurse = false;
+//methods._cms_tokenizeNoRecurse = false;
 
 var catchThatBlur = false;
 
@@ -3812,7 +3843,7 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 	
 	} else if (thus.typeaheadSearchEnabled(field, id, tab)) {
 		if (searchURL = thus.typeaheadSearchAJAXURL(field, id, tab)) {
-			searchParam = '_search';
+			searchParam = '_cms_searchTerm';
 		}
 	}
 	
@@ -3834,7 +3865,7 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 		// them to still be able to replace what's there by typing in the box, so instead I'll call the
 		// addToPickedItems() function which will auto-remove the previously selected value.)
 		onAddToken: function(value, text, e) {
-			if (thus._tokenizeNoRecurse) {
+			if (thus._cms_tokenizeNoRecurse) {
 				return;
 			}
 			
@@ -3878,7 +3909,7 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 		},
 		
 		onRemoveToken: function(value, e) {
-			if (thus._tokenizeNoRecurse) {
+			if (thus._cms_tokenizeNoRecurse) {
 				return;
 			}
 			
@@ -4170,7 +4201,7 @@ methods.pickedItemsArray = function(field, value) {
 		file,
 		k, i;
 	
-	field._display_value = false;
+	field._cms_displayValue = false;
 	
 	foreach (items as k) {
 		if (i = items[k]) {
@@ -4230,8 +4261,8 @@ methods.pickedItemsArray = function(field, value) {
 				picked_items[i] = i;
 			}
 			
-			if (field._display_value === false) {
-				field._display_value = picked_items[i];
+			if (field._cms_displayValue === false) {
+				field._cms_displayValue = picked_items[i];
 			}
 		}
 	}
@@ -4560,13 +4591,13 @@ methods.drawPickedItem2 = function(id, pick_items, inDropDown, mi) {
 	if (inDropDown) {
 		
 		//Little hack to try and add tooltips even though there's no placehodler function in the right place to do it properly
-		thus.__addTT = true;
+		thus._cms_addTooltip = true;
 		
 		setTimeout(function() {
-			if (thus.__addTT) {
+			if (thus._cms_addTooltip) {
 				thus.tooltips('#' + thus.idPrefix() + 'name_for_' + id + ' .Dropdown *[title]');
 			}
-			delete thus.__addTT;
+			delete thus._cms_addTooltip;
 		}, 1);
 		
 		return thus.microTemplate(pick_items.dropdown_item_microtemplate || thus.mtPrefix + '_dropdown_item', mi);
@@ -4657,7 +4688,7 @@ methods.removeFromPickedItems = function(values, id, tab) {
 };
 
 methods.addToPickedItems = function(values, id, tab, remove) {
-	thus._tokenizeNoRecurse = true;
+	thus._cms_tokenizeNoRecurse = true;
 	
 		var field = thus.field(id, tab),
 			current_value = thus.readField(id),	//(!defined(field.current_value)? field.value : field.current_value),
@@ -4704,7 +4735,7 @@ methods.addToPickedItems = function(values, id, tab, remove) {
 	
 		thus.redrawPickedItems(id, field, picked_items, reselectedItems);
 	
-	thus._tokenizeNoRecurse = false;
+	thus._cms_tokenizeNoRecurse = false;
 };
 
 
@@ -4980,7 +5011,7 @@ methods.meMarkChanged = function(id, current_value, value) {
 		}
 	}
 	
-	thus.field(id).multiple_edit._changed = true;
+	thus.field(id).multiple_edit._cms_changed = true;
 	thus.meSetCheckbox(id, true);
 };
 
@@ -4999,7 +5030,7 @@ methods.meChange = function(changed, id, confirm) {
 	
 	//Update its state in the schema
 	if (changed) {
-		field.multiple_edit._changed = true;
+		field.multiple_edit._cms_changed = true;
 	} else {
 		
 		//Require a confirm prompt if this will lose any changes
@@ -5017,7 +5048,7 @@ methods.meChange = function(changed, id, confirm) {
 			return;
 		}
 		
-		field.multiple_edit._changed = false;
+		field.multiple_edit._cms_changed = false;
 		
 		//If it is now off, revert the field's value back to the default.
 		delete field.current_value;
@@ -5355,12 +5386,12 @@ methods.readField = function(f) {
 	}
 	
 	var readOnly = thus.fieldIsReadonly(f, field, tab),
-		hidden = field._was_hidden_before;
+		hidden = field._cms_hidden;
 	
 	//Update logic for multiple edit fields
 	if (field.multiple_edit) {
 		if (readOnly) {
-			delete field.multiple_edit._changed;
+			delete field.multiple_edit._cms_changed;
 		}
 	}
 	
@@ -5592,7 +5623,7 @@ methods.wipeTab = function() {
 		delete field.current_value;
 		
 		if (field.multiple_edit) {
-			delete field.multiple_edit._changed;
+			delete field.multiple_edit._cms_changed;
 		}
 	}
 };
@@ -5838,16 +5869,16 @@ methods.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $ke
 		//Only allow certain tags in certain places to be merged in
 		if (
 			(!defined($key1) && zenario.IN($key0, 'download', 'path', 'shake', 'tab', 'switchToTab') && ($type = 'value'))
-		 || (!defined($key1) && zenario.IN($key0, '_sync', 'tabs') && ($type = 'array'))
-			 || (!defined($key2) && $key1 == '_sync' && zenario.IN($key0, 'cache_dir', 'password', 'session', 'iv') && ($type = 'value'))
+		 || (!defined($key1) && zenario.IN($key0, '_cms_sync', 'tabs') && ($type = 'array'))
+			 || (!defined($key2) && $key1 == '_cms_sync' && zenario.IN($key0, 'cache_dir', 'password', 'session', 'iv') && ($type = 'value'))
 			 || (!defined($key2) && $key1 == 'tabs' && ($type = 'array'))
-				 || (!defined($key3) && $key2 == 'tabs' && $key0 == '_was_hidden_before' && ($type = 'value'))
+				 || (!defined($key3) && $key2 == 'tabs' && $key0 == '_cms_hidden' && ($type = 'value'))
 				 || (!defined($key3) && $key2 == 'tabs' && zenario.IN($key0, 'edit_mode', 'fields') && ($type = 'array'))
 					 || (!defined($key4) && $key3 == 'tabs' && $key1 == 'edit_mode' && $key0 == 'on' && ($type = 'value'))
 					 || (!defined($key4) && $key3 == 'tabs' && $key1 == 'fields' && ($type = 'array'))
-						 || (!defined($key5) && $key4 == 'tabs' && $key2 == 'fields' && zenario.IN($key0, '_display_value', '_was_hidden_before', 'current_value', 'pressed') && ($type = 'value'))
+						 || (!defined($key5) && $key4 == 'tabs' && $key2 == 'fields' && zenario.IN($key0, '_cms_displayValue', '_cms_hidden', 'current_value', 'pressed') && ($type = 'value'))
 						 || (!defined($key5) && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'multiple_edit' && ($type = 'array'))
-							 || (!defined($key6) && $key5 == 'tabs' && $key3 == 'fields' && $key1 == 'multiple_edit' && $key0 == '_changed' && ($type = 'value'))
+							 || (!defined($key6) && $key5 == 'tabs' && $key3 == 'fields' && $key1 == 'multiple_edit' && $key0 == '_cms_changed' && ($type = 'value'))
 		) {
 			
 			//Update any values from the client on the server's copy
@@ -5913,7 +5944,7 @@ methods.syncAllTagsToServerR = function($serverTags, $clientTags) {
 
 
 methods.getValueArrayofArrays = function(leaveAsJSONString) {
-	return zenario.nonAsyncAJAX(thus.getURL(), zenario.urlRequest({_read_values: true, _box: thus.sendStateToServer()}), !leaveAsJSONString);
+	return zenario.nonAsyncAJAX(thus.getURL(), zenario.urlRequest({_cms_readFormValues: true, _cms_box: thus.sendStateToServer()}), !leaveAsJSONString);
 };
 
 methods.getVisibleValues = function(useTabNames, specificTabs) {
@@ -5944,7 +5975,7 @@ methods.getFieldValues = function(includeTogglesIfOn, getInitialValues, pluginSe
 					name = f;
 					
 					if ((ignoreReadonlyFields && thus.fieldIsReadonly(f, field, t))
-					 || (ignoreHiddenFields && (tab._was_hidden_before || field._was_hidden_before))
+					 || (ignoreHiddenFields && (tab._cms_hidden || field._cms_hidden))
 					 || (pluginSettingsOnly && !(name = field.plugin_setting && field.plugin_setting.name))) {
 						continue;
 					}
@@ -6039,7 +6070,7 @@ methods.format = function(wipeValues) {
 	
 	thus.retryAJAX(
 		url,
-		{_format: true, _box: thus.sendStateToServer()},
+		{_cms_formatAction: true, _cms_box: thus.sendStateToServer()},
 		true,
 		function(data) {
 			thus.load(data);
@@ -6071,7 +6102,7 @@ methods.validate = function(differentTab, tab, wipeValues, callBack) {
 	
 	thus.retryAJAX(
 		url,
-		{_validate: true, _box: thus.sendStateToServer()},
+		{_cms_validateAction: true, _cms_box: thus.sendStateToServer()},
 		true,
 		function(data) {
 			if (thus.load(data)) {

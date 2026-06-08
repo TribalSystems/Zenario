@@ -9,7 +9,6 @@ zenario__social:
             label: Forums
             tooltip: View and manage the forums on your site
             panel:
-                php: Yes
                 title: Forums
                 select_mode_title: Select a Forum
                 no_items_message: |
@@ -71,8 +70,6 @@ zenario__social:
                         title: Categories
                 default_sort_column: title
                 item:
-                    name: Forum
-                    names: Forums
                     css_class: zenario_forum__forum
                     tooltip: |
                         To change the order Forums appear in lists, use Grid View, then simply drag and drop.
@@ -81,8 +78,7 @@ zenario__social:
                     view_frontend:
                         css_class: view_frontend
                         tooltip: View in Front-end window
-                        frontend_link:
-                            exists: Yes
+                        frontend_link: true
                         visible_if: >
                             zenario.engToBoolean(item.frontend_link)
                     inspect:
@@ -107,7 +103,7 @@ zenario__social:
                             request:
                                 lock_forum: "1"
                         with_columns_set:
-                            traits.unlocked: true
+                            unlocked: true
                     unlock_forum:
                         priv: _PRIV_MODERATE_USER_COMMENTS
                         hide_in_select_mode: Yes
@@ -122,7 +118,7 @@ zenario__social:
                             request:
                                 unlock_forum: "1"
                         with_columns_set:
-                            traits.locked: true
+                            locked: true
                     remove_thread_page:
                         ord: 97
                         priv: _PRIV_MANAGE_ITEM_SLOT
@@ -145,7 +141,7 @@ zenario__social:
                             request:
                                 remove_thread_page: "1"
                         with_columns_set:
-                            traits.has_thread_page: true
+                            has_thread_page: true
                     remove_new_thread_page:
                         ord: 98
                         priv: _PRIV_MANAGE_ITEM_SLOT
@@ -166,7 +162,7 @@ zenario__social:
                             request:
                                 remove_new_thread_page: "1"
                         with_columns_set:
-                            traits.has_new_thread_page: true
+                            has_new_thread_page: true
                     remove_forum:
                         ord: 99
                         priv: _PRIV_MANAGE_ITEM_SLOT
@@ -182,7 +178,7 @@ zenario__social:
                             request:
                                 remove_forum: "1"
                         with_columns_set:
-                            traits.empty: true
+                            empty: true
                 reorder:
                     priv: _PRIV_REORDER_MENU_ITEM
                     column: ordinal

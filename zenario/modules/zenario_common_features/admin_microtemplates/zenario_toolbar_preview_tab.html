@@ -18,6 +18,12 @@
 			</div>
 		<% } %>
 		
+		<% if (!zenarioT.hidden(m.sections.indicators)) { %>
+			<div class="zenario_at_indicators">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.indicators)}}
+			</div>
+		<% } %>
+		
 		<% if (!zenarioT.hidden(m.sections.help)) { %>
 			<div class="zenario_at_help">
 				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.help)}}

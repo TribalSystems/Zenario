@@ -1,11 +1,11 @@
 <% if (m.fields) { %>
-	<div id="{{m.lib.idPrefix()|escape}}row__{{m.fields[0]._id|escape}}" class="
-		zenario_ab_row__{{m.fields[0]._id|escape}}
+	<div id="{{m.lib.idPrefix()|escape}}row__{{m.fields[0]._cms_fieldID|escape}}" class="
+		zenario_ab_row__{{m.fields[0]._cms_fieldID|escape}}
 		{{m.fields[0].row_class|escape}}
-		{{m.fields[0]._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
+		{{m.fields[0]._cms_hideOnOpen? 'zenario_hide_row_on_open' : ''}}
 		zenario_colsortfields_row
 	">
-		<div class="{{m.fields[0]._hideOnOpen? 'zenario_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zenario_show_on_open' : ''}}">
+		<div class="{{m.fields[0]._cms_hideOnOpen? 'zenario_hide_on_open' : ''}} {{m.fields[0]._cms_showOnOpen? 'zenario_show_on_open' : ''}}">
 			{{m.lib.microTemplate('zenario_filters_field', m.fields)}}
 		</div>
 	</div>

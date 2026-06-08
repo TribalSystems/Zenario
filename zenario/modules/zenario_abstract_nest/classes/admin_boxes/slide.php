@@ -78,14 +78,32 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			$values['details/auto_refresh_interval'] = $details['auto_refresh_interval'];
 			
 			if ($box['key']['usesConductor']) {
+				//Come up with a sensible default value for the global command name.
+				$values['details/global_command'] = 'key_slide_'. (1 + (int) ze\row::count('nested_plugins', [
+					'instance_id' => $box['key']['instanceId'],
+					'is_slide' => 1,
+					'is_inner_slide' => 0
+				]));
+				
 				if ($details['is_inner_slide']) {
 					$values['details/slide_type'] = 'inner_slide';
 					$values['details/show_back'] = $details['show_back'];
+					$values['details/show_back_to_1st'] = $details['show_back_to_1st'];
 				} else {
 					$values['details/slide_type'] = 'key_slide';
 					$values['details/global_command'] = $details['global_command'];
 					$values['details/slide_link_image_id'] = $details['slide_link_image_id'];
 				}
+				
+				
+				$values['details/show_exit'] = ze\plugin::setting('show_exit', $box['key']['instanceId']);
+				
+				if ($values['details/show_exit']) {
+					$fields['details/show_exit']['tooltip'] = ze\admin::phrase('This is enabled in the nest settings.');
+				} else {
+					$fields['details/show_exit']['tooltip'] = ze\admin::phrase('This can be enabled in the nest settings.');
+				}
+				
 			} else {
 				$values['details/slide_link_image_id'] = $details['slide_link_image_id'];
 			}
@@ -166,7 +184,7 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			unset($box['identifier']);
 			
 			
-			//In the conductor, yry and set the slide type to something logical when creating a new slide.
+			//In the conductor, try and set the slide type to something logical when creating a new slide.
 			//In most situations, the first slide will be the key slide, and all subsequent slides will
 			//be inner slides.
 			if ($details['slide_num'] == 1) {
@@ -174,13 +192,19 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			} else {
 				$values['details/slide_type'] = 'inner_slide';
 			}
+			
+			if ($box['key']['usesConductor']) {
+				//Come up with a sensible default value for the global command name.
+				$values['details/global_command'] = 'key_slide_'. (1 + (int) ze\row::count('nested_plugins', [
+					'instance_id' => $box['key']['instanceId'],
+					'is_slide' => 1,
+					'is_inner_slide' => 0
+				]));
+			}
 		}
 		
 		//Add some things if this is a slide in a conductor
 		if ($box['key']['usesConductor']) {
-			
-			//Set a placheolder for the global command field
-			$fields['details/global_command']['placeholder'] = ze\admin::phrase('E.g. slide_[[slide_num]]', $details);
 			
 			//Check the state letter (or state letters) used on this slide.
 			$states = [];
@@ -251,6 +275,9 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 		
 		$fields['details/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();
 		$fields['details/group_ids']['values'] = ze\datasetAdm::getGroupPickerCheckboxesForFAB();
+		if (empty($fields['privacy/group_ids']['values'])) {
+			$box['key']['groups_exist'] = false;
+		}
 		
 		if (ze\module::inc('zenario_organization_manager')) {
 			$fields['details/role_ids']['values'] = zenario_organization_manager::getRoleTypesIndexedByIdOrderedByName();
@@ -423,6 +450,19 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 				}
 				break;
 		}
+		
+		//check there are not two key slides with the same command name
+		if ($box['key']['usesConductor']
+		 && !empty($values['details/global_command'])
+		 && ze\row::exists('nested_plugins', [
+				'id' => ['!' => $box['key']['id']],
+				'instance_id' => $box['key']['instanceId'],
+				'is_slide' => 1,
+				'is_inner_slide' => 0,
+				'global_command' => $values['details/global_command']
+		])) {
+			$fields['details/global_command']['error'] = ze\admin::phrase('Another key slide is already useing this command name.');
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -455,6 +495,7 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			'param_2' => '',
 			'always_visible_to_admins' => 1,
 			'show_back' => 0,
+			'show_back_to_1st' => 0,
 			'show_refresh' => 0,
 			'show_auto_refresh' => 0,
 			'auto_refresh_interval' => 60,
@@ -473,6 +514,7 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			} else {
 				$details['is_inner_slide'] = 1;
 				$details['show_back'] = $values['details/show_back'];
+				$details['show_back_to_1st'] = $values['details/show_back_to_1st'];
 			}
 			
 			if ($details['show_refresh'] = $values['details/show_refresh']) {

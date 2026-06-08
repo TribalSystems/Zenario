@@ -45,7 +45,12 @@ class module {
 				default_framework,
 				css_class_name,
 				is_pluggable,
-				nestable,
+				into_content_items,
+				into_layouts,
+				into_regular_nests,
+				into_ajax_nests_without_conductor,
+				into_ajax_nests_with_conductor,
+				into_slideshows,
 				can_be_version_controlled
 			FROM " . DB_PREFIX . "modules";
 	
@@ -58,14 +63,7 @@ class module {
 				WHERE id = " . (int) $idOrName;
 		}
 	
-		if (!$module = \ze\sql::fetchAssoc($sql)) {
-			return false;
-		} else {
-			
-			$module['nestable_only'] = $module['nestable'] == 2;
-			
-			return $module;
-		}
+		return \ze\sql::fetchAssoc($sql);
 	}
 
 	public static function className($id) {

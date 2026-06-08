@@ -42,12 +42,12 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			if ($item['type'] == 'folder') {
 				$tempArray = [];
 				$item['css_class'] = 'zenario_folder_item';
-				$item['traits']['is_folder'] = true;
+				$item['is_folder'] = true;
 				$tempArray = ze\row::getValues('documents', 'id', ['folder_id' => $item['id']]);
 				$item['folder_file_count'] = count($tempArray);
 				
 				if (!$item['folder_file_count']) {
-					$item['traits']['is_empty_folder'] = true;
+					$item['is_empty_folder'] = true;
 				}
 				$item['extract_wordcount'] =  $item['privacy'] = '';
 				
@@ -67,13 +67,13 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				
 				if ($item['privacy'] == 'offline') {
 					$item['tooltip'] = $privacyPhraseOffline;
-					$item['traits']['offline'] = true;
+					$item['offline'] = true;
 				} elseif ($item['privacy'] == 'private') {
 					$item['tooltip'] = $privacyPhrasePrivate;
-					$item['traits']['private'] = true;
+					$item['private'] = true;
 				} elseif ($item['privacy'] == 'public') {
 					$item['tooltip'] = $privacyPhrasePublic;
-					$item['traits']['public'] = true;
+					$item['public'] = true;
 					
 					$dirPath = 'public' . '/downloads/' . $item['short_checksum'];
 					$frontLink = $dirPath . '/' . $item['filename'];
@@ -82,10 +82,6 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				
 				if (!empty($item['extract_wordcount'])) {
 					$item['plaintext_extract_details'] = 'Word count: '.$item['extract_wordcount'].", ".$item['extract_snippet'];
-				}
-				
-				if ($item['date_uploaded']) {
-					$item['date_uploaded'] = ze\admin::phrase('Uploaded [[date]]', ['date' => ze\admin::formatDateTime($item['date_uploaded'], '_MEDIUM', ze::$defaultLang)]);
 				}
 				
 				if ($item['extract_wordcount']) {
@@ -109,6 +105,10 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				if(isset($filenameInfo['extension'])) {
 					$item['type'] = $filenameInfo['extension'];
 				}
+			}
+			
+			if ($item['created']) {
+				$item['created'] = ze\admin::phrase('Created on [[date]]', ['date' => ze\admin::formatDateTime($item['created'], '_MEDIUM', ze::$defaultLang)]);
 			}
 			
 			//In FAB pickers, show the full folder path (including the names of any parent folders)
@@ -310,6 +310,12 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				echo '<p>', ze\admin::phrase('Successfully updated document image.'), '</p>';
 			}
 			
+			$lastUpdated = [];
+			ze\admin::setLastUpdated($lastUpdated, $creating = false);
+	
+			$documentProperties['last_edited'] = $lastUpdated['last_edited'];
+			$documentProperties['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
+			
 			ze\row::update('documents', $documentProperties, ['id' => $ids]);
 			
 		} elseif (ze::post('rescan_image')) {
@@ -321,6 +327,13 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			
 			if ($thumbnailId) {
 				$documentProperties['thumbnail_id'] = $thumbnailId;
+				
+				$lastUpdated = [];
+				ze\admin::setLastUpdated($lastUpdated, $creating = false);
+		
+				$documentProperties['last_edited'] = $lastUpdated['last_edited'];
+				$documentProperties['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
+				
 				ze\row::update('documents', $documentProperties, ['id' => $ids]);
 			}
 			
@@ -342,7 +355,22 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				}
 			} else {
 				echo "<p>Successfully updated document text extract.</p>";
-				ze\row::update('documents', ['extract'=>$documentProperties['extract']], ['id' => $ids]);
+				
+				$lastUpdated = [];
+				\ze\admin::setLastUpdated($lastUpdated, $creating = false);
+		
+				$documentProperties['last_edited'] = $lastUpdated['last_edited'];
+				$documentProperties['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
+				
+				ze\row::update(
+					'documents',
+					[
+						'extract' => $documentProperties['extract'],
+						'last_edited' => $documentProperties['last_edited'],
+						'last_edited_admin_id' => $documentProperties['last_edited_admin_id']
+					],
+					['id' => $ids]
+				);
 			}
 		
 		//Remove all of the custom data from a document
@@ -381,6 +409,14 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 						}
 					} else {
 						$successfullyMadePublic++;
+						
+						$lastUpdated = [];
+						$documentProperties = [];
+						ze\admin::setLastUpdated($lastUpdated, $creating = false);
+				
+						$documentProperties['last_edited'] = $lastUpdated['last_edited'];
+						$documentProperties['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
+						\ze\row::update('documents', $documentProperties, ['id' => $id]);
 					}
 				}
 				

@@ -36,8 +36,6 @@ zenario__menu:
             reorder:
                 priv: _PRIV_REORDER_MENU_ITEM
                 column: ordinal
-                hierarchy_view_mode: parent_ids_and_ordinals
-                lazy_load: true
         
             hierarchy: {}
                 column: parent_id
@@ -45,8 +43,7 @@ zenario__menu:
         
             disable_periodic_refresh: true
             refiners:
-                language:
-                    exists: true
+                language: {}
                 section:
                     sql: 'mi.section_id = [[REFINER__SECTION]]'
                 children:
@@ -215,8 +212,6 @@ zenario__menu:
                         send_signal:
                             label: 'Send a signal to decide permissions'
             item:
-                name: Menu node
-                names: Menu nodes
                 css_class: linked_child_menuitem_with_children
             collection_buttons:
                 create_dropdown:
@@ -311,8 +306,7 @@ zenario__menu:
                 view_frontend:
                     css_class: view_frontend
                     tooltip: Go to content item in front-end window
-                    frontend_link:
-                        exists: true
+                    frontend_link: true
                     visible_if: !item.ghost && zenario.engToBoolean(item.frontend_link)
                 inspect:
                     css_class: inspect
@@ -404,7 +398,6 @@ zenario__menu:
                     label: Content items under this menu node
                     link:
                         path: zenario__content/panels/content
-                        branch: true
                         refiner: menu_children
                 action_dropdown:
                     label: Actions
@@ -746,7 +739,6 @@ zenario__menu:
                     label: View attached images
                     link:
                         path: zenario__library/panels/image_library
-                        branch: true
                         refiner: images_for_menu_node_linked_content_item
                     visible_if: item.linked_content_item
                 linked_content_item__translations:
@@ -756,7 +748,6 @@ zenario__menu:
                     label: "View content item's translations"
                     link:
                         path: zenario__content/panels/chained
-                        branch: true
                         refiner: zenario_trans__chained_in_link__from_menu_node
                     visible_if: item.linked_content_item
                 linked_content_item__view_slots:
@@ -766,7 +757,6 @@ zenario__menu:
                     label: Slots and plugins on this content item
                     link:
                         path: zenario__content/panels/slots
-                        branch: true
                         refiner: content_item_from_menu_node
                     visible_if: item.linked_content_item
                 linked_content_item__view_in_content_items_panel:

@@ -2011,19 +2011,19 @@ if (ze\dbAdm::needRevision(64130)) {
 //Automatically turn on the "base64" encoding option for emails in this update,
 //as the "automatic" option can have compatibility issues.
 //Note: this was backpatched from 10.4 to 10.3, but is safe to run multiple times.
-if (ze\dbAdm::needRevision(64133)) {
+if (ze\dbAdm::needRevision(64700)) {
 	ze\site::setSetting('base64_encode_emails', 1);
 	
-	ze\dbAdm::revision(64133);
+	ze\dbAdm::revision(64700);
 }
 
 //Combined update that fixes/resyncs links to images in email templates.
 //Try to replace links to file.php with links to the actual files in the public/images/ directory.
 //Also try to replace links to WebP images with links to the original JPEG/PNG versions.
 //Note: this was backpatched from 10.4 to 10.3, but is safe to run multiple times.
-if (ze\dbAdm::needRevision(64134)) {
+if (ze\dbAdm::needRevision(64740)) {
 	
 	ze\fileAdm::updateAllImagePublicLinksInEmailTemplates();
 
-	ze\dbAdm::revision(64134);
+	ze\dbAdm::revision(64740);
 }

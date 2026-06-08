@@ -85,3 +85,107 @@ site_settings:
                     site_setting:
                         name: zenario_newsletter__enable_opened_emails
                     type: checkbox
+        
+        newsletter_css_rules:
+            label: Newsletter CSS rules
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>These CSS rules will be available when composing a newsletter or newsletter template.</p>
+                            <p>The contents are automatically wrapped in <code>&lt;style&gt;&lt;/style&gt;</code> tags.</p>
+                newsletter_css_rules:
+                    site_setting:
+                        name: newsletter_css_rules
+                    label: 'CSS rules:'
+                    type: code_editor
+                    tall_as_possible: true
+                    dont_trim: true
+                    language: css
+                    style: >
+                        width: 98%;
+                    value: |
+                        .newsletter.style_blue {
+                            background-color: #f8f9fa;
+                        }
+                        
+                        .newsletter.style_green {
+                            background-color: #ffffff;
+                        }
+                        
+                        .newsletter table.button tr td {
+                            padding: 12px 24px; 
+                            background-color: #0e76bc; 
+                            text-align: center;
+                        }
+                        
+                        .newsletter table.button tr td a {
+                            color:#ffffff;
+                            display:inline-block !important;
+                        }
+                        
+                        .newsletter.style_green table.button tr td {
+                            background-color: #42bd4c;
+                        }
+                        
+                        .newsletter h1,
+                        .newsletter h2,
+                        .newsletter h3,
+                        .newsletter h4 {
+                            font-family: Arial, Helvetica, sans-serif;
+                            color:#000;
+                        }
+                        
+                        .newsletter h2,
+                        .newsletter h3,
+                        .newsletter h4 {
+                            font-weight: bold;
+                        }
+                        
+                        .newsletter.style_blue h1 {
+                            margin: 0; 
+                            font-size: 28px; 
+                            font-weight: normal; 
+                        }
+                        
+                        .newsletter.style_blue h2 {
+                            margin: 0 0 12px; 
+                            font-size: 22px;  
+                            line-height: 1.3; 
+                        }
+                        
+                        .newsletter.style_blue h3 {
+                            margin: 0 0 20px; 
+                            font-size: 16px; 
+                            text-transform: uppercase; 
+                        }
+                        
+                        .newsletter.style_blue h4 {
+                            margin: 0 0 6px; 
+                            font-size: 16px; 
+                            line-height: 1.3; 
+                        }
+                        
+                        .newsletter.style_green h1 {
+                            margin: 0; 
+                            font-size: 24px; 
+                            font-weight: bold;
+                        }
+                        
+                        .newsletter.style_green h2 {
+                            margin: 0 0 15px; 
+                            font-size: 20px; 
+                            line-height: 1.2; 
+                        }
+                        
+                        .newsletter.style_green h3 {
+                            margin: 0 0 10px; 
+                            font-size: 14px;  
+                            color: #0e76bc;  
+                            text-transform: uppercase;
+                        }

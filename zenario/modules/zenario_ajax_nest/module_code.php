@@ -315,6 +315,7 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 			
 			
 			//Loop through each slide, checking if they have any states or global commands
+			$firstGlobalCommand = null;
 			$hadCommands = [];
 			foreach ($this->slides as $slideNum => $slide) {
 				
@@ -342,6 +343,18 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 								
 								//...but do block it, so we get consistent logic if two slides have the same global command.
 								$hadCommands[$command] = true;
+								
+								
+								//Check if the slide we're showing has the "Show Exit button" option enabled.
+								//If so, the first key slide we find should be the destination for the exist button.
+								if (is_null($firstGlobalCommand)) {
+									$firstGlobalCommand = $command;
+									
+									if (!empty($this->slides[$this->slideNum]['show_back_to_1st'])) {
+										$this->sections['Tab'][$this->slideNum]['Show_Back_To_1st'] = true;
+										$this->sections['Tab'][$this->slideNum]['Back_To_1st_Command'] = $command;
+									}
+								}
 							}
 						}
 					
@@ -433,6 +446,17 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 					case 'overwrite':
 						$this->setPageTitle($this->formatTitleText($this->slides[$this->slideNum]['slide_label']));
 						break;
+				}
+				
+				//Add the "exit" button if enabled in the conductor settings
+				if ($this->setting('show_exit')
+				 && ($menuId = ze\menu::getIdFromContentItem(ze::$equivId, ze::$cType, $sectionId = false, $mustBePrimary = true))
+				 && ($menuParentId = ze\menu::parentId($menuId))
+				 && ($menuContent = ze\menu::getContentItem($menuParentId))
+				 && ($link = ze\link::toItemInVisitorsLanguage($menuContent['equiv_id'], $menuContent['content_type'], $fullPath = false))) {
+					
+					$this->sections['Tab'][$this->slideNum]['Show_Exit'] = true;
+					$this->sections['Tab'][$this->slideNum]['Exit_Link'] = $link;
 				}
 			}
 		}

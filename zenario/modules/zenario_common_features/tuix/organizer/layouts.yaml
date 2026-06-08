@@ -104,8 +104,7 @@ zenario__layouts:
                     always_show: true
                     width: xlarge
                     html: true
-                grid_name:
-                    exists: true
+                grid_name: {}
                 usage_status:
                     format: enum
                     values:
@@ -138,11 +137,8 @@ zenario__layouts:
                         INNER JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
                            ON pitl.instance_id = ps.instance_id
                           AND pitl.layout_id = l.layout_id
-                archived:
-                    exists: true
+                archived: {}
             item:
-                name: Layout
-                names: Layouts
                 css_class: template
             collection_buttons:
                 create:
@@ -274,8 +270,6 @@ zenario__layouts:
                     popout: 
                         href: zenario/admin/layout_preview.php
                         iframe: true
-                        #preloading: false
-                        #open: true
                         
                 code:
                     parent: view_dropdown
@@ -294,7 +288,6 @@ zenario__layouts:
                     record_count: usage_content_items
                     link:
                         path: zenario__content/panels/content
-                        branch: true
                         refiner: template
                 view_slots:
                     priv: _PRIV_VIEW_SLOT
@@ -304,7 +297,6 @@ zenario__layouts:
                     link:
                         path: zenario__content/panels/slots
                         refiner: layout
-                        branch: true
                 
                 head_slot_layers:
                     parent: view_dropdown
@@ -333,7 +325,7 @@ zenario__layouts:
                 duplicate:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_TEMPLATE
-                    hide_in_select_mode: true
+                    hide_in_select_mode: false
                     label: Duplicate
                     admin_box:
                         path: zenario_layout

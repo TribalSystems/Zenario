@@ -1,25 +1,17 @@
 # You must use a tab-size of 4 spaces to edit this file.
 
-display_name: 'Timezones'
+display_name: Clock with Timezones
 author_name: Tribal Systems
 copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: true
 license_info: 'Modified BSD License'
 description: >
-    <p>
-        This module adds a list of timezones for a centralised form select field and contains static functions relating to timezones.
-    </p><p>
-        It also contains a plugin that adds the current time and timezone onto the page.
-    </p><p>
-        Functions:
-    </p>
-    <br />
-    <b>getTime($timezone)</b>
-    <p>Takes a php timezone (eg 'US/Samoa') and returns the current time in that timezone.</p>
-    <br />
-    
-    <p>Converts a UTC date/timestamp into the users timezone</p>
+    <p>When started, this module adds a list of timezones in Organizer->Site settings->Date and time. These are used for a centralised select list that can be added to a dataset (e.g. Users dataset).</p>
+    <p>It also makes the same list available to add to a User Form, so if, for example, you require a form in which the user should choose their timezone, the form just needs to include a Timezone field as a select.</p>
+    <p>The plugin from this module is quite simple, and displays the current time (hours, minutes, seconds) and the site's timezone.<p>
+    <p>Please see Organizer->Site settings->Date and time and go to the "Timezone" tab to set the timezone for the site.</p>
+    <p>For developers, there are static functions included in the module, which allow other modules to get the site's timezone, or the timezone of the current user. The function <code>getTime($timezone)</code> takes a PHP timezone as an argument (eg. "US/Samoa") and converts the server's current time to the time in that timezone.</p>
 category: pluggable
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
@@ -30,7 +22,13 @@ is_pluggable: true
 can_be_version_controlled: false
 default_framework: standard
 default_instance_name: Current time
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: true
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 centralised_lists:
     -
         method_name: getTimezones

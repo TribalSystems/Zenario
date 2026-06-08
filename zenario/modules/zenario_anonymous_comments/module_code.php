@@ -115,7 +115,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 
 	public function requireJSLibsForTinyMCE() {
 		$this->requireJsLib('zenario/libs/yarn/tinymce/tinymce.min.js');
-		$this->requireJsLib('zenario/libs/yarn/@tinymce/tinymce-jquery/dist/tinymce-jquery.min.js');
+		$this->requireJsLib('zenario/js/tinymce.bundle.js.php');
 	}
 	
 	
@@ -535,20 +535,14 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			if (ze::request('comm_enter_text')) {
 				return;
 			}
-			
-			$paginationStyleSettingName = 'pagination_style_posts';
 		
 		} elseif ($this->mode == 'showThreads') {
 			$this->pageSize = (int) $this->setting('page_size_threads') ?: 12;
 			$pageCount = (int) ceil($this->forum['thread_count'] / $this->pageSize);
-			
-			$paginationStyleSettingName = 'pagination_style_threads';
 		
 		} elseif ($this->mode == 'showSearch' && $this->results) {
 			$this->pageSize = (int) $this->setting('page_size_search') ?: 12;
 			$pageCount = (int) ceil($this->results / $this->pageSize);
-			
-			$paginationStyleSettingName = 'pagination_style_search';
 		
 		} else {
 			return;
@@ -569,7 +563,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		}
 		
 		$this->mergeFields['Pagination'] = '';
-		$this->pagination($paginationStyleSettingName, $this->page, $pages, $this->mergeFields['Pagination']);
+		$this->pagination($this->page, $pages, $this->mergeFields['Pagination']);
 	}
 	
 	
@@ -1029,14 +1023,6 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 					$fields['moderation/email_template_for_approve_requests']['value'] = 'zenario_comments__comment_awaiting_approval';
 				}
 
-				$box['tabs']['order']['fields']['pagination_style_posts']['values'] = 
-					ze\pluginAdm::paginationOptions();
-				
-				if (isset($box['tabs']['order']['fields']['pagination_style_threads'])) {
-					$box['tabs']['order']['fields']['pagination_style_threads']['values'] = 
-						ze\pluginAdm::paginationOptions();
-				}
-				
 				if (isset($box['tabs']['moderation']['fields']['email_address_for_reports']) && !$box['key']['instanceId']) {
 					$box['tabs']['moderation']['fields']['email_address_for_reports']['value'] = EMAIL_ADDRESS_GLOBAL_SUPPORT;
 				}

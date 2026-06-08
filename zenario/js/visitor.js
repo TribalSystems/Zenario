@@ -171,18 +171,33 @@ zenario.lib(function(
 	
 	
 	
+	zenario.ajaxURL = function(method, className, path, script) {
+		
+		if (!defined(script)) {
+			script = 'zenario/ajax.php';
+		}
+		
+		var url = URLBasePath + script + '?method_call=' + encodeURIComponent(method);
+		
+		if (defined(className)) {
+			url += '&_cms_class=' + encodeURIComponent(className);
+		}
+		
+		if (defined(path)) {
+			url += '&path=' + encodeURIComponent(path);
+		}
+		
+		return url;
+	}
 	
 
 	zenario.phrases = {};
 	zenario.loadPhrases = function(vlpClass, code) {
 	
-		var url = URLBasePath + 'zenario/ajax.php'
-			+ '?method_call=loadPhrase'
-			+ '&__class__=' + encodeURIComponent(vlpClass)
-			+ '&langId=' + encodeURIComponent(zenario.langId);
+		var url = zenario.ajaxURL('loadPhrase', vlpClass) + '&langId=' + encodeURIComponent(zenario.langId);
 	
 		if (defined(code)) {
-			url += '&__code__=';
+			url += '&_cms_code=';
 			
 			if (_.isArray(code)) {
 				url += _.map(code, zenario.encodeItemIdForOrganizer).join(',');
@@ -697,9 +712,9 @@ methods.checkComplete = function() {
 
 //Some different examples of how to use the callback function above
 //window.test = function() {
-//	var url1 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Fcontent&_item=html_1&_limit=1',
-//		url2 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Fcontent&_item=html_2&_limit=1',
-//		url3 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Fcontent&_item=html_3&_limit=1';
+//	var url1 = URLBasePath + 'zenario/admin/organizer.ajax.php?_cms_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Fcontent&_cms_selectedID=html_1&_cms_limit=1',
+//		url2 = URLBasePath + 'zenario/admin/organizer.ajax.php?_cms_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Fcontent&_cms_selectedID=html_2&_cms_limit=1',
+//		url3 = URLBasePath + 'zenario/admin/organizer.ajax.php?_cms_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Fcontent&_cms_selectedID=html_3&_cms_limit=1';
 //	
 //	zenario.ajax(url1, false, true).after(function(data) {
 //		console.log(1, data.items.html_1.tag);
@@ -842,7 +857,8 @@ zenario.nonAsyncAJAX = function(url, post, json, useCache) {
 		//Only works in admin mode.
 		//Can be a function to call, or true to recall this function
 	//timeout: If set, the request will be automatically retried or cancelled after this amount of time.
-zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError) {
+
+zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError, flagsWillBeHandled) {
 
 	url = zenario.addBasePath(url);
 	
@@ -858,7 +874,16 @@ zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settin
 		//If the request is a success, note down the data.
 		success = function(data) {
 			if (aborted) return;
-			result = data;
+			
+			if (flagsWillBeHandled) {
+				result = data;
+			
+			} else {
+				var resp = zenario.splitFlagsFromMessage(data);
+				zenario.showDumpsFromFlags(resp.flags);
+				
+				result = resp.responseText;
+			}
 		},
 		
 		//If there was an error, attempt to handle it
@@ -1058,6 +1083,12 @@ zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settin
 	//If we didn't use the cache above, run the function now
 	doRequest();
 	return cb;
+};
+
+//The zenario.ajax() function automatically strips out any flags anyone might add using the ze\escape::flag() function.
+//However if you plan to handle them and want them left in, you should call this function instead.
+zenario.ajaxWithFlags = function(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError) {
+	return zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError, true);
 };
 
 
@@ -1424,11 +1455,6 @@ zenario.scrollToSlotTop = function(containerIdSlotNameOrEl, neverScrollDown, tim
 
 	if (!defined(offset)) {
 		offset = -80;
-	}
-	
-	//For hacks where something like a sticky menu takes up space at the top so an offset is needed
-	if (window._scrollToTopOffset) {
-		offset = (offset || 0) - window._scrollToTopOffset;
 	}
 
 	//Check that the top of the slot is actually visible
@@ -2189,7 +2215,7 @@ zenario.enc = function(id, className, moduleClassNameForPhrases, feaPaths, jsNot
 	}
 	
 	if (typeof window[className] != 'object') {
-		window[className] = new zenario.__moduleBaseClass(
+		window[className] = new zenario._cms_baseClass(
 			id, className, moduleClassNameForPhrases,
 			zenario);
 		
@@ -2377,6 +2403,19 @@ zenario.on = function(slotName, containerId, eventName, handler) {
 			});
 		}
 	}
+};
+
+//Check if a plugin/slot has registered an event yet.
+zenario.registeredEvents = function(slotName, containerId, eventName, handler) {
+	slotName = slotNameForEvent(slotName, containerId);
+	containerId = containerId || '';
+	
+	var slot = zenario.slots[slotName];
+	
+	return slot
+		&& slot.events
+		&& slot.events[eventName]
+		&& slot.events[eventName][containerId];
 };
 
 //De-register events for a plugin in a slot.
@@ -4187,7 +4226,7 @@ zenario.tinyMCEGetContent = function(editor) {
 };
 
 zenario.removeLinkStatus = function($el) {
-	$el.find('del.zenario_link_status').remove();
+	$el.find('x-zenario-link-status').remove();
 };
 
 //Functions for browser fullscreen

@@ -1042,16 +1042,23 @@ public static function updateHeadAndFootInAllLayouts($oldToNewNames) {
 	if (!empty($oldToNewNames)) {
 	
 		foreach ($oldToNewNames as $oldName => $newName) {
-			//Try to catch the case where two slots have their names switched.
-			//Don't change the data in the database if this has happened.
-			if (empty($oldToNewNames[$newName])
-			 && !\ze\row::exists('plugin_sitewide_link', ['slot_name' => $newName])) {
-				$sql = "
-					UPDATE IGNORE ".  DB_PREFIX. "plugin_sitewide_link
-					SET slot_name = '". \ze\escape::asciiInSQL($newName). "'
-					WHERE slot_name = '". \ze\escape::asciiInSQL($oldName). "'";
-				\ze\sql::update($sql);
+			
+			//Try to catch the case where two different slots have their names switched.
+			if (strtolower($oldName) !== strtolower($newName)
+			 && isset($oldToNewNames[$newName])
+			 && \ze\row::exists('plugin_sitewide_link', ['slot_name' => $newName])) {
+				
+				//Don't change the data in the database if this has happened.
+				continue;
 			}
+			
+			//Catch the case where a slot is being renamed. Try to update the linking table
+			//for any plugins in that slot, so they don't disappear.
+			$sql = "
+				UPDATE IGNORE ".  DB_PREFIX. "plugin_sitewide_link
+				SET slot_name = '". \ze\escape::asciiInSQL($newName). "'
+				WHERE slot_name = '". \ze\escape::asciiInSQL($oldName). "'";
+			\ze\sql::update($sql);
 		}
 	}
 }
@@ -1103,52 +1110,58 @@ public static function saveLayoutData($layoutId, $body, $oldToNewNames = []) {
 	if (!empty($oldToNewNames)) {
 	
 		foreach ($oldToNewNames as $oldName => $newName) {
-			//Try to catch the case where two slots have their names switched.
-			//Don't change the data in the database if this has happened.
-			if (empty($oldToNewNames[$newName])
-			 && !\ze\row::exists(
+			
+			//Try to catch the case where two different slots have their names switched.
+			if (strtolower($oldName) !== strtolower($newName)
+			 && isset($oldToNewNames[$newName])
+			 && \ze\row::exists(
 					'layout_slot_link',
 					[
 						'layout_id' => $layoutId,
 						'slot_name' => $newName]
 			)) {
-				//Switch the slot names in the system
-				$sql = "
-					UPDATE IGNORE ".  DB_PREFIX. "plugin_layout_link
-					SET slot_name = '". \ze\escape::asciiInSQL($newName). "'
-					WHERE slot_name = '". \ze\escape::asciiInSQL($oldName). "'
-					  AND layout_id = ". (int) $layoutId;
-				\ze\sql::update($sql);
-			
-				$sql = "
-					UPDATE IGNORE ".  DB_PREFIX. "layout_slot_link
-					SET slot_name = '". \ze\escape::asciiInSQL($newName). "'
-					WHERE slot_name = '". \ze\escape::asciiInSQL($oldName). "'
-					  AND layout_id = ". (int) $layoutId;
-				\ze\sql::update($sql);
-			
-				$sql = "
-					UPDATE IGNORE ".  DB_PREFIX. "content_item_versions AS v
-					INNER JOIN ".  DB_PREFIX. "plugin_instances AS pi
-					   ON pi.content_id = v.id
-					  AND pi.content_type = v.type
-					  AND pi.content_version = v.version
-					SET pi.slot_name = '". \ze\escape::asciiInSQL($newName). "'
-					WHERE pi.slot_name = '". \ze\escape::asciiInSQL($oldName). "'
-					  AND v.layout_id = ". (int) $layoutId;
-				\ze\sql::update($sql);
-			
-				$sql = "
-					UPDATE IGNORE ".  DB_PREFIX. "content_item_versions AS v
-					INNER JOIN ".  DB_PREFIX. "plugin_item_link AS pil
-					   ON pil.content_id = v.id
-					  AND pil.content_type = v.type
-					  AND pil.content_version = v.version
-					SET pil.slot_name = '". \ze\escape::asciiInSQL($newName). "'
-					WHERE pil.slot_name = '". \ze\escape::asciiInSQL($oldName). "'
-					  AND v.layout_id = ". (int) $layoutId;
-				\ze\sql::update($sql);
+				
+				//Don't change the data in the database if this has happened.
+				continue;
 			}
+			
+			//Catch the case where a slot is being renamed. Try to update the linking tables
+			//for any plugins in that slot, so they don't disappear.
+			$sql = "
+				UPDATE IGNORE ".  DB_PREFIX. "plugin_layout_link
+				SET slot_name = '". \ze\escape::asciiInSQL($newName). "'
+				WHERE slot_name = '". \ze\escape::asciiInSQL($oldName). "'
+				  AND layout_id = ". (int) $layoutId;
+			\ze\sql::update($sql);
+		
+			$sql = "
+				UPDATE IGNORE ".  DB_PREFIX. "layout_slot_link
+				SET slot_name = '". \ze\escape::asciiInSQL($newName). "'
+				WHERE slot_name = '". \ze\escape::asciiInSQL($oldName). "'
+				  AND layout_id = ". (int) $layoutId;
+			\ze\sql::update($sql);
+		
+			$sql = "
+				UPDATE IGNORE ".  DB_PREFIX. "content_item_versions AS v
+				INNER JOIN ".  DB_PREFIX. "plugin_instances AS pi
+				   ON pi.content_id = v.id
+				  AND pi.content_type = v.type
+				  AND pi.content_version = v.version
+				SET pi.slot_name = '". \ze\escape::asciiInSQL($newName). "'
+				WHERE pi.slot_name = '". \ze\escape::asciiInSQL($oldName). "'
+				  AND v.layout_id = ". (int) $layoutId;
+			\ze\sql::update($sql);
+		
+			$sql = "
+				UPDATE IGNORE ".  DB_PREFIX. "content_item_versions AS v
+				INNER JOIN ".  DB_PREFIX. "plugin_item_link AS pil
+				   ON pil.content_id = v.id
+				  AND pil.content_type = v.type
+				  AND pil.content_version = v.version
+				SET pil.slot_name = '". \ze\escape::asciiInSQL($newName). "'
+				WHERE pil.slot_name = '". \ze\escape::asciiInSQL($oldName). "'
+				  AND v.layout_id = ". (int) $layoutId;
+			\ze\sql::update($sql);
 		}
 	}
 

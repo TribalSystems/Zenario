@@ -47,10 +47,10 @@
 			<option value="current" {{'current' == m.selectedFile? ' selected="selected"' : ''}}>Current value (dynamic)</option>
 
 			<% if (devTools.mode != 'zenarioSlot') { %>
-				<option value="visible" {{'visible' == m.selectedFile? ' selected="selected"' : ''}}>Current value, excluding objects that are hidden</option>
+				<option value="visible" {{'visible' == m.selectedFile? ' selected="selected"' : ''}}>Current value, excluding elements that are hidden</option>
 			<% } %>
 			
-			<% if (sourceLib.__lastFormHTML) { %>
+			<% if (sourceLib._cms_formHTML) { %>
 				<option value="form_html" {{'form_html' == m.selectedFile? ' selected="selected"' : ''}}>HTML for the current view</option>
 			<% } %>
 		</optgroup>

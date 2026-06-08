@@ -19,14 +19,11 @@ zenario__content:
                 parent_category:
                     sql: 'cat.parent_id = [[REFINER__PARENT_CATEGORY]]'
             item:
-                name: Category
-                names: Categories
                 css_class: zenario_category_icon
                 tooltip_when_link_is_active: 'View sub-categories of "[[name]]"'
                 link:
                     path: zenario__content/panels/categories
                     refiner: parent_category
-                    branch: Yes
             columns:
                 id:
                     title: ID
@@ -139,7 +136,6 @@ zenario__content:
                     link:
                         path: zenario__content/panels/content
                         refiner: category
-                        branch: Yes
                     record_count: item_count
                 delete:
                     priv: _PRIV_MANAGE_CATEGORY

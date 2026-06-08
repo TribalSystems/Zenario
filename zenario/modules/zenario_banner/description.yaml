@@ -7,33 +7,37 @@ start_running_on_install: true  # N.b. changing this property won't do anything 
 license_info: 'Modified BSD License'
 display_name: Banner
 description: |
-    <p>Banners let you add text and images to your website, and are typically used for callouts or links to other pages.
-        A Banner can be any combination of an image, a block of text and HTML, and a managed hyperlink.</p>
+    <p>Banner plugins let you add text, HTML, images and links.</p>
+   
+    <p>They can be used for "callouts" that link to other pages, but can also be subtle. They are very flexible and most Zenario sites have a lot of Banners!</p>
+
+    <h3>Text and HTML</h3>
+
+    <p>Banners can have a title (text), description (formatted HTML), and "More info" text. All of them can be entered, but none mandatory.</p>
+
+    <h3>Images</h3>
     
-    <p>You may enter text for a banner by writing plain HTML, or by using a WYSIWYG Editor. If you have more than one language on your site and you place your
-        Banner on the Layout or Template Family Layer, you also have the option of using Visitor Phrases to make your text multilingual.</p>
+    <p>A Banner may display an image. You may also specify a second image to appear on rollover. An alternate image can be specified for viewing on on a mobile device.</p>
     
-    <p>A Banner may display an image. You may also nominate a second image as a rollover.</p>
+    <p>Images can be in JPG, PNG or SVG format. If the image selected is larger than is needed, Zenario automatically reduces and optimises it, and sends the smaller image to the browser but at 2x resolution for sharpness on hi-res screens.</p>
+
+    <p>As an alternative to setting a link, a Banner may be used to show an enlargeable image. For example, you might show an image on the page as a thumbnail, and let visitors click to see it at full size in a floating box.</p>
+
+    <h3>Links</h3>
     
-    <p>There is support for responsive websites, in that you can specify an alternate image to be displayed when viewed on a mobile device.</p>
+    <p>A Banner can link to a content item of any kind (e.g. HTML Page, News, Blog, Event, Document Content Item), a hierachical document, a custom URL, or a mailto: link to an email address.</p>
     
-    <p>Images can be in JPG, PNG and GIF formats. In addition, the CMS can automatically resize large images down in size.</p>
+    <p>Links to content items are managed, meaning that the link points to the content item by its tag ID. Therefore if the target item's alias changes, the link will not break.</p>
+
+    <h3>Use in nests</h3>
     
-    <p>Banners can link to a Content Item on your site, an image on your site, or a custom URL.</p>
-    
-    <p>If you link to a Content Item on your site, then this will form a managed link, which will be updated automatically if the alias to that Content Item
-        ever changes, and will be deleted automatically if that Content Item is ever deleted.</p>
-    
-    <p>If you link to a document on your site, you will have the option of linking to its download page, or linking directly to the file download.</p>
-    
-    <p>If you link to an image on your site, then this image will appear in a floating box above the current page.
-        Note that using or linking to an image gives the current Visitor the right to view that image at the size you specify.</p>
-        
-    <p>Banners are nestable; this means that by first inserting a Plugin Nest into a Slot, you can then insert multiple Banners to make creative animated effects.</p>
+    <p>Banners can be put in nests. For example, by putting several Banners in a nest, you can make make a gallery.</p>
+
+    <p>Tip: If you want to make a large gallery, consider using the Multiple Image Container plugin.</p>
 category: pluggable
 keywords: >
     masthead, callout, call-out, document, download, image,
-    picture, gif, jpg, jpeg, png, link, hyperlink, url
+    picture, gif, jpg, jpeg, png, svg, link, hyperlink, url, mailto
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:
@@ -41,6 +45,12 @@ vlp_class_name: zenario_banner
 css_class_name: zenario_banner
 is_pluggable: true
 can_be_version_controlled: false
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: true
+    regular_nests: true
+    slideshows: true
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: true
 default_framework: image_then_title_then_text
 default_instance_name: Untitled Banner

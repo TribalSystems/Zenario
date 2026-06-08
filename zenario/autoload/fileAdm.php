@@ -73,9 +73,9 @@ class fileAdm {
 		}
 		
 		if ($filename === false) {
-			$filename = \ze\file::safeName(basename($location));
+			$filename = \ze\file::validName(basename($location));
 		} else {
-			$filename = \ze\file::safeName($filename);
+			$filename = \ze\file::validName($filename);
 		}
 
 		$file['filename'] = $filename;
@@ -149,15 +149,66 @@ class fileAdm {
 			if (\ze\file::isImage($file['mime_type'])) {
 				
 				\ze::ignoreErrors();
-					$image = getimagesize($location);
+					$size = getimagesize($location);
 				\ze::noteErrors();
 				
-				if ($image === false) {
+				if ($size === false) {
 					return false;
 				}
-				$file['width'] = $image[0];
-				$file['height'] = $image[1];
-				$file['mime_type'] = $image['mime'];
+				
+				$file['width'] = $imgWidth = $size[0];
+				$file['height'] = $imgHeight = $size[1];
+				$file['mime_type'] = $size['mime'];
+				
+				//Make sure we have the correct image orientation
+				//and the width/height values the right way around.
+				if (function_exists('exif_read_data')) {
+					
+					//Load the image library we use and use it to inspect the image.
+					$imageDriver = new \Imagine\Gd\Imagine();
+					
+					$image = $imageDriver
+						->setMetadataReader(new \Imagine\Image\Metadata\ExifMetadataReader())
+						->open($location);
+					$metadata = $image->metadata();
+					
+					//Try to see if the image has rotation information in its metadata.
+					$orientation = $metadata['ifd0.Orientation'] ?? $metadata['Orientation'] ?? 0;
+					
+					//Look for the flags for a 90, 180 and a 270 degree rotation (3, 6 or 8).
+					//Apply the appropriate rotations if needed.
+					$needsSave = false;
+					switch ($orientation) {
+						case 3:
+							$image->rotate(180);
+							$needsSave = true;
+							break;
+						case 6:
+							$image->rotate(90);
+							$needsSave = true;
+							$file['width'] = $imgWidth = $size[1];
+							$file['height'] = $imgHeight = $size[0];
+							break;
+						case 8:
+							$image->rotate(-90);
+							$needsSave = true;
+							$file['width'] = $imgWidth = $size[1];
+							$file['height'] = $imgHeight = $size[0];
+							break;
+					}
+					
+					if ($needsSave) {
+						//Check if we're allowed to save over the image's current path.
+						//If not, make a new temporary file to save the image to.
+						if (!$deleteWhenDone) {
+							$location = tempnam(sys_get_temp_dir(), 'img');
+							$deleteWhenDone = true;
+						}
+						
+						//Replace the image that was upload with the new one we've made that's now correctly rotated.
+						$image->save($location, ['format' => \ze\ring::chopPrefix('image/', $size['mime'])]);
+					}
+				}
 		
 				//Create resizes for the image as needed.
 				//Working copies should only be created if they are enabled, and the image is big enough to need them.
@@ -168,8 +219,8 @@ class fileAdm {
 					['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height', 180, 130, true]
 				] as $c) {
 					if ($c[3] && $c[4] && ($c[5] || ($file['width'] > $c[3] || $file['height'] > $c[4]))) {
-						$file[$c[1]] = $image[0];
-						$file[$c[2]] = $image[1];
+						$file[$c[1]] = $imgWidth;
+						$file[$c[2]] = $imgHeight;
 						$file[$c[0]] = file_get_contents($location);
 						\ze\image::resize($file[$c[0]], $file['mime_type'], $file[$c[1]], $file[$c[2]], $c[3], $c[4]);
 					}
@@ -531,7 +582,7 @@ class fileAdm {
 			}
 		}
 		
-		$filePath = $pathInDocstoreDir. \ze\file::safeName($file['filename']);
+		$filePath = $pathInDocstoreDir. \ze\file::validName($file['filename']);
 		
 		if (file_exists($filePath)) {
 			unlink($filePath);
@@ -548,7 +599,7 @@ class fileAdm {
 		if (\ze::request('fileUpload')) {
 		
 			\ze\fileAdm::exitIfUploadError(true, true, true, 'Filedata');
-			\ze\fileAdm::putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], \ze::request('_html5_backwards_compatibility_hack'));
+			\ze\fileAdm::putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], \ze::request('_cms_backwards_compatibility_mode'));
 	
 		} else {
 			exit;
@@ -598,7 +649,7 @@ To correct this, please ask your system administrator to perform a
 		}
 	
 		$file = [];
-		$file['filename'] = \ze\file::safeName($filename);
+		$file['filename'] = \ze\file::validName($filename);
 	
 		//Check if the file is already uploaded
 		if (!file_exists($path = CMS_ROOT. $dir. $file['filename'])
@@ -610,9 +661,35 @@ To correct this, please ask your system administrator to perform a
 		$mimeType = \ze\file::mimeType($file['filename']);
 		
 		if (\ze\file::isImage($mimeType)
-		 && ($image = @getimagesize($path))) {
-			$file['width'] = $image[0];
-			$file['height'] = $image[1];
+		 && ($size = @getimagesize($path))) {
+			$file['width'] = $size[0];
+			$file['height'] = $size[1];
+			
+			//Make sure we have the correct image orientation
+			//and the width/height values the right way around.
+			if (function_exists('exif_read_data')) {
+				
+				//Load the image library we use and use it to inspect the image.
+				$imageDriver = new \Imagine\Gd\Imagine();
+				
+				$image = $imageDriver
+					->setMetadataReader(new \Imagine\Image\Metadata\ExifMetadataReader())
+					->open($path);
+				$metadata = $image->metadata();
+				
+				//Try to see if the image has rotation information in its metadata.
+				$orientation = $metadata['ifd0.Orientation'] ?? $metadata['Orientation'] ?? 0;
+				
+				//Look for the flags for a 90 or a 270 degree rotation (6 or 8).
+				//Fix the width and height of the image if so
+				switch ($orientation) {
+					case 6:
+					case 8:
+						$file['width'] = $size[1];
+						$file['height'] = $size[0];
+						break;
+				}
+			}
 		
 			$file['id'] = \ze\ring::encodeIdForOrganizer($sha. '/'. $file['filename']. '/'. $file['width']. '/'. $file['height']);
 		
@@ -727,7 +804,7 @@ To correct this, please ask your system administrator to perform a
 		if ($method_call == 'handleAdminBoxAJAX' || $method_call == 'handlePluginAJAX') {
 			$pathRequest = \ze::request('path');
 		} elseif ($method_call == 'handleOrganizerPanelAJAX') {
-			$pathRequest = \ze::request('__path__');
+			$pathRequest = \ze::request('path');
 		}
 		
 		if ($pathRequest) {

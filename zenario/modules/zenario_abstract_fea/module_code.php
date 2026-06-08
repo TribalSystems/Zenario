@@ -449,10 +449,10 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 						$item[$key] = null;
 					}
 					
-					if (!isset($tags['_hiddenColumns'][$key])) {
-						$tags['_hiddenColumns'][$key] = [];
+					if (!isset($tags['_cms_hiddenColumns'][$key])) {
+						$tags['_cms_hiddenColumns'][$key] = [];
 					}
-					$tags['_hiddenColumns'][$key][$id] = true;
+					$tags['_cms_hiddenColumns'][$key][$id] = true;
 				
 				} elseif (!empty($col['twig_snippet'])) {
 					if ($twigPath = \ze\plugin::twigSnippetPath($col['twig_snippet'])) {
@@ -475,10 +475,10 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			foreach ($tags['item_buttons'] as $key => &$button) {
 				
 				if (!$this->customVisibility('item_button', $key, $button, $id, $item)) {
-					if (!isset($tags['_hiddenItemButtons'][$key])) {
-						$tags['_hiddenItemButtons'][$key] = [];
+					if (!isset($tags['_cms_hiddenItemButtons'][$key])) {
+						$tags['_cms_hiddenItemButtons'][$key] = [];
 					}
-					$tags['_hiddenItemButtons'][$key][$id] = true;
+					$tags['_cms_hiddenItemButtons'][$key][$id] = true;
 				}
 			}
 		}
@@ -504,8 +504,8 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 				}
 			}
 			
-			if (!isset($tags['_hiddenColumns'])) {
-				$tags['_hiddenColumns'] = [];
+			if (!isset($tags['_cms_hiddenColumns'])) {
+				$tags['_cms_hiddenColumns'] = [];
 			}
 		}
 		
@@ -528,8 +528,8 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 				}
 			}
 			
-			if (!isset($tags['_hiddenItemButtons'])) {
-				$tags['_hiddenItemButtons'] = [];
+			if (!isset($tags['_cms_hiddenItemButtons'])) {
+				$tags['_cms_hiddenItemButtons'] = [];
 			}
 		}
 		
@@ -578,8 +578,8 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			}
 			
 			$limit = ze\sql::limit($page, $pageSize);
-			$tags['__page_size__'] = $pageSize;
-			$tags['__page__'] = $page;
+			$tags['_cms_pageSize'] = $pageSize;
+			$tags['_cms_page'] = $page;
 		}
 		
 		$sql = $this->populateItemsSelect($path, $tags, $fields, $values). "
@@ -601,7 +601,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		unset($sql);
 		
 		$tags['items'] = [];
-		$tags['__item_sort_order__'] = [];
+		$tags['_cms_itemSortOrder'] = [];
 		while ($item = ze\sql::fetchAssoc($result)) {
 			$id = $item[$idCol];
 			$this->formatItemRow($item, $path, $tags, $fields, $values);
@@ -619,28 +619,28 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			$this->applyTwigSnippets($id, $item, $path, $tags, $fields, $values);
 			
 			$tags['items'][$id] = $item;
-			$tags['__item_sort_order__'][] = $item[$idCol];
+			$tags['_cms_itemSortOrder'][] = $item[$idCol];
 			
 			if (!$pageSize) {
 				++$itemCount;
 			}
 		}
-		$tags['__item_count__'] = $itemCount;
+		$tags['_cms_itemCount'] = $itemCount;
 		
 		if ($limit
 		 && $pageSize < $itemCount) {
 		 	
 		 	$mrg = [
-		 		'count' => $itemCount,
-				'start' => ze\sql::pageStart($page, $pageSize) + 1,
-				'stop' => min(ze\sql::pageStart($page + 1, $pageSize), $itemCount)
+		 		'count' => ze\lang::formatInt($itemCount),
+				'start' => ze\lang::formatInt(ze\sql::pageStart($page, $pageSize) + 1),
+				'stop' => ze\lang::formatInt(min(ze\sql::pageStart($page + 1, $pageSize), $itemCount))
 			];
 		 	
 			if ($this->checkThingEnabled('search_box') && !empty($_REQUEST['search'])) {
 				$mrg['search'] = $_REQUEST['search'];
-				$tags['__items_phrase__'] = $this->phrase('[[start]] - [[stop]] of [[count]] items found from search "[[search]]"', $mrg);
+				$tags['__items_phrase__'] = $this->phrase('Showing [[start]] - [[stop]] of [[count]] items found from search "[[search]]"', $mrg);
 			} elseif ($itemCount) {
-				$tags['__items_phrase__'] = $this->phrase('[[start]] - [[stop]] of [[count]] items', $mrg);
+				$tags['__items_phrase__'] = $this->phrase('Showing [[start]] - [[stop]] of [[count]] items', $mrg);
 			}
 		} else {
 			if ($this->checkThingEnabled('search_box') && !empty($_REQUEST['search'])) {

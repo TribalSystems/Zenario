@@ -6,33 +6,6 @@ plugin_settings:
         first_tab:
             label: Details
             fields:
-                show_details_and_link:
-                    label: 'Show Audio details from:'
-                    type: radios
-                    plugin_setting:
-                        name: show_details_and_link
-                    values:
-                        current_content_item:
-                            ord: 1
-                            label: Current Content Item (this must be an Audio Content Item)
-                        another_content_item:
-                            ord: 2
-                            label: Another Audio Content Item
-                    value: current_content_item
-                    format_onchange: Yes
-                another_audio:
-                    label: 'Select Audio Content Item:'
-                    plugin_setting:
-                        name: another_audio
-                        foreign_key_to: content
-                    pick_items:
-                        path: zenario__content/panels/content/refiners/content_type//audio//
-                        min_path: zenario__content/panels/content
-                        max_path: zenario__content/panels/content
-                        target_path: zenario__content/panels/content
-                        select_phrase: Select Content Item...
-                    validation:
-                        required_if_not_hidden: Please select Content Item.
                 show_file_size:
                     label: 'Show file size'
                     plugin_setting:

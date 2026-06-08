@@ -34,13 +34,13 @@ class document {
 
 
 
-	public static function upload($filepath, $filename, $folderId = false, $privacy = 'offline') {
+	public static function upload($filepath, $filename, $folderId = false, $privacy = 'offline', $adminFacing = true) {
 		if ($fileId = \ze\fileAdm::addToDatabase('hierarchical_file', $filepath, $filename, false,false,true)) {
-			return \ze\document::create($fileId, $filename, $folderId, $privacy);
+			return \ze\document::create($fileId, $filename, $folderId, $privacy, $adminFacing);
 		}
 	}
 	
-	public static function create($fileId, $filename, $folderId, $privacy = 'offline') {
+	public static function create($fileId, $filename, $folderId, $privacy = 'offline', $adminFacing = true) {
 		
 		//Get last ordinal within folder
 		$sql = '
@@ -56,7 +56,6 @@ class document {
 			'file_id' => $fileId,
 			'folder_id' => 0,
 			'filename' => $filename,
-			'file_datetime' => date("Y-m-d H:i:s"),
 			'ordinal' => $ordinal,
 			'privacy' => $privacy];
 		
@@ -78,6 +77,17 @@ class document {
 			$documentProperties['folder_id'] = $folderId;
 		}
 		
+		$lastUpdated = [];
+		if ($adminFacing) {
+			 \ze\admin::setLastUpdated($lastUpdated, $creating = true);
+			$documentProperties['created_admin_id'] = $lastUpdated['created_admin_id'];
+		} else {
+			\ze\user::setLastUpdated($lastUpdated, $creating = true);
+			$documentProperties['created_user_id'] = $lastUpdated['created_user_id'];
+			$documentProperties['created_username'] = $lastUpdated['created_username'];
+		}
+		$documentProperties['created'] = $lastUpdated['created'];
+		
 		if ($documentId = \ze\row::insert('documents', $documentProperties)) {
 			\ze\document::processRules($documentId);
 			
@@ -91,7 +101,7 @@ class document {
 		return $documentId;
 	}
 	
-	public static function createFolder($name, $parentId = false, $makeNameUnqiue = false) {
+	public static function createFolder($name, $adminFacing = true, $parentId = false, $makeNameUnqiue = false) {
 		$name = mb_substr(trim($name), 0, 250, 'UTF-8');
 		$nameExists = \ze\row::exists('documents', ['folder_name' => $name, 'type' => 'folder', 'folder_id' => $parentId]);
 		if ($nameExists) {
@@ -120,6 +130,13 @@ class document {
 			WHERE folder_id = ' . (int)$parentId;
 		\ze\sql::update($sql);
 		
+		$lastUpdated = [];
+		if ($adminFacing) {
+			 \ze\admin::setLastUpdated($lastUpdated, $creating = true);
+		} else {
+			\ze\user::setLastUpdated($lastUpdated, $creating = true);
+		}
+		
 		return \ze\row::insert(
 			'documents',
 			[
@@ -127,7 +144,11 @@ class document {
 				'folder_name' => $name,
 				'folder_id' => $parentId,
 				'privacy' => 'public',
-				'ordinal' => 0
+				'ordinal' => 0,
+				'created' => $lastUpdated['created'],
+				'created_admin_id' => $lastUpdated['created_admin_id'],
+				'created_user_id' => $lastUpdated['created_user_id'],
+				'created_username' => $lastUpdated['created_username']
 			]
 		);
 	}
@@ -175,6 +196,14 @@ class document {
 			\ze\cache::deleteDir(CMS_ROOT . 'public/downloads/' . $parts[0]);
 		}
 		\ze\row::delete('document_public_redirects', ['document_id' => $documentId]);
+		
+		$lastUpdated = [];
+		$documentProperties = [];
+        \ze\admin::setLastUpdated($lastUpdated, $creating = false);
+
+        $documentProperties['last_edited'] = $lastUpdated['last_edited'];
+		$documentProperties['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
+		\ze\row::update('documents', $documentProperties, ['id' => $documentId]);
 		
 		return true;
 	}
@@ -229,7 +258,7 @@ class document {
 		
 	}
 
-	public static function delete($documentId) {
+	public static function delete($documentId, $usage = 'hierarchical_file') {
 		$details = \ze\row::get('documents', ['type', 'file_id', 'thumbnail_id'], $documentId);
 		\ze\module::sendSignal('eventDocumentDeleted', [$documentId]);
 		
@@ -246,11 +275,11 @@ class document {
 			$fileIdsInDocument = \ze\row::getAssocs('documents', ['file_id', 'filename'], ['file_id' => $document['file_id']]);
 			$numberFileIds = count($fileIdsInDocument);
 			
-			$file = \ze\row::get('files', ['id', 'filename', 'path', 'created_datetime', 'checksum'], ['id' => $document['file_id'], 'usage' => 'hierarchical_file']);
+			$file = \ze\row::get('files', ['id', 'filename', 'path', 'created_datetime', 'checksum'], ['id' => $document['file_id'], 'usage' => $usage]);
 
 			\ze\document::deletePubliclink($documentId, true);
 			
-			if ($file['filename']) {
+			if ($file && !empty($file['filename'])) {
 				//Please note: before 10.2, this logic would also check if any document content item uses the same file.
 				//As of 10.2, that logic is removed, as docstore is now split into folders named after the `usage` column.
 				//Doc content items and hierarchical documents are in separate pools.
@@ -294,6 +323,14 @@ class document {
 		
 		\ze\row::delete('documents_custom_data', $documentId);
 		\ze\row::delete('custom_dataset_values_link', ['dataset_id' => $dataset['id'], 'linking_id' => $documentId]);
+		
+		$lastUpdated = [];
+		$documentProperties = [];
+        \ze\admin::setLastUpdated($lastUpdated, $creating = false);
+
+        $documentProperties['last_edited'] = $lastUpdated['last_edited'];
+		$documentProperties['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
+		\ze\row::update('documents', $documentProperties, ['id' => $documentId]);
 	}
 	
 	public static function isDirEmpty($dir) {
@@ -322,6 +359,7 @@ class document {
 		if ($thumbnailId) {
 			$documentProperties['thumbnail_id'] = $thumbnailId;
 		}
+		
 		return $documentProperties;
 	}
 	
@@ -349,7 +387,7 @@ class document {
 			}
 			
 			$symFolder =  CMS_ROOT . $dirPath;
-			$safeFilename = \ze\file::safeName($document['filename']);
+			$safeFilename = \ze\file::validName($document['filename']);
 			$symPath = $symFolder . $safeFilename;
 			$frontLink = $dirPath . $safeFilename;
 			$publicLinkHtAccessFile = $symFolder . '.htaccess';
@@ -379,7 +417,6 @@ class document {
 						\ze\row::update('documents', ['privacy' => $docWithSameFile['privacy']], ['id' => $docWithSameFile['id']]);
 					}
 				}
-				//\ze\row::update('documents', ['privacy' => 'public'], ['file_id' => $document['file_id']]);
 				
 				return $frontLink;
 				
@@ -429,7 +466,7 @@ class document {
 		$content .= "<IfModule mod_rewrite.c> "."\n";
 		$content .= "	RewriteEngine On "."\n";
 		$redirectFromFileName = str_replace(' ', '\ ', $redirectFromFileName );
-		$redirectToFileName = str_replace(' ', '\ ', \ze\file::safeName($redirectToFileName));
+		$redirectToFileName = str_replace(' ', '\ ', \ze\file::validName($redirectToFileName));
 		$content .= "	RewriteRule ^.*$ " . SUBDIRECTORY . "public/downloads/".$redirectToChecksum."/". $redirectToFileName ." [R=301] "."\n";
 		$content .= "</IfModule>";
 		fwrite($f, $content);
@@ -452,7 +489,7 @@ class document {
 		$result = \ze\sql::select($sql);
 		while($doc = \ze\sql::fetchAssoc($result)) {
 			
-			if ($forceRemake || !file_exists(CMS_ROOT. 'public/downloads/'. $doc['short_checksum']. '/'. \ze\file::safeName($doc['filename']))) {
+			if ($forceRemake || !file_exists(CMS_ROOT. 'public/downloads/'. $doc['short_checksum']. '/'. \ze\file::validName($doc['filename']))) {
 				if ($forceRemake) {
 					//Make public link
 					$publicLink = \ze\document::generatePublicLink($doc['id']);

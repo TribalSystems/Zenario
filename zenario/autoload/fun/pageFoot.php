@@ -33,7 +33,7 @@ if (!ze::$cacheBundles) {
 	$w .= '&amp;no_cache=1';
 }
 
-$isWelcome = $mode === true || $mode === 'welcome';
+$isWelcome = $mode === 'welcome';
 $isOrganizer = $mode === 'organizer';
 $isAdmin = ze::isAdmin();
 
@@ -75,22 +75,22 @@ if (\ze\cookie::canSetAll()) {
 	$canSetAll =
 	$canSetNecessary =
 	$canSetFunctional =
-	$canSetAnalytic =
-	$canSetSocial = true;
+	$canSetAnalytics =
+	$canSetSocialMedia = true;
 
 } elseif (\ze\cookie::isDecided()) {
 	$canSetAll = false;
 	$canSetNecessary = true;
 	$canSetFunctional = \ze\cookie::canSet('functionality');
-	$canSetAnalytic = \ze\cookie::canSet('analytics');
-	$canSetSocial = \ze\cookie::canSet('social_media');
+	$canSetAnalytics = \ze\cookie::canSet('analytics');
+	$canSetSocialMedia = \ze\cookie::canSet('social_media');
 
 } else {
 	$canSetAll =
 	$canSetNecessary =
 	$canSetFunctional =
-	$canSetAnalytic =
-	$canSetSocial = false;
+	$canSetAnalytics =
+	$canSetSocialMedia = false;
 }
 
 //Write other related JavaScript variables to the page
@@ -106,8 +106,8 @@ echo '
 	(int) $canSetAll, ',',
 	(int) $canSetNecessary, ',',
 	(int) $canSetFunctional, ',',
-	(int) $canSetAnalytic, ',',
-	(int) $canSetSocial, ',',
+	(int) $canSetAnalytics, ',',
+	(int) $canSetSocialMedia, ',',
 	(int) ze::$equivId, ',',
 	(int) ze::$cID, ',',
 	json_encode(ze::$isPublic), ',',
@@ -145,8 +145,7 @@ if ($isAdmin) {
 	
 	//Add libraries for TinyMCE
 	ze::requireJsLib('zenario/libs/yarn/tinymce/tinymce.min.js');
-	ze::requireJsLib('zenario/libs/yarn/@tinymce/tinymce-jquery/dist/tinymce-jquery.min.js');
-	ze::requireJsLib('zenario/js/tinymce.integration.min.js');
+	ze::requireJsLib('zenario/js/tinymce.bundle.js.php');
 	
 }
 
@@ -391,12 +390,20 @@ if (ze::$cID && ze::$cID !== -1) {
 	$itemHTML = $templateHTML = $familyHTML = false;
 	
 	
-	//Include the site-wide foot first
+	//Call modules that add HTML to each page.
+	if ($mode == 'page') {
+		foreach (\ze\content::$sitewideModules as $moduleClassName) {
+			call_user_func([$moduleClassName, 'addToSitewidePageFoot'], $canSetAnalytics, $canSetSocialMedia);
+		}
+	}
+	
+	//Include the site-wide foot
 	ze\layout::sitewideHTML('sitewide_foot');
-	if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'foot') {
+	
+	if ($canSetAnalytics && ze::setting('sitewide_analytics_html_location') == 'foot') {
 		ze\layout::sitewideHTML('sitewide_analytics_html');
 	}
-	if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'foot') {
+	if ($canSetSocialMedia && ze::setting('sitewide_social_media_html_location') == 'foot') {
 		ze\layout::sitewideHTML('sitewide_social_media_html');
 	}
 	

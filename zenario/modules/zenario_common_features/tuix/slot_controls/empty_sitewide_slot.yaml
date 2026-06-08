@@ -41,7 +41,7 @@ empty_sitewide_slot:
     actions:
         insert_reusable_on_layout_layer:
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Insert a plugin into the site-wide ~header~...
+            label: Insert plugin into site-wide ~header~...
             page_modes:
                 layout: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -55,7 +55,7 @@ empty_sitewide_slot:
         insert_nest_on_layout_layer:
             hidden: true    # N.b. this will be unhidden if a nest module is running
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Insert nest into the site-wide ~header~...
+            label: Insert nest into site-wide ~header~...
             page_modes:
                 layout: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -69,7 +69,7 @@ empty_sitewide_slot:
         insert_slideshow_on_layout_layer:
             hidden: true    # N.b. this will be unhidden if a slideshow module is running
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Insert slideshow into the site-wide ~header~...
+            label: Insert slideshow into site-wide ~header~...
             page_modes:
                 layout: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -86,7 +86,7 @@ empty_sitewide_slot:
                 layout: true
             visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 'actions', 'layout');
             onclick: return zenarioA.showSlotOptionsInFAB(slotName, 'actions', 'layout');
-            label: Insert a plugin/nest/slideshow into the site-wide ~header~...
+            label: Insert into site-wide ~header~...
     
     
     overridden_info:

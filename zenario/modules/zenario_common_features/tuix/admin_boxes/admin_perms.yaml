@@ -58,7 +58,7 @@ zenario_admin:
                     type: checkbox
                     disabled: true
                     full_width: true
-                    post_field_label: Publish (requires Author permissions)
+                    post_field_label: Content item publishing, plugins, phrases (requires Author permissions)
                     label_class: zfab_core_perm
                     row_class: zenario_perms
                 perm_publish:
@@ -122,7 +122,7 @@ zenario_admin:
                     type: checkbox
                     disabled: true
                     full_width: true
-                    post_field_label: Menu (requires Author permissions)
+                    post_field_label: Menu hierarchy (requires Author permissions)
                     label_class: zfab_core_perm
                     row_class: zenario_perms
                 perm_editmenu:
@@ -193,7 +193,7 @@ zenario_admin:
                     type: checkbox
                     disabled: true
                     full_width: true
-                    post_field_label: Designer (requires Author permissions)
+                    post_field_label: Plugins and layouts (requires Author permissions)
                     label_class: zfab_core_perm
                     row_class: zenario_perms
                 perm_designer:
@@ -317,7 +317,7 @@ zenario_admin:
                             label_class: zfab_core_perm zfab_scary_option
                         _PRIV_CREATE_DELETE_MENU_SECTION:
                             label: Create/delete a menu section
-                            label_class: zfab_core_perm
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_EDIT_CSS:
                             label: Edit skin and plugin CSS
                             label_class: zfab_core_perm
@@ -326,17 +326,17 @@ zenario_admin:
                             label_class: zfab_core_perm
                         _PRIV_MANAGE_LANGUAGE_CONFIG:
                             label: Enable languages and edit their settings
-                            label_class: zfab_core_perm
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_EDIT_SITE_SETTING:
                             parent: _PRIV_VIEW_SITE_SETTING
                             label: Edit site settings
                             label_class: zfab_core_perm zfab_scary_option
                         _PRIV_EDIT_CONTENT_TYPE:
                             label: Change content type settings
-                            label_class: zfab_core_perm
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_MANAGE_DATASET:
                             label: Manage datasets
-                            label_class: zfab_core_perm
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_PROTECT_UNPROTECT_DATASET_FIELD:
                             parent: _PRIV_MANAGE_DATASET
                             label: Protect/unprotect dataset fields
@@ -349,7 +349,7 @@ zenario_admin:
                             label_class: zfab_core_perm zfab_scary_option
                         _PRIV_BACKUP_SITE:
                             label: Create a backup of the site
-                            label_class: zfab_core_perm
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_RESTORE_SITE:
                             parent: _PRIV_BACKUP_SITE
                             label: Restore the site from a backup

@@ -131,7 +131,6 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 				$documentProperties = [
 					'file_id' => $newFileId,
 					'filename' => $replacementDocumentName,
-					'file_datetime' => date("Y-m-d H:i:s"),
 					'extract_wordcount' => 0,
 					'extract' => NULL
 				];
@@ -158,6 +157,12 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 						$documentProperties['extract_wordcount'] = $extraProperties['extract_wordcount'] ?? 0;
 					}
 				}
+				
+				$lastUpdated = [];
+				ze\admin::setLastUpdated($lastUpdated, $creating = false);
+		
+				$documentProperties['last_edited'] = $lastUpdated['last_edited'];
+				$documentProperties['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
 
 				ze\row::set('documents', $documentProperties, $documentId);
 				//If the old file had a public link, create a new public link for the new file and remake all redirects to point to it including the old file.

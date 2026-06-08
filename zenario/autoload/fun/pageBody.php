@@ -115,8 +115,21 @@ echo '
 if (!$showingPreview) {
 	//If this page is a normal webpage being displayed by index.php, output the "Start of body" slot
 	if (ze::$cID) {
+		
+		$canSetAnalytics = ze\cookie::canSet('analytics');
+		$canSetSocialMedia = ze\cookie::canSet('social_media');
+		
+		//Call modules that add HTML to each page.
+		if ($mode == 'page') {
+			foreach (\ze\content::$sitewideModules as $moduleClassName) {
+				call_user_func([$moduleClassName, 'addToSitewidePageBody'], $canSetAnalytics, $canSetSocialMedia);
+			}
+		}
+		
+		//Include the site-wide body
 		ze\layout::sitewideHTML('sitewide_body');
-		if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'body') {
+		
+		if ($canSetAnalytics && ze::setting('sitewide_analytics_html_location') == 'body') {
 			ze\layout::sitewideHTML('sitewide_analytics_html');
 		}
 		if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'body') {

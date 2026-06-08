@@ -233,11 +233,18 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$values['history/last_login'] = $loginStatus['last_login'];
 			
 			if ($details['last_platform'] && $details['last_platform'] && $details['last_platform'] && $details['last_platform']) {
+				//We want to obfuscate the 2nd half of the IP address when displaying it.
+				$obfuscatedIpAddress = '';
+				if ($details['last_login_ip']) {
+					$ipAddressParts = explode('.', $details['last_login_ip']);
+					$obfuscatedIpAddress = $ipAddressParts[0] . '.' . $ipAddressParts[1] . '.0.0';
+				}
+				
 				$replace = [
 					'last_platform' => $details['last_platform'],
 					'last_browser' => $details['last_browser'],
 					'last_browser_version' => $details['last_browser_version'],
-					'last_login_ip' => $details['last_login_ip']
+					'last_login_ip' => $obfuscatedIpAddress
 				];
 				
 				if (ze\module::inc('zenario_geoip_lookup')) {
@@ -702,7 +709,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 					
 							//Get the value of the setting. Hidden fields should count as being empty
 							if (ze\ring::engToBoolean($field['hidden'] ?? false)
-							 || ze\ring::engToBoolean($field['_was_hidden_before'] ?? false)) {
+							 || ze\ring::engToBoolean($field['_cms_hidden'] ?? false)) {
 								$value = '';
 							} else {
 								$value = $values[$tabName. '/'. $fieldName] ?? '';

@@ -10,13 +10,15 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx\Namespaces;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
-use PhpOffice\PhpSpreadsheet\Settings;
 use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
 use PhpOffice\PhpSpreadsheet\Shared\XMLWriter;
 use PhpOffice\PhpSpreadsheet\Style\Conditional;
 use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\ConditionalColorScale;
 use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\ConditionalDataBar;
 use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\ConditionalFormattingRuleExtension;
+use PhpOffice\PhpSpreadsheet\Style\ConditionalFormatting\ConditionalIconSet;
+use PhpOffice\PhpSpreadsheet\Style\Font;
+use PhpOffice\PhpSpreadsheet\Worksheet\BaseDrawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\RowDimension;
 use PhpOffice\PhpSpreadsheet\Worksheet\SheetView;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet as PhpspreadsheetWorksheet;
@@ -36,6 +38,8 @@ class Worksheet extends WriterPart
     private bool $explicitStyle0;
 
     private bool $useDynamicArrays = false;
+
+    private bool $restrictMaxColumnWidth = false;
 
     /**
      * Write worksheet to XML format.
@@ -62,13 +66,13 @@ class Worksheet extends WriterPart
         } else {
             $objWriter = new XMLWriter(XMLWriter::STORAGE_MEMORY);
         }
+        $this->restrictMaxColumnWidth = $this->getParentWriter()->getRestrictMaxColumnWidth();
 
         // XML header
         $objWriter->startDocument('1.0', 'UTF-8', 'yes');
 
         // Worksheet
         $objWriter->startElement('worksheet');
-        $objWriter->writeAttribute('xml:space', 'preserve');
         $objWriter->writeAttribute('xmlns', Namespaces::MAIN);
         $objWriter->writeAttribute('xmlns:r', Namespaces::SCHEMA_OFFICE_DOCUMENT);
 
@@ -436,7 +440,7 @@ class Worksheet extends WriterPart
 
         // Default column width
         if ($worksheet->getDefaultColumnDimension()->getWidth() >= 0) {
-            $objWriter->writeAttribute('defaultColWidth', StringHelper::formatNumber($worksheet->getDefaultColumnDimension()->getWidth()));
+            $objWriter->writeAttribute('defaultColWidth', StringHelper::formatNumber($worksheet->getDefaultColumnDimension()->getWidthForOutput($this->restrictMaxColumnWidth)));
         }
 
         // Outline level - row
@@ -483,7 +487,7 @@ class Worksheet extends WriterPart
                     $objWriter->writeAttribute('width', '9.10');
                 } else {
                     // Width set
-                    $objWriter->writeAttribute('width', StringHelper::formatNumber($colDimension->getWidth()));
+                    $objWriter->writeAttribute('width', StringHelper::formatNumber($colDimension->getWidthForOutput($this->restrictMaxColumnWidth)));
                 }
 
                 // Column visibility
@@ -864,6 +868,47 @@ class Worksheet extends WriterPart
         }
     }
 
+    private function writeIconSetElements(XMLWriter $objWriter, ?ConditionalIconSet $iconSet): void
+    {
+        if ($iconSet === null) {
+            return;
+        }
+
+        $objWriter->startElement('iconSet');
+        if ($iconSet->getIconSetType() !== null) {
+            $objWriter->writeAttribute('iconSet', $iconSet->getIconSetType()->value);
+        }
+        foreach (
+            [
+                'reverse' => $iconSet->getReverse(),
+                'showValue' => $iconSet->getShowValue(),
+                'custom' => $iconSet->getCustom(),
+            ] as $attr => $value
+        ) {
+            self::writeAttributeIf($objWriter, $value !== null, $attr, $value ? '1' : '0');
+        }
+
+        foreach ($iconSet->getCfvos() as $cfvo) {
+            $objWriter->startElement('cfvo');
+            $objWriter->writeAttribute('type', $cfvo->getType());
+            self::writeAttributeIf(
+                $objWriter,
+                $cfvo->getValue() !== null,
+                'val',
+                (string) $cfvo->getValue(),
+            );
+            self::writeAttributeIf(
+                $objWriter,
+                $cfvo->getGreaterThanOrEqual() !== null,
+                'gte',
+                $cfvo->getGreaterThanOrEqual() ? '1' : '0',
+            );
+            $objWriter->endElement(); // end cfvo
+        }
+
+        $objWriter->endElement(); // end iconSet
+    }
+
     /**
      * Write ConditionalFormatting.
      */
@@ -898,6 +943,7 @@ class Worksheet extends WriterPart
                     $objWriter,
                     ($conditional->getConditionType() !== Conditional::CONDITION_COLORSCALE
                         && $conditional->getConditionType() !== Conditional::CONDITION_DATABAR
+                        && $conditional->getConditionType() !== Conditional::CONDITION_ICONSET
                         && $conditional->getNoFormatSet() === false),
                     'dxfId',
                     (string) $this->getParentWriter()->getStylesConditionalHashTable()->getIndexForHashCode($conditional->getHashCode())
@@ -934,6 +980,8 @@ class Worksheet extends WriterPart
                     self::writeTimePeriodCondElements($objWriter, $conditional, $topLeftCell);
                 } elseif ($conditional->getConditionType() === Conditional::CONDITION_COLORSCALE) {
                     self::writeColorScaleElements($objWriter, $conditional->getColorScale());
+                } elseif ($conditional->getConditionType() === Conditional::CONDITION_ICONSET) {
+                    self::writeIconSetElements($objWriter, $conditional->getIconSet());
                 } else {
                     self::writeOtherCondElements($objWriter, $conditional, $topLeftCell);
                 }
@@ -1038,6 +1086,13 @@ class Worksheet extends WriterPart
 
                 if ($hyperlink->getTooltip() !== '') {
                     $objWriter->writeAttribute('tooltip', $hyperlink->getTooltip());
+                }
+                if ($hyperlink->getDisplay() !== '') {
+                    $objWriter->writeAttribute('display', $hyperlink->getDisplay());
+                } elseif ($hyperlink->getTooltip() !== '') {
+                    // Probably shouldn't do this,
+                    // but avoids a breaking change.
+                    // This was introduced in PR 904 in 2019.
                     $objWriter->writeAttribute('display', $hyperlink->getTooltip());
                 }
 
@@ -1351,6 +1406,16 @@ class Worksheet extends WriterPart
             }
         }
 
+        $customHeightNeeded = false;
+        if ($worksheet->getDefaultRowDimension()->getRowHeight() >= 0) {
+            foreach ($worksheet->getRowDimensions() as $rowDimension) {
+                if ($rowDimension->getCustomFormat()) {
+                    $customHeightNeeded = true;
+
+                    break;
+                }
+            }
+        }
         $currentRow = 0;
         $emptyDimension = new RowDimension();
         while ($currentRow++ < $highestRow) {
@@ -1364,6 +1429,7 @@ class Worksheet extends WriterPart
 
                 if ($writeCurrentRow) {
                     // Start a new row
+                    $customFormatWritten = false;
                     $objWriter->startElement('row');
                     $objWriter->writeAttribute('r', "$currentRow");
                     $objWriter->writeAttribute('spans', '1:' . $colCount);
@@ -1372,6 +1438,12 @@ class Worksheet extends WriterPart
                     if ($rowDimension->getRowHeight() >= 0) {
                         $objWriter->writeAttribute('customHeight', '1');
                         $objWriter->writeAttribute('ht', StringHelper::formatNumber($rowDimension->getRowHeight()));
+                    } elseif ($rowDimension->getCustomFormat()) {
+                        $objWriter->writeAttribute('customFormat', '1');
+                        $customFormatWritten = true;
+                        $objWriter->writeAttribute('ht', StringHelper::formatNumber($rowDimension->getRowHeight()));
+                    } elseif ($customHeightNeeded) {
+                        $objWriter->writeAttribute('customHeight', '1');
                     }
 
                     // Row visibility
@@ -1392,7 +1464,9 @@ class Worksheet extends WriterPart
                     // Style
                     if ($rowDimension->getXfIndex() !== null) {
                         $objWriter->writeAttribute('s', (string) $rowDimension->getXfIndex());
-                        $objWriter->writeAttribute('customFormat', '1');
+                        if (!$customFormatWritten) {
+                            $objWriter->writeAttribute('customFormat', '1');
+                        }
                     }
 
                     // Write cells
@@ -1431,19 +1505,26 @@ class Worksheet extends WriterPart
         $objWriter->endElement();
     }
 
-    private function writeCellInlineStr(XMLWriter $objWriter, string $mappedType, RichText|string $cellValue): void
+    private function writeCellInlineStr(XMLWriter $objWriter, string $mappedType, RichText|string $cellValue, ?Font $font): void
     {
         $objWriter->writeAttribute('t', $mappedType);
         if (!$cellValue instanceof RichText) {
             $objWriter->startElement('is');
-            $objWriter->writeElement(
-                't',
-                StringHelper::controlCharacterPHP2OOXML(htmlspecialchars($cellValue, Settings::htmlEntityFlags()))
+            $objWriter->startElement('t');
+            $textToWrite = StringHelper::controlCharacterPHP2OOXML(
+                $cellValue
             );
-            $objWriter->endElement();
+            if ($textToWrite !== trim($textToWrite)) {
+                $objWriter->writeAttribute('xml:space', 'preserve');
+            }
+            $objWriter->writeRawData($textToWrite);
+            $objWriter->endElement(); // t
+            $objWriter->endElement(); // is
         } else {
             $objWriter->startElement('is');
-            $this->getParentWriter()->getWriterPartstringtable()->writeRichText($objWriter, $cellValue);
+            $this->getParentWriter()
+                ->getWriterPartstringtable()
+                ->writeRichText($objWriter, $cellValue, null, $font);
             $objWriter->endElement();
         }
     }
@@ -1482,6 +1563,13 @@ class Worksheet extends WriterPart
         $cellIsFormula = str_starts_with($cellValue, '=');
         self::writeElementIf($objWriter, $cellIsFormula, 'f', FunctionPrefix::addFunctionPrefixStripEquals($cellValue));
         $objWriter->writeElement('v', $cellIsFormula ? $formulaerr : $cellValue);
+    }
+
+    private function writeCellDrawing(XMLWriter $objWriter, int $index): void
+    {
+        $objWriter->writeAttribute('t', 'e');
+        $objWriter->writeAttribute('vm', (string) $index);
+        $objWriter->writeElement('v', '#VALUE!');
     }
 
     private function writeCellFormula(XMLWriter $objWriter, string $cellValue, Cell $cell): void
@@ -1560,8 +1648,8 @@ class Worksheet extends WriterPart
             self::writeElementIf(
                 $objWriter,
                 $this->getParentWriter()->getOffice2003Compatibility() === false
-                && $this->getParentWriter()->getPreCalculateFormulas()
-                && $calculatedValue !== null,
+                    && $this->getParentWriter()->getPreCalculateFormulas()
+                    && $calculatedValue !== null,
                 'v',
                 (!is_array($calculatedValue) && !str_starts_with($calculatedValueString, '#'))
                     ? StringHelper::formatNumber($calculatedValueString) : '0'
@@ -1608,6 +1696,13 @@ class Worksheet extends WriterPart
         if (empty($xfi) && !$writeValue) {
             return;
         }
+        $styleArray = $this->getParentWriter()
+            ->getSpreadsheet()
+            ->getCellXfCollection();
+        $font = $styleArray[$xfi] ?? null;
+        if ($font !== null) {
+            $font = $font->getFont();
+        }
         $objWriter->startElement('c');
         $objWriter->writeAttribute('r', $cellAddress);
         $mappedType = $pCell->getDataType();
@@ -1638,7 +1733,7 @@ class Worksheet extends WriterPart
                 case 'inlinestr':    // Inline string
                     /** @var RichText|string */
                     $richText = $cellValue;
-                    $this->writeCellInlineStr($objWriter, $mappedType, $richText);
+                    $this->writeCellInlineStr($objWriter, $mappedType, $richText, $font);
 
                     break;
                 case 's':            // String
@@ -1656,6 +1751,13 @@ class Worksheet extends WriterPart
                     break;
                 case 'b':            // Boolean
                     $this->writeCellBoolean($objWriter, $mappedType, (bool) $cellValue);
+
+                    break;
+                case 'drawingcell':  // DrawingInCell
+                    if ($cellValue instanceof BaseDrawing) {
+                        $index = $cellValue->getIndex();
+                        $this->writeCellDrawing($objWriter, $index);
+                    }
 
                     break;
                 case 'e':            // Error

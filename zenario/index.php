@@ -511,7 +511,7 @@ if (ze\lang::count() > 1) {
 	}
 }
 
-ze\content::pageHead('zenario/', false, true, $overrideFrameworkAndCSS);
+ze\content::pageHead($scriptPrefix = 'zenario/', $scriptMode = 'page', true, $overrideFrameworkAndCSS);
 
 echo "</head>";
 
@@ -564,7 +564,7 @@ if ($singleSlot) {
 	
 	//Just show the plugin, without any of the <div>s from the layout around it
 	if ($hideLayout) {
-		ze\content::pageBody('zenario_showing_plugin_without_layout', '', true);
+		ze\content::pageBody($scriptPrefix, $scriptMode, 'zenario_showing_plugin_without_layout', '', true);
 		
 	
 	//Try and "fake" the grid, to get as many styles from the Skin as possible,
@@ -574,9 +574,9 @@ if ($singleSlot) {
 			echo '
 				<link rel="stylesheet" type="text/css" href="', htmlspecialchars(ze\link::absolute()), 'zenario/styles/admin_plugin_preview.min.css">';
 			
-			ze\content::pageBody('zenario_showing_plugin_preview', '', true);
+			ze\content::pageBody($scriptPrefix, $scriptMode, 'zenario_showing_plugin_preview', '', true);
 		} else {
-			ze\content::pageBody('zenario_showing_standalone_plugin', '', true);
+			ze\content::pageBody($scriptPrefix, $scriptMode, 'zenario_showing_standalone_plugin', '', true);
 		}
 		
 		echo $skinDiv, $templateDiv, $contentItemDiv;
@@ -633,7 +633,7 @@ if ($singleSlot) {
 			window.zenario_inIframe = true;
 		</script>';
 	
-	ze\content::pageFoot('zenario/', false, false, false);
+	ze\content::pageFoot($scriptPrefix, $scriptMode, false, false);
 	
 	//If showing a plugin preview inside a fake layout, add a call to
 	//zenario.resize() as this is needed but won't happen naturally.
@@ -645,8 +645,8 @@ if ($singleSlot) {
 	}
 
 //Show a preview, without the Admin Toolbar or any JavaScript
-} elseif (!empty($_REQUEST['_show_page_preview'])) {
-	ze\content::pageBody('zenario_showing_preview', '', true);
+} elseif (!empty($_REQUEST['_cms_showPagePreview'])) {
+	ze\content::pageBody($scriptPrefix, $scriptMode, 'zenario_showing_preview', '', true);
 	echo $skinDiv, $templateDiv, $contentItemDiv;
 	
 	if ($tplFile = ze\layout::htmlPath(ze::$layoutId, true)) {
@@ -656,7 +656,7 @@ if ($singleSlot) {
 	echo "\n", '</div></div></div>';
 	
 	if (!empty($_REQUEST['_add_js'])) {
-		ze\content::pageFoot('zenario/', false, false, false);
+		ze\content::pageFoot($scriptPrefix, $scriptMode, false, false);
 	} else {
 		echo '
 		<script type="text/javascript" src="zenario/libs/yarn/jquery/dist/jquery.min.js?v=', ZENARIO_VERSION, '"></script>';
@@ -667,9 +667,9 @@ if ($singleSlot) {
 				el.onclick = function() { return false; };
 			});';
 			
-			if (!empty($_REQUEST['_scroll_to'])) {
+			if (!empty($_REQUEST['_cms_scrollTo'])) {
 				echo '
-					$(document).scrollTop('. (int) $_REQUEST['_scroll_to']. ');';
+					$(document).scrollTop('. (int) $_REQUEST['_cms_scrollTo']. ');';
 			}
 	echo '
 		</script>';
@@ -678,7 +678,7 @@ if ($singleSlot) {
 //Normal functionality; show the whole page
 } else {
 	$includeAdminToolbar = $isAdmin && empty($_SESSION['hide_admin_toolbar']);
-	ze\content::pageBody('', '', true, $includeAdminToolbar);
+	ze\content::pageBody($scriptPrefix, $scriptMode, '', '', true, $includeAdminToolbar);
 	ze\cookie::showConsentBox($isAdmin, true, $includeAdminToolbar);
 	
 	if (ze\module::inc('zenario_sensitive_content_message')) {
@@ -697,7 +697,7 @@ if ($singleSlot) {
 	}
 	
 	echo "\n", '</div></div></div>';
-	ze\content::pageFoot('zenario/', false, true, $includeAdminToolbar, true);
+	ze\content::pageFoot($scriptPrefix, $scriptMode, true, $includeAdminToolbar, true);
 	
 	//If someone just changed the CSS for a plugin, scroll down to that plugin to show the changes
 	if ($isAdmin && !empty($_SESSION['scroll_slot_on_'. ze::$cType. '_'. ze::$cID])) {

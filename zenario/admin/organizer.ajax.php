@@ -67,7 +67,11 @@ function searchOrganizerColumn(&$whereStatement, $columnName, $searchText, $exac
 	
 		$whereStatement .= "'". ze\escape::sql($searchText). "'";
 	
-	} else {
+	//For most columns that are flagged as searchable, we assume that they are text and we look for
+	//anything with that text in.
+	//Before Zenario 10.4, we just used a LIKE for this.
+	//However we'll still use a LIKE if the search text has a space or non-word characters in it.
+	} elseif ((false !== strpos($searchText, ' ')) || ($searchText !== ze\ring::trimNonWordCharactersUnicode($searchText))) {
 		if ($not) {
 			$whereStatement .= "
 				(". $columnName. " IS NULL OR ". $columnName. " NOT LIKE ";
@@ -81,18 +85,37 @@ function searchOrganizerColumn(&$whereStatement, $columnName, $searchText, $exac
 		}
 	
 		$whereStatement .= "'%". ze\escape::like($searchText, true). "%'";
+	
+	//T12933: Improve admin-side searching, to avoid simple LIKE and use RLIKE for word boundaries
+	} else {
+		if ($not) {
+			$whereStatement .= "
+				(". $columnName. " IS NULL OR ". $columnName. " NOT RLIKE ";
+		} else {
+			$whereStatement .= "
+				". $columnName. " RLIKE ";
+		}
+	
+		if ($asciiCharactersOnly) {
+			$whereStatement .= "_ascii";
+		}
+	
+		$whereStatement .= "'". ze\escape::sql('\\b'. ze\escape::regexp($searchText)). "'";
 	}
 	
 	if ($not) {
 		$whereStatement .= ")";
 	}
+	
+	//To help debugging
+	//$whereStatement .= '/* $col: '. print_r($col, true). '  */';
 }
 
 
 $mode = false;
 $tagPath = '';
 $modules = [];
-$debugMode = (bool) ze::get('_debug');
+$debugMode = (bool) ze::get('_cms_debug');
 $customJoin = false;
 $organizerQueryIds = false;
 $organizerQueryDetails = false;
@@ -101,19 +124,19 @@ $compatibilityClassNames = [];
 ze::$tuixType = $type = 'organizer';
 
 //Work out which mode this should be for Organizer
-if (ze::get('_select_mode')) {
+if (ze::get('_cms_orgSelectMode')) {
 	define('ORGANIZER_MODE', $mode = 'select');
-} elseif (ze::get('_quick_mode')) {
+} elseif (ze::get('_cms_orgQuickMode')) {
 	define('ORGANIZER_MODE', $mode = 'quick');
-} elseif (ze::get('_typeahead_search')) {
+} elseif (ze::get('_cms_orgTypeahead')) {
 	define('ORGANIZER_MODE', $mode = 'typeahead_search');
 } elseif (ze::get('_get_item_name')) {
 	define('ORGANIZER_MODE', $mode = 'get_item_name');
-} elseif (!empty($_REQUEST['_get_item_links'])) {
+} elseif (!empty($_REQUEST['_cms_fetchItemLinks'])) {
 	define('ORGANIZER_MODE', $mode = 'get_item_links');
-} elseif (ze::get('_get_item_data')) {
+} elseif (ze::get('_cms_fetchItemData')) {
 	define('ORGANIZER_MODE', $mode = 'get_item_data');
-} elseif (ze::get('_get_matched_ids')) {
+} elseif (ze::get('_cms_fetchMatchedIds')) {
 	define('ORGANIZER_MODE', $mode = 'get_matched_ids');
 } else {
 	define('ORGANIZER_MODE', $mode = 'full');
@@ -218,8 +241,8 @@ class zenario_organizer {
 	}
 }
 
-if (ze::get('_filters')) {
-	zenario_organizer::$filters = json_decode($_GET['_filters'] ?? false, true);
+if (ze::get('_cms_filters')) {
+	zenario_organizer::$filters = json_decode($_GET['_cms_filters'] ?? false, true);
 }
 
 
@@ -290,7 +313,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 	
 	
 	//Add definitions for any refiners supplied in the request
-	$refinersPresent = ['refinerId' => 'REFINER_ID', '_combineItem' => 'COMBINE_ITEM'];
+	$refinersPresent = ['refinerId' => 'REFINER_ID', '_cms_combineItem' => 'COMBINE_ITEM'];
 	foreach ($_REQUEST as $key => $value) {
 		if (substr($key, 0, 9) == 'refiner__') {
 			$refinersPresent[$key] = strtoupper($key);
@@ -332,8 +355,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		}
 	}
 	
-	if (ze::request('_combineItem')) {
-		define('COMBINE_ITEM__NO_QUOTES', ze::request('_combineItem'));
+	if (ze::request('_cms_combineItem')) {
+		define('COMBINE_ITEM__NO_QUOTES', ze::request('_cms_combineItem'));
 	}
 	
 	//Start to populate the Organizer Panel:
@@ -352,8 +375,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		}
 	}
 	
-	$queued = !empty($_GET['_queued']);
-	$sortCol = $_GET['_sort_col'] ?? false;
+	$queued = !empty($_GET['_cms_isQueued']);
+	$sortCol = $_GET['_cms_sortCol'] ?? false;
 	
 	//Have any columns been added that need formatting from their own Module?
 	if (isset($tags['columns']) && is_array($tags['columns'])) {
@@ -576,7 +599,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		if (ze::get('refinerName') && !empty($tags['refiners'][ze::get('refinerName')])) {
 			
 			$refinerWhere = false;
-			if (isset($_GET['_search']) && !empty($tags['refiners'][ze::get('refinerName')]['sql_when_searching'])) {
+			if (isset($_GET['_cms_searchTerm']) && !empty($tags['refiners'][ze::get('refinerName')]['sql_when_searching'])) {
 				$refinerWhere = ltrim($tags['refiners'][ze::get('refinerName')]['sql_when_searching']);
 			
 			} elseif (!empty($tags['refiners'][ze::get('refinerName')]['sql'])) {
@@ -601,7 +624,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 			//Add any table-joins for refiners
 			$refinerJoin = false;
-			if (isset($_GET['_search']) && !empty($tags['refiners'][ze::get('refinerName')]['table_join_when_searching'])) {
+			if (isset($_GET['_cms_searchTerm']) && !empty($tags['refiners'][ze::get('refinerName')]['table_join_when_searching'])) {
 				$refinerJoin = $tags['refiners'][ze::get('refinerName')]['table_join_when_searching'];
 			
 			} elseif (!empty($tags['refiners'][ze::get('refinerName')]['table_join'])) {
@@ -670,7 +693,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 					
 					if ($colName == $sortCol
-					 || (($isFiltered || isset($_GET['_search'])) && ze\ring::engToBoolean($col['searchable'] ?? false))
+					 || (($isFiltered || isset($_GET['_cms_searchTerm'])) && ze\ring::engToBoolean($col['searchable'] ?? false))
 					 || ($isFiltered && $filterFormat && ze::in(
 							$filterFormat,
 							'enum', 'yes_or_no',
@@ -688,13 +711,15 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		
 		//Apply a search from the search box
-		if (isset($_GET['_search']) && !empty($tags['columns'])) {
+		if (isset($_GET['_cms_searchTerm']) && !empty($tags['columns'])) {
 			$whereStatement .= "
 			  AND (";
 			
 			$first = true;
 			foreach ($tags['columns'] as $colName => &$col) {
-				if (!empty($col['db_column']) && ze\ring::engToBoolean($col['searchable'] ?? false) && !ze\ring::engToBoolean($col['disallow_quicksearch'] ?? false)) {
+				if (!empty($col['db_column'])
+				 && !empty($col['searchable'])
+				 && empty($col['disallow_quicksearch'])) {
 					//Group functions can't be used in a query
 					if (!preg_match('/COUNT\s*\(/i', $col['db_column'])) {
 						
@@ -706,14 +731,22 @@ if (!$requestedPath || empty($tags['class_name'])) {
 						
 						if (!empty($col['encrypted']['hashed'])) {
 							$whereStatement .= "
-								". $col['encrypted']['hashed_column']. " = '". ze\escape::hashedColumn($_GET['_search']). "'";
+								". $col['encrypted']['hashed_column']. " = '". ze\escape::hashedColumn($_GET['_cms_searchTerm']). "'";
 						
 						} else {
 							
-							$exactMatch = !empty($col['format']) && $col['format'] == 'id';
+							//ID columns should always be an exact match.
+							if ($colName == 'id') {
+								//Note: I've noticed that it's rare developers actually bother to set the "format: id" option
+								//on ID columns, so I'm hard-coding a rule where if the column's name is "id" then I'm also
+								//considering it an id-column for this purpose!
+								$exactMatch = true;
+							} else {
+								$exactMatch = isset($col['format']) && $col['format'] == 'id';
+							}
 							$not = false;
 							
-							searchOrganizerColumn($whereStatement, $col['search_column'] ?? $col['db_column'], $_GET['_search'], $exactMatch, $not, $col);
+							searchOrganizerColumn($whereStatement, $col['search_column'] ?? $col['db_column'], $_GET['_cms_searchTerm'], $exactMatch, $not, $col);
 						}
 					}
 				}
@@ -727,7 +760,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			//panels to add specific logic to their quick-searches, that's not tied to a specific column.
 			//This was added for T13107, Searching for users/contacts in Organizer
 			foreach ($modules as $className => &$module) {
-				$whereStatement .= $module->quickSearchOrganizerPanel($requestedPath, $tags, ze::request('refinerName'), ze::request('refinerId'), $mode, $_GET['_search']);
+				$whereStatement .= $module->quickSearchOrganizerPanel($requestedPath, $tags, ze::request('refinerName'), ze::request('refinerId'), $mode, $_GET['_cms_searchTerm']);
 			}
 			
 			$whereStatement .= "
@@ -907,7 +940,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		//Order by the sort column
 		if ($sortColumn) {
-			if (ze::get('_sort_desc')) {
+			if (ze::get('_cms_sortDesc')) {
 				$orderBy = $sortColumnDesc. ", ". $groupBy;
 			} else {
 				$orderBy = $sortColumn. ", ". $groupBy;
@@ -957,12 +990,12 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				$_GET['id'] .= $row[0];
 			}
 			
-			if (!empty($_REQUEST['_fab_path'])) {
+			if (!empty($_REQUEST['_cms_fabPath'])) {
 				//Handle FABs that wanted the list of ids.
 				//We'll fake a few things in the GET/POST, then call admin_boxes.ajax.php
 				//to run the logic for opening the FAB
-				$_REQUEST['_fill'] = $_POST['_fill'] = $_GET['_fill'] = true;
-				$_REQUEST['path'] = $_POST['path'] = $_GET['path'] = $_REQUEST['_fab_path'];
+				$_REQUEST['_cms_fillAction'] = $_POST['_cms_fillAction'] = $_GET['_cms_fillAction'] = true;
+				$_REQUEST['path'] = $_POST['path'] = $_GET['path'] = $_REQUEST['_cms_fabPath'];
 				require CMS_ROOT. 'zenario/admin/admin_boxes.ajax.php';
 			
 			} else {
@@ -970,17 +1003,17 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				//Note that this code is similar to the logic in zenario/ajax.php that normally handles
 				//the handleOrganizerPanelAJAX() and organizerPanelDownload() methods, except this version
 				//also runs preFillOrganizerPanel() and includes a list of ids
-				if (!ze::request('__pluginClassName__')
-				 || empty($modules[ze::request('__pluginClassName__')])) {
+				if (!ze::request('_cms_class')
+				 || empty($modules[ze::request('_cms_class')])) {
 					echo 'Error, could not find the module for this button on this panel.';
 					exit;
 				}
 			
-				if (ze::post('_download')) {
-					$modules[ze::request('__pluginClassName__')]->organizerPanelDownload($requestedPath, $_GET['id'], ze::request('refinerName'), ze::request('refinerId'));
+				if (ze::post('_cms_isDownload')) {
+					$modules[ze::request('_cms_class')]->organizerPanelDownload($requestedPath, $_GET['id'], ze::request('refinerName'), ze::request('refinerId'));
 			
 				} else {
-					$newIds = $modules[ze::request('__pluginClassName__')]->handleOrganizerPanelAJAX($requestedPath, $_GET['id'], '', ze::request('refinerName'), ze::request('refinerId'));
+					$newIds = $modules[ze::request('_cms_class')]->handleOrganizerPanelAJAX($requestedPath, $_GET['id'], '', ze::request('refinerName'), ze::request('refinerId'));
 
 					if ($newIds && !is_array($newIds)) {
 						$newIds = explode(',', $newIds);
@@ -1004,14 +1037,14 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		} elseif ($groupBy === $idColumn && $mode == 'get_item_links') {
 			//Only look for a few specific items
 				//(Somewhat of a bespoke feature at the moment, it's not in the schema)
-			foreach(explode(',', $_REQUEST['_get_item_links']) as $i => $id) {
+			foreach(explode(',', $_REQUEST['_cms_fetchItemLinks']) as $i => $id) {
 				$in .= $in? ", " : "IN (";
 				$in .= is_numeric($id)? (int) $id : "'". ze\escape::sql($id). "'";
 			}
 			
 		} elseif ($groupBy === $idColumn && $mode == 'get_item_name') {
-			if (isset($_REQUEST['_item'])) {
-				foreach(explode(',', $_REQUEST['_item']) as $i => $id) {
+			if (isset($_REQUEST['_cms_selectedID'])) {
+				foreach(explode(',', $_REQUEST['_cms_selectedID']) as $i => $id) {
 					$in .= $in? ", " : "IN (";
 					$in .= is_numeric($id)? (int) $id : "'". ze\escape::sql($id). "'";
 				}
@@ -1133,7 +1166,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			//Otherwise get the list of ids in the correctly sorted order
 			} else {
 				$count = 0;
-				$tags['__item_sort_order__'] = [];
+				$tags['_cms_itemSortOrder'] = [];
 				
 				while ($row = ze\sql::fetchRow($result)) {
 					
@@ -1147,14 +1180,14 @@ if (!$requestedPath || empty($tags['class_name'])) {
 							$row[0] = ze\ring::encodeIdForOrganizer($row[0]);
 						}
 					
-						$tags['__item_sort_order__'][] = $row[0];
+						$tags['_cms_itemSortOrder'][] = $row[0];
 					}
 				}
 				
-				//If "_limit" is in the request, this means that server side sorting/pagination is being used
-				if ($limit = (int) ($_GET['_limit'] ?? 0)) {
+				//If "_cms_limit" is in the request, this means that server side sorting/pagination is being used
+				if ($limit = (int) ($_GET['_cms_limit'] ?? 0)) {
 					//Apply pagination using the limit
-					$start = (int) ($_GET['_start'] ?? 0);
+					$start = (int) ($_GET['_cms_start'] ?? 0);
 				
 					if ($start >= $count) {
 						$start = 0;
@@ -1162,10 +1195,10 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				
 					//If we are using pagination, and have had specific item(s) requested, only show the page that item is on.
 					//In the case of a multiple selection, show the earliest page with items on
-					if (isset($_GET['_item'])) {
+					if (isset($_GET['_cms_selectedID'])) {
 						$pos = false;
-						foreach (explode(',', $_GET['_item']) as $item) {
-							$itemPos = array_search($item, $tags['__item_sort_order__']);
+						foreach (explode(',', $_GET['_cms_selectedID']) as $item) {
+							$itemPos = array_search($item, $tags['_cms_itemSortOrder']);
 						
 							if ($itemPos !== false && ($pos === false || $itemPos < $pos)) {
 								$pos = $itemPos;
@@ -1179,7 +1212,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					}
 				
 					//Set which page this should be
-					$tags['__page__'] = 1 + (int) ($start / $limit);
+					$tags['_cms_page'] = 1 + (int) ($start / $limit);
 					$stop = $start + $limit;
 				
 					$startV = $start;
@@ -1195,8 +1228,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				
 					$new__item_sort_order__ = [];
 					for ($i = $start; $i < $stop; ++$i) {
-						if (isset($tags['__item_sort_order__'][$i]) && $tags['__item_sort_order__'][$i] !== null) {
-							$new__item_sort_order__[$i] = $tags['__item_sort_order__'][$i];
+						if (isset($tags['_cms_itemSortOrder'][$i]) && $tags['_cms_itemSortOrder'][$i] !== null) {
+							$new__item_sort_order__[$i] = $tags['_cms_itemSortOrder'][$i];
 						} else {
 							break;
 						}
@@ -1204,7 +1237,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 						if ($i >= $startV && $i < $stopV) {
 							$in .= $in? ", " : "IN (";
 						
-							$thisId = $tags['__item_sort_order__'][$i];
+							$thisId = $tags['_cms_itemSortOrder'][$i];
 							if ($encodeItemIdForOrganizer) {
 								$thisId = ze\ring::decodeIdForOrganizer($thisId);
 							}
@@ -1218,13 +1251,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					}
 				
 					//We don't need to send the ids of every single item to the client
-					unset($tags['__item_sort_order__']);
-					$tags['__item_sort_order__'] = $new__item_sort_order__;
+					unset($tags['_cms_itemSortOrder']);
+					$tags['_cms_itemSortOrder'] = $new__item_sort_order__;
 					unset($new__item_sort_order__);
 				
 				//A simplier version of the above that doesn't worry about pagination
 				} else {
-					foreach ($tags['__item_sort_order__'] as $i => $thisId) {
+					foreach ($tags['_cms_itemSortOrder'] as $i => $thisId) {
 						
 						$in .= $in? ", " : "IN (";
 					
@@ -1253,7 +1286,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		//When I do the work to add a new type of CSV export, the code to handle it should probably go here!
 		
 		//if (ze::request('new_csv_mode') {
-		//	foreach ($tags['__item_sort_order__'] as $id) {
+		//	foreach ($tags['_cms_itemSortOrder'] as $id) {
 		//		some_module::some_function($requestedPath, $id);
 		//	}
 		//} else
@@ -1409,11 +1442,11 @@ if (!$requestedPath || empty($tags['class_name'])) {
 	
 	//Set the current item count
 	if (isset($count)) {
-		$tags['__item_count__'] = $count;
+		$tags['_cms_itemCount'] = $count;
 	} elseif (!empty($tags['items'])) {
-		$tags['__item_count__'] = count($tags['items']);
+		$tags['_cms_itemCount'] = count($tags['items']);
 	} else {
-		$tags['__item_count__'] = 0;
+		$tags['_cms_itemCount'] = 0;
 	}
 }
 
@@ -1445,8 +1478,8 @@ if ($mode == 'get_item_data') {
 	$tags = [
 		'items' => $tags['items'],
 		'title' => $tags['title'],
-		'__item_count__' => $tags['__item_count__'],
-		'__item_sort_order__' => $tags['__item_sort_order__']];
+		'_cms_itemCount' => $tags['_cms_itemCount'],
+		'_cms_itemSortOrder' => $tags['_cms_itemSortOrder']];
 
 
 //When just fetching an item's name, strip away everything that we don't need to calculate the item name
@@ -1528,19 +1561,19 @@ if ($mode == 'get_item_data') {
 
 } elseif ($requestedPath) {
 	//Send the filters back to the client, just in case they were adjusted in php
-	$tags['_filters'] = zenario_organizer::$filters;
+	$tags['_cms_filters'] = zenario_organizer::$filters;
 }
 
 
 
-$doExport = $requestedPath && !empty($_POST['_export']) && !empty($_POST['_exportCols']);
+$doExport = $requestedPath && !empty($_POST['_cms_isExport']) && !empty($_POST['_cms_exportColumns']);
 
 
 if ($doExport) {
 	//Simple export feature
 	//Allow users to request anything they could see as CSV or Excel
 	$isExcel = !empty($_POST['_excelExport']);
-	$keys = ze\ray::explodeAndTrim($_POST['_exportCols']);
+	$keys = ze\ray::explodeAndTrim($_POST['_cms_exportColumns']);
 	$title = preg_replace('@\W@', '-', ($tags['title'] ?? '') ?: 'Export'). ' '. str_replace(':', '-', ze\date::now());
 	
 	//Create a new Excel document or CSV file
@@ -1569,8 +1602,8 @@ if ($doExport) {
 	//Loop through each row
 	if (!empty($tags['items']) && is_array($tags['items'])) {
 	
-		if (!empty($tags['__item_sort_order__'])) {
-			$ids = $tags['__item_sort_order__'];
+		if (!empty($tags['_cms_itemSortOrder'])) {
+			$ids = $tags['_cms_itemSortOrder'];
 		} else {
 			$ids = array_keys($tags['items'] ?? []);
 		}
@@ -1620,11 +1653,11 @@ if ($doExport) {
 	}
 	
 	if (ze::$recordFiles) {
-		$tags['__source_files'] = ze\tuix::recordedFiles();
+		$tags['_cms_sourceFileList'] = ze\tuix::recordedFiles();
 	}
 	
 	if (!empty(ze::$dumps)) {
-		$tags['__dumps'] = ze::$dumps;
+		$tags['_cms_dumps'] = ze::$dumps;
 		ze::$dumps = [];
 	}
 

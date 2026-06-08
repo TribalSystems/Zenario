@@ -5,7 +5,6 @@ zenario__content:
         content: &contentPanelDefinition
             columns:
                 zenario_ctype_event__start_date:
-                    php: Yes
                     title: 'Event: Start Date'
                     db_column: zenario_ctype_event__ce.start_date
                     table_join: |
@@ -14,9 +13,8 @@ zenario__content:
                                                 AND v.version = zenario_ctype_event__ce.version
                                                 AND v.type = 'event'
                     format: date
-                    show_by_default: Yes
+                    show_by_default: true
                 zenario_ctype_event__start_time:
-                    php: Yes
                     title: 'Event: Start Time'
                     db_column: zenario_ctype_event__ce.start_time
                     table_join: |
@@ -24,9 +22,8 @@ zenario__content:
                                                 ON v.id = zenario_ctype_event__ce.id
                                                 AND v.version = zenario_ctype_event__ce.version
                                                 AND v.type = 'event'
-                    show_by_default: No
+                    show_by_default: false
                 zenario_ctype_event__end_date:
-                    php: Yes
                     title: 'Event: End Date'
                     db_column: zenario_ctype_event__ce.end_date
                     table_join: |
@@ -35,9 +32,8 @@ zenario__content:
                                                 AND v.version = zenario_ctype_event__ce.version
                                                 AND v.type = 'event'
                     format: date
-                    show_by_default: Yes
+                    show_by_default: true
                 zenario_ctype_event__end_time:
-                    php: Yes
                     title: 'Event: End Time'
                     db_column: zenario_ctype_event__ce.end_time
                     table_join: |
@@ -45,7 +41,7 @@ zenario__content:
                                                 ON v.id = zenario_ctype_event__ce.id
                                                 AND v.version = zenario_ctype_event__ce.version
                                                 AND v.type = 'event'
-                    show_by_default: No
+                    show_by_default: false
         
         trashed_content_items: *contentPanelDefinition
         

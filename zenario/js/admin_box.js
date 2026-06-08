@@ -622,7 +622,7 @@ zenarioAB.validateAliasGo = function() {
 	}
 	
 	var req = {
-		_validate_alias: 1,
+		_cms_validate_alias: 1,
 		alias: domAlias.value
 	}
 	
@@ -704,12 +704,12 @@ zenarioAB.contentTitleChange = function() {
 	var menuTextDOM = zenarioAB.get('menu_text'),
 		aliasDOM = zenarioAB.get('alias');
 	
-	if (menuTextDOM && !zenarioAB.tuix.___menu_text_changed) {
+	if (menuTextDOM && !zenarioAB.tuix._cms_menuTextChanged) {
 		menuTextDOM.value = zenarioAB.get('title').value.replace(/\s+/g, ' ').substr(0, 125).trim();
 		$(menuTextDOM).trigger('input');
 	}
 	
-	if (aliasDOM && !aliasDOM.disabled && !aliasDOM.readOnly && !zenarioAB.tuix.___alias_changed) {
+	if (aliasDOM && !aliasDOM.disabled && !aliasDOM.readOnly && !zenarioAB.tuix._cms_aliasChanged) {
 		aliasDOM.value = zenarioAB.generateAlias(zenarioAB.get('title').value);
 		zenarioAB.validateAlias();
 

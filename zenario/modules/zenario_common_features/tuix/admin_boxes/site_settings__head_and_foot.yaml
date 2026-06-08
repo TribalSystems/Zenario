@@ -3,6 +3,8 @@
 site_settings:
     setting_group: head_and_foot
     title: Site-wide <head> and <body> HTML/JavaScript
+    save_and_continue_button_message: Save & continue
+    save_button_message: Save & close
     tabs:
         head:
             label: HTML/JS in <head>
@@ -278,6 +280,8 @@ site_settings:
                     style: >
                         height: 20em;
                         width: 99%;
+                
+                #If Matomo Analytics module is running, it will display a note here.
                 
                 sitewide_social_media_html_location:
                     site_setting:

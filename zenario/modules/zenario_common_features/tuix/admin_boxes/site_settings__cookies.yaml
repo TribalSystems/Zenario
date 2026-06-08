@@ -206,12 +206,13 @@ site_settings:
                         target_path: zenario__library/panels/special_images
                         select_phrase: Select from special images library...
                     upload: 
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: false
                     visible_if: zenarioAB.value('cookie_require_consent') == 'explicit' && zenarioAB.value('cookie_show_image')

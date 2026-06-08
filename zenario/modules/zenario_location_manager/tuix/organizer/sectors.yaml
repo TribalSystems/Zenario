@@ -24,15 +24,15 @@ zenario__locations:
                     name:
                         title: Name
                         db_column: s.name
-                        show_by_default: Yes
-                        searchable: Yes
+                        show_by_default: true
+                        searchable: true
                         width: large
                     score:
                         title: Score
                         db_column: lssl.score_id
                         table_join: '[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl ON lssl.sector_id = s.id'
-                        show_by_default: Yes
-                        align_right: Yes
+                        show_by_default: true
+                        align_right: true
                         width: xsmall
                     subsectors:
                         title: Sub-sectors
@@ -42,8 +42,8 @@ zenario__locations:
                                                                 FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s2
                                                                 WHERE s2.parent_id = s.id
                                                             )
-                        show_by_default: Yes
-                        align_right: Yes
+                        show_by_default: true
+                        align_right: true
                         width: small
                     locations:
                         title: Locations
@@ -53,16 +53,14 @@ zenario__locations:
                                                                 FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link AS lssl2
                                                                 WHERE lssl2.sector_id = s.id
                                                             )
-                        show_by_default: Yes
-                        align_right: Yes
+                        show_by_default: true
+                        align_right: true
                         width: small
                 item:
                     css_class: zenario_location_manager_sector
                     link:
                         path: zenario__locations/nav/sectors/panel
-                        branch: Yes
                         refiner: sub_sectors
-                disable_close_up_view: Yes
                 collection_buttons:
                     create_sector:
                         priv: _PRIV_MANAGE_LOCATIONS
@@ -80,7 +78,7 @@ zenario__locations:
                             path: zenario__locations/nav/sectors/panel
                             target_path: zenario__locations/nav/sectors/panel
                             min_path: zenario__locations/nav/sectors/panel
-                            multiple_select: Yes
+                            multiple_select: true
                             request:
                                 action: add_sector
                 item_buttons:
@@ -91,23 +89,22 @@ zenario__locations:
                         link:
                             path: zenario__locations/panel
                             refiner: sector_locations
-                            branch: Yes
                     action_dropdown:
                         label: Actions
-                        multiple_select: Yes
-                        hide_when_children_are_not_visible: Yes
+                        multiple_select: true
+                        hide_when_children_are_not_visible: true
                     rename_sector:
                         priv: _PRIV_MANAGE_LOCATIONS
                         parent: action_dropdown
                         label: Rename
-                        hide_in_select_mode: Yes
+                        hide_in_select_mode: true
                         admin_box:
                             path: zenario_location_manager__sector
                     delete_sector:
                         priv: _PRIV_MANAGE_LOCATIONS
                         parent: action_dropdown
                         label: Delete
-                        hide_in_select_mode: Yes
+                        hide_in_select_mode: true
                         ajax:
                             confirm:
                                 message: 'Are you sure you wish to delete the sector "[[name]]"?'
@@ -121,7 +118,7 @@ zenario__locations:
                         ord: 2
                         css_class: delete
                         tooltip: Remove this sector
-                        multiple_select: Yes
+                        multiple_select: true
                         ajax:
                             confirm:
                                 message: 'Are you sure you wish to remove the sector "[[name]]" from this lcation?'
@@ -136,14 +133,14 @@ zenario__locations:
                     increase_score:
                         ord: 2
                         css_class: add
-                        tooltip: Increase Score
+                        tooltip: Increase score
                         ajax:
                             request:
                                 action: increase_score
                     decrease_score:
                         ord: 2
                         css_class: add
-                        tooltip: Decrease Score
+                        tooltip: Decrease score
                         ajax:
                             request:
                                 action: decrease_score

@@ -313,7 +313,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			$newsletterBody = zenario_newsletter::applyNewsletterMergeFields($newsletter['body'], $admin, $newsletter['url']);
 			
 			if ($newsletter['apply_css_rules']) {
-				$cssRules = ze::setting('email_css_rules');
+				$cssRules = ze::setting('newsletter_css_rules');
 			} else {
 				$cssRules = '';
 			}
@@ -441,7 +441,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		}
 		
 		if ($newsletter['apply_css_rules']) {
-			$cssRules = ze::setting('email_css_rules');
+			$cssRules = ze::setting('newsletter_css_rules');
 		} else {
 			$cssRules = '';
 		}

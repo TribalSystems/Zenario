@@ -405,7 +405,7 @@ site_settings:
                                     http://www.tinymce.com/wiki.php/Configuration:style_formats</a>
                             for more information.
         css_rules:
-            label: CSS rules
+            label: Email CSS rules
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -415,7 +415,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            <p>These CSS rules will be available when composing a newsletter or an email template.</p>
+                            <p>These CSS rules will be available when composing an email template.</p>
                             <p>The contents are automatically wrapped in <code>&lt;style&gt;&lt;/style&gt;</code> tags.</p>
                 email_css_rules:
                     site_setting:

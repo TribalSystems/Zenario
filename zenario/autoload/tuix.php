@@ -625,7 +625,7 @@ class tuix {
 					case 'refiner_required':
 					case 'reorder':
 					case 'title':
-					case '_path_here':
+					case '_cms_pathToHere':
 						if ($lastWasPanel) {
 							$includeThisSubTree = true;
 						}
@@ -710,7 +710,6 @@ class tuix {
 					case 'background_tasks':
 					case 'content_types':
 					case 'jobs':
-					case 'pagination_types':
 					case 'preview_images':
 					case 'signals':
 					case 'special_pages':
@@ -848,7 +847,7 @@ class tuix {
 			} elseif ($type == 'organizer') {
 				if ($isPanel) {
 					//..note down the path of the panel...
-					$tags[$tag]['_path_here'] = $goodURLs[0];
+					$tags[$tag]['_cms_pathToHere'] = $goodURLs[0];
 				
 					//...and also the link to the panel above if there is one.
 					if (isset($goodURLs[1])
@@ -1037,6 +1036,21 @@ class tuix {
 
 
 
+
+	//Given a LoV in one of our two standard formats, and and ID of an entry, this function
+	//will read the text of the label from it.
+	public static function labelFromLoV($lov, $id) {
+		
+		if (!isset($lov[$id])) {
+			return 'Missing ID '. $id;
+		}
+		
+		if (is_array($lov[$id])) {
+			return $lov[$id]['label'] ?? '';
+		} else {
+			return $lov[$id];
+		}
+	}
 
 	public static function sort(&$tags) {
 		if (is_array($tags)) {
@@ -1263,7 +1277,7 @@ class tuix {
 		if (($adminBoxSyncStoragePath = \ze\tuix::syncStoragePath($tags))
 		 && (@file_put_contents($adminBoxSyncStoragePath, \ze\tuix::encode($tags)))) {
 			\ze\cache::chmod($adminBoxSyncStoragePath, 0666);
-			$tags['_sync']['session'] = false;
+			$tags['_cms_sync']['session'] = false;
 
 		//Fallback code to store in the session
 		} else {
@@ -1271,12 +1285,12 @@ class tuix {
 				$_SESSION['admin_box_sync'] = [0 => 0]; //I want to start counting from 1 so the key is not empty
 			}
 	
-			if (empty($tags['_sync']['session']) || empty($_SESSION['admin_box_sync'][$tags['_sync']['session']])) {
-				$tags['_sync']['session'] = count($_SESSION['admin_box_sync']);
+			if (empty($tags['_cms_sync']['session']) || empty($_SESSION['admin_box_sync'][$tags['_cms_sync']['session']])) {
+				$tags['_cms_sync']['session'] = count($_SESSION['admin_box_sync']);
 			}
 	
-			$_SESSION['admin_box_sync'][$tags['_sync']['session']] = \ze\tuix::encode($tags);
-			$tags['_sync']['cache_dir'] = false;
+			$_SESSION['admin_box_sync'][$tags['_cms_sync']['session']] = \ze\tuix::encode($tags);
+			$tags['_cms_sync']['cache_dir'] = false;
 		}
 	}
 
@@ -1289,12 +1303,12 @@ class tuix {
 		 && (\ze\tuix::decode($tags, $clientTags, file_get_contents($adminBoxSyncStoragePath)))) {
 	
 		} else
-		if (!empty($clientTags['_sync']['session'])
-		 && !empty($_SESSION['admin_box_sync'][$clientTags['_sync']['session']])
-		 && (\ze\tuix::decode($tags, $clientTags, $_SESSION['admin_box_sync'][$clientTags['_sync']['session']]))) {
+		if (!empty($clientTags['_cms_sync']['session'])
+		 && !empty($_SESSION['admin_box_sync'][$clientTags['_cms_sync']['session']])
+		 && (\ze\tuix::decode($tags, $clientTags, $_SESSION['admin_box_sync'][$clientTags['_cms_sync']['session']]))) {
 	
 		} else {
-			if (!empty($clientTags['_sync']['session'])) {
+			if (!empty($clientTags['_cms_sync']['session'])) {
 				echo \ze\admin::phrase('An error occurred when syncing this form with the server. There is a problem with the server\'s $_SESSION variable.');
 		
 			} else {
@@ -1311,23 +1325,23 @@ class tuix {
 			$box['key'] = [];
 		}
 	
-		if (empty($box['_sync'])) {
-			$box['_sync'] = [];
+		if (empty($box['_cms_sync'])) {
+			$box['_cms_sync'] = [];
 		}
 	
-		if (empty($box['_sync']['cache_dir'])
-		 || !is_dir(CMS_ROOT. 'cache/fabs/'. preg_replace('/[^\\w-]/', '', $box['_sync']['cache_dir']))) {
-			$box['_sync']['cache_dir'] =
+		if (empty($box['_cms_sync']['cache_dir'])
+		 || !is_dir(CMS_ROOT. 'cache/fabs/'. preg_replace('/[^\\w-]/', '', $box['_cms_sync']['cache_dir']))) {
+			$box['_cms_sync']['cache_dir'] =
 				\ze\cache::createRandomDir(
 					8, $type = 'cache/fabs/', false, false,
 					$prefix = 'ab_'. \ze::hash64(json_encode($box), 8). '_');
 		}
 	
-		if (!empty($box['_sync']['cache_dir'])) {
-			$box['_sync']['cache_dir'] = str_replace('cache/fabs/', '', $box['_sync']['cache_dir']);
-			$box['_sync']['cache_dir'] = preg_replace('/[^\\w-]/', '', $box['_sync']['cache_dir']);
-			touch(CMS_ROOT. 'cache/fabs/'. $box['_sync']['cache_dir']. '/accessed');
-			return CMS_ROOT. 'cache/fabs/'. $box['_sync']['cache_dir']. '/ab.json';
+		if (!empty($box['_cms_sync']['cache_dir'])) {
+			$box['_cms_sync']['cache_dir'] = str_replace('cache/fabs/', '', $box['_cms_sync']['cache_dir']);
+			$box['_cms_sync']['cache_dir'] = preg_replace('/[^\\w-]/', '', $box['_cms_sync']['cache_dir']);
+			touch(CMS_ROOT. 'cache/fabs/'. $box['_cms_sync']['cache_dir']. '/accessed');
+			return CMS_ROOT. 'cache/fabs/'. $box['_cms_sync']['cache_dir']. '/ab.json';
 	
 		} else {
 			return false;
@@ -1372,24 +1386,24 @@ class tuix {
 		
 		
 		//If we can, use SSL to encode the file so it's a bit harder for someone browsing the server to read them.
-		//Firstly, if there's not already a password, we'll set one up in _sync.password.
+		//Firstly, if there's not already a password, we'll set one up in _cms_sync.password.
 		//Then encode the tags (but temporarily remove the password when we do this,
 		// so that the encoded message does not contain the password)
 		if (function_exists('openssl_encrypt')) {
-			if (empty($box['_sync'])) {
-				$box['_sync'] = [];
+			if (empty($box['_cms_sync'])) {
+				$box['_cms_sync'] = [];
 			}
 	
-			if (empty($tags['_sync']['password'])) {
-				$tags['_sync']['password'] = base64_encode(openssl_random_pseudo_bytes(32));
+			if (empty($tags['_cms_sync']['password'])) {
+				$tags['_cms_sync']['password'] = base64_encode(openssl_random_pseudo_bytes(32));
 			}
-			if (empty($tags['_sync']['iv'])) {
-				$tags['_sync']['iv'] = base64_encode(openssl_random_pseudo_bytes(16));
+			if (empty($tags['_cms_sync']['iv'])) {
+				$tags['_cms_sync']['iv'] = base64_encode(openssl_random_pseudo_bytes(16));
 			}
 		
 			$string = openssl_encrypt(
 				json_encode($tags), 'aes128',
-				base64_decode($tags['_sync']['password']), 0, base64_decode($tags['_sync']['iv']));
+				base64_decode($tags['_cms_sync']['password']), 0, base64_decode($tags['_cms_sync']['iv']));
 		
 		} else {
 			$string = json_encode($tags);
@@ -1415,12 +1429,12 @@ class tuix {
 
 	//Reverse the above
 	public static function decode(&$tags, &$clientTags, $string) {
-		if (function_exists('openssl_encrypt') && !empty($clientTags['_sync']['password'])) {
+		if (function_exists('openssl_encrypt') && !empty($clientTags['_cms_sync']['password'])) {
 			$iv = '';
-			if (!empty($clientTags['_sync']['iv'])) {
-				$iv = \ze\tuix::deTilde($clientTags['_sync']['iv']);
+			if (!empty($clientTags['_cms_sync']['iv'])) {
+				$iv = \ze\tuix::deTilde($clientTags['_cms_sync']['iv']);
 			}
-			$string = openssl_decrypt($string, 'aes128', base64_decode(\ze\tuix::deTilde($clientTags['_sync']['password'])), 0, base64_decode($iv));
+			$string = openssl_decrypt($string, 'aes128', base64_decode(\ze\tuix::deTilde($clientTags['_cms_sync']['password'])), 0, base64_decode($iv));
 		}
 	
 		return ($tags = json_decode($string, true)) && (is_array($tags));
@@ -1591,11 +1605,11 @@ class tuix {
 						
 							} else
 							if ($readOnly
-							 || (isset($field['multiple_edit']['changed']) && !isset($field['multiple_edit']['_changed']))) {
+							 || (isset($field['multiple_edit']['changed']) && !isset($field['multiple_edit']['_cms_changed']))) {
 								$changed = \ze\ring::engToBoolean($field['multiple_edit']['changed'] ?? false);
 						
 							} else {
-								$changed = \ze\ring::engToBoolean($field['multiple_edit']['_changed'] ?? false);
+								$changed = \ze\ring::engToBoolean($field['multiple_edit']['_cms_changed'] ?? false);
 							}
 						}
 					
@@ -1703,7 +1717,7 @@ class tuix {
 					continue;
 				}
 				
-				$hidden = !empty($field['_was_hidden_before'])
+				$hidden = !empty($field['_cms_hidden'])
 					   || (isset($tab['hidden']) && \ze\ring::engToBoolean($tab['hidden']))
 					   || (isset($field['hidden']) && \ze\ring::engToBoolean($field['hidden']));
 				
@@ -2014,6 +2028,15 @@ class tuix {
 		}
 	}
 	
+	public static function translatePhrasesInConfirmation(&$t, &$o, &$p, &$c, &$l, &$s) {
+		if (is_array($t)) {
+			if (isset($t[$i='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+			if (isset($t[$i='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+			if (isset($t[$i='button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+			if (isset($t[$i='cancel_button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+		}
+	}
+	
 	public static function translatePhrasesInObject(&$t, &$o, &$p, &$c, &$l, &$s, $objectType = false) {
 	
 		if ($objectType === false) {
@@ -2047,10 +2070,7 @@ class tuix {
 				}
 			
 				if (isset($t[$i='error_on_form_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-				if (isset($t[$i='confirm_on_close'][$j='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-				if (isset($t[$i='confirm_on_close'][$j='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-				if (isset($t[$i='confirm_on_close'][$j='button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-				if (isset($t[$i='confirm_on_close'][$j='cancel_button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+				if (isset($t[$i='confirm_on_close'])) \ze\tuix::translatePhrasesInConfirmation($t[$i], $o, $q, $c, $l, $s);
 			}
 	
 		} else {
@@ -2201,16 +2221,9 @@ class tuix {
 						case 'item_buttons':
 						case 'inline_buttons':
 						case 'quick_filter_buttons':
-							if (isset($t[$i='confirm'][$j='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-							if (isset($t[$i='confirm'][$j='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-							if (isset($t[$i='confirm'][$j='button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-							if (isset($t[$i='confirm'][$j='cancel_button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-							if (isset($t[$i='ajax'][$j='toast'][$k='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
-							if (isset($t[$i='ajax'][$j='toast'][$k='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
-							if (isset($t[$i='ajax'][$j='confirm'][$k='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
-							if (isset($t[$i='ajax'][$j='confirm'][$k='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
-							if (isset($t[$i='ajax'][$j='confirm'][$k='button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
-							if (isset($t[$i='ajax'][$j='confirm'][$k='cancel_button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
+							if (isset($t[$i='confirm'])) \ze\tuix::translatePhrasesInConfirmation($t[$i], $o, $q, $c, $l, $s);
+							if (isset($t[$i='ajax'][$j='confirm'])) \ze\tuix::translatePhrasesInConfirmation($t[$i][$j], $o, $q, $c, $l, $s);
+							if (isset($t[$i='ajax'][$j='toast'])) \ze\tuix::translatePhrasesInConfirmation($t[$i][$j], $o, $q, $c, $l, $s);
 							break;
 					}
 			}
@@ -2246,6 +2259,8 @@ class tuix {
 		\ze\tuix::translatePhrasesInObjects(
 			['phrases', 'lovs', 'tabs', 'columns', 'collection_buttons', 'item_buttons', 'inline_buttons', 'quick_filter_buttons'],
 			$tags, $overrides, $path, $moduleClass, $languageId, $scan);
+		
+		if (isset($tags[$i='confirm'])) \ze\tuix::translatePhrasesInConfirmation($tags[$i], $overrides, $path, $moduleClass, $languageId, $scan);
 	}
 
 	public static function lookForPhrases($path = '') {
@@ -2275,7 +2290,7 @@ class tuix {
 		$html = '
 			<p class="zfab_customise_phrases_explainer">';
 		
-		$html .= htmlspecialchars(\ze\admin::phrase("This mode's YAML code contains the following text and messages. Use this tab to override and customise them when they are displayed."));
+		$html .= htmlspecialchars(\ze\admin::phrase("This mode's YAML code contains the following text for display. Use this tab to override with custom text."));
 		
 		if ($showSecondLanguageColumn) {
 			$html .= '
@@ -2577,8 +2592,8 @@ class tuix {
 					
 								foreach ([
 									'values', 'value', 'current_value', 'pressed',
-									'selected_option', '_display_value',
-									'hidden', '_was_hidden_before'
+									'selected_option', '_cms_displayValue',
+									'hidden', '_cms_hidden'
 								] as $val) {
 									if (isset($tab['fields'][$cutName][$val])) {
 										$tab['fields'][$pstName][$val] = $tab['fields'][$cutName][$val];
@@ -2669,7 +2684,7 @@ class tuix {
 									'current_value' => 'current_value',
 									'pressed' => 'pressed',
 									'hidden' => 'hidden',
-									'_was_hidden_before' => '_was_hidden_before'
+									'_cms_hidden' => '_cms_hidden'
 								];
 								if (self::fieldIsReadonly($tab['fields'][$copyName])) {
 									$attrs['current_value'] = 'value';
@@ -2860,16 +2875,16 @@ class tuix {
 			//Only allow certain tags in certain places to be merged in
 			if (
 				($key1 === false && \ze::in($key0, 'download', 'path', 'shake', 'tab', 'switchToTab') && ($type = 'value'))
-			 || ($key1 === false && \ze::in($key0, '_sync', 'tabs') && ($type = 'array'))
-				 || ($key2 === false && $key1 == '_sync' && \ze::in($key0, 'cache_dir', 'password', 'storage') && ($type = 'value'))
+			 || ($key1 === false && \ze::in($key0, '_cms_sync', 'tabs') && ($type = 'array'))
+				 || ($key2 === false && $key1 == '_cms_sync' && \ze::in($key0, 'cache_dir', 'password', 'storage') && ($type = 'value'))
 				 || ($key2 === false && $key1 == 'tabs' && ($type = 'array'))
-					 || ($key3 === false && $key2 == 'tabs' && $key0 == '_was_hidden_before' && ($type = 'value'))
+					 || ($key3 === false && $key2 == 'tabs' && $key0 == '_cms_hidden' && ($type = 'value'))
 					 || ($key3 === false && $key2 == 'tabs' && \ze::in($key0, 'edit_mode', 'fields') && ($type = 'array'))
 						 || ($key4 === false && $key3 == 'tabs' && $key1 == 'edit_mode' && $key0 == 'on' && ($type = 'value'))
 						 || ($key4 === false && $key3 == 'tabs' && $key1 == 'fields' && ($type = 'array'))
-							 || ($key5 === false && $key4 == 'tabs' && $key2 == 'fields' && \ze::in($key0, '_display_value', '_was_hidden_before', 'current_value', 'pressed') && ($type = 'value'))
+							 || ($key5 === false && $key4 == 'tabs' && $key2 == 'fields' && \ze::in($key0, '_cms_displayValue', '_cms_hidden', 'current_value', 'pressed') && ($type = 'value'))
 							 || ($key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'multiple_edit' && ($type = 'array'))
-								 || ($key6 === false && $key5 == 'tabs' && $key3 == 'fields' && $key1 == 'multiple_edit' && $key0 == '_changed' && ($type = 'value'))
+								 || ($key6 === false && $key5 == 'tabs' && $key3 == 'fields' && $key1 == 'multiple_edit' && $key0 == '_cms_changed' && ($type = 'value'))
 			) {
 			
 				//Update any values from the client on the server's copy
@@ -2973,7 +2988,7 @@ class tuix {
 	public static function closeWithFlags($flags) {
 	
 		$tags = [
-			'_sync' => [
+			'_cms_sync' => [
 				'flags' => $flags
 			]
 		];
@@ -3300,12 +3315,12 @@ class tuix {
 			}
 			
 			if (\ze::$recordFiles) {
-				$tags['__source_files'] = \ze\tuix::recordedFiles();
+				$tags['_cms_sourceFileList'] = \ze\tuix::recordedFiles();
 			}
 	
 	
 		} else {
-			$clientTags = json_decode($_POST['_tuix'], true);
+			$clientTags = json_decode($_POST['_cms_tuix'], true);
 	
 			\ze\tuix::loadCopyFromServer($tags, $clientTags);
 		
@@ -3335,6 +3350,9 @@ class tuix {
 			
 			
 				if ($saving) {
+					
+					unset($tags['_cms_showConfirm']);
+					
 					//Check if there are any errors. If so, stop the save, and switch to the tab with the errors
 					$doSave = true;
 					if (\ze\tuix::looksLikeFAB($tags)) {
@@ -3356,7 +3374,19 @@ class tuix {
 							}
 						}
 					}
-				
+					
+					//Check if we should show a confirmation message before saving, and whether
+					//the user has confirmed the message yet.
+					//If the form is valid but we should show a confirmation before saving,
+					//don't save the form and send it back with an internal property set in the TUIX.
+					if ($doSave) {
+						$confirmed = !empty($_POST['_cms_confirm']);
+						if (!$confirmed && !empty($tags['confirm']['show'])) {
+							$doSave = false;
+							$tags['_cms_showConfirm'] = true;
+						}
+					}
+					
 					if ($doSave) {
 						$fields = [];
 						$values = [];

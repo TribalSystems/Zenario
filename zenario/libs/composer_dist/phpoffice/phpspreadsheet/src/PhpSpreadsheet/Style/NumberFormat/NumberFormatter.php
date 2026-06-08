@@ -148,7 +148,7 @@ class NumberFormatter extends BaseFormatter
         $dec = $matches[2];
         $right = $matches[3];
 
-        // minimun width of formatted number (including dot)
+        // minimum width of formatted number (including dot)
         $minWidth = strlen($left) + strlen($dec) + strlen($right);
         if ($useThousands) {
             $value = number_format(
@@ -280,7 +280,7 @@ class NumberFormatter extends BaseFormatter
         $preDecimal = $postDecimal = '';
         $pregArray = preg_split('/\.(?=(?:[^"]*"[^"]*")*[^"]*\Z)/miu', $baseFormat . '.?');
         if (is_array($pregArray)) {
-            $preDecimal = $pregArray[0] ?? '';
+            $preDecimal = $pregArray[0];
             $postDecimal = $pregArray[1] ?? '';
         }
 

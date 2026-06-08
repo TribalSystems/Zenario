@@ -69,15 +69,17 @@
 							"
 						<% } %>
 					>
-						{{control.label}}
+						
 						
 						<% if (control.link_to_new_tab) { %>
 							<a
 								target="_blank"
-								class="zenario_linkToNewTab"
+								class="plugins_optional_link_to_new_tab"
 								href="{{control.link_to_new_tab|escape}}"
-								onclick="zenarioA.closeSlotControls(); zenario.stop(event);"
-							></a>
+								onclick="return false;"
+							>{{control.label}}</a>
+						<% } else { %>
+							{{control.label}}
 						<% } %>
 					</div>
 				<% } %>

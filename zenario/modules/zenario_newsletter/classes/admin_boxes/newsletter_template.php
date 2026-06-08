@@ -44,11 +44,11 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 			$box['tabs']['details']['fields']['body']['editor_options']['style_formats'] = $style_formats;
 		}
 		
-		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tcss_rules~k{\"id\"%3A\"email\"}' target='_blank'>";
+		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tnewsletter_css_rules~k{\"id\"%3A\"email\"}' target='_blank'>";
 		$linkEnd = "</a>";
 		ze\lang::applyMergeFields($fields['details/apply_css_rules']['post_field_html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 		
-		if (!ze::setting('email_css_rules')) {
+		if (!ze::setting('newsletter_css_rules')) {
 			$fields['details/apply_css_rules']['disabled'] = true;
 			$fields['details/apply_css_rules']['note_below'] = ze\admin::phrase('Disabled as no CSS rules have been defined in settings.');
 		}
@@ -59,7 +59,7 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 		ze\contentAdm::addAbsURLsToAdminBoxField($fields['details/body']);
 		
 		if ($values['details/apply_css_rules']) {
-			$fields['details/body']['editor_options']['content_style'] = ze::setting('email_css_rules');
+			$fields['details/body']['editor_options']['content_style'] = ze::setting('newsletter_css_rules');
 		} else {
 			unset($fields['details/body']['editor_options']['content_style']);
 		}

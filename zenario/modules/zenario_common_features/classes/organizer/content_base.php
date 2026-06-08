@@ -135,9 +135,9 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 		
 		//In "Copy from other" mode, do not allow picking the same content item
 		//as the source and target. Hide it in the picker panel.
-		if (!empty($_GET['_combineItem'])) {
+		if (!empty($_GET['_cms_combineItem'])) {
 			$panel['db_items']['where_statement'] .= "
-				AND c.tag_id != '" . ze\escape::sql($_GET['_combineItem']) . "'";
+				AND c.tag_id != '" . ze\escape::sql($_GET['_cms_combineItem']) . "'";
 		}
 		
 		//Also, only allow the "Copy from other" button to work on specific content type panels.
@@ -172,8 +172,8 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 			if (!$langIdFilter = zenario_organizer::filterValue('language_id')) {
 				
 				//If an item was selected, use the language from that...
-				if (ze::request('_item')) {
-					$langIdFilter = ze\row::get('content_items', 'language_id', ['tag_id' => ze::request('_item')]);
+				if (ze::request('_cms_selectedID')) {
+					$langIdFilter = ze\row::get('content_items', 'language_id', ['tag_id' => ze::request('_cms_selectedID')]);
 				}
 				//...otherwise use the default language
 				if (!$langIdFilter) {
@@ -883,14 +883,9 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 			if ($item['id'] !== null) {
 	
 				if ($checkSpecificPerms && ze\priv::check(false, $item['id'], $item['type'])) {
-					$item['_specific_perms'] = true;
+					$item['_cms_hasSpecificPerms'] = true;
 				}
 				
-				if ($item['lock_owner_id']) {
-					$adminDetails = ze\admin::details($item['lock_owner_id']);
-					$item['lock_owner_name'] = $adminDetails['first_name'].' '.$adminDetails['last_name'];
-				}
-		
 				if ($path == 'zenario__content/panels/chained') {
 					$panel['key']['equivId'] = $item['equiv_id'];
 					$panel['key']['cType'] = $item['type'];
@@ -1056,10 +1051,9 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 						$item['permissions'] = ze\admin::phrase('Private (all extranet users)');
 						break;
 					case 'group_members':
+						$groupLabels = [];
 						$groups = ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $item['equiv_id'], 'link_from_char' => $item['type']]);
-						if (!empty($groups)) {
-							$groupLabels = [];
-							
+						if (!empty($groups)) {							
 							$groupCount = count($groups);
 							
 							if ($groupCount > 1) {
@@ -1071,6 +1065,8 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 							foreach ($groups as $groupId) {
 								$groupLabels[] = ze\user::getGroupLabel($groupId);
 							}
+						} else {
+							$string = 'Private (no groups selected)';
 						}
 						
 						$item['permissions'] = ze\admin::phrase($string, ['group_labels' => implode(', ', $groupLabels)]);
@@ -1164,7 +1160,7 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 					//This would let them create translations in languages they had permissions for.
 					//However this option was not being used and has been removed as of 9.2.
 					#if ($checkSpecificPerms && ze\priv::onLanguage(false, $item['language_id'])) {
-					#	$item['_specific_perms'] = true;
+					#	$item['_cms_hasSpecificPerms'] = true;
 					#}
 				} else {
 					++$numEquivs;

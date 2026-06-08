@@ -137,11 +137,9 @@ zenario__content:
                     value: is_hidden
                 
             refiners:
-                filter_by_lang:
-                    exists: true
+                filter_by_lang: {}
                 filter_exclude_documents:
                     sql: 'c.type != "document"'
-                    exists: true
                 content_type:
                     sql: 'c.type = [[REFINER__CONTENT_TYPE]]'
                     
@@ -160,9 +158,7 @@ zenario__content:
                     sql: 'v.access_code = [[REFINER__USES_ACCESS_CODE]]'
                 add_translation_to_chain:
                     sql: ''
-                    add_translation_to_chain: ''
-                filter_by_language_and_content_type:
-                    exists: true
+                filter_by_language_and_content_type: {}
                 
                 published_draft_and_unlisted_only:
                     sql: 'c.status IN("published", "published_with_draft", "unlisted", "unlisted_with_draft", "first_draft")'
@@ -272,8 +268,6 @@ zenario__content:
                           AND cii.foreign_key_char = v.type
                           AND cii.image_id = [[REFINER_ID]]
             item:
-                name: Content item
-                names: Content items
                 css_class: content_published
             columns:
                 tag:
@@ -564,7 +558,6 @@ zenario__content:
                     db_column: v.publisher_id
                 word_count:
                     title: Page word count
-                    sortable: true
                     db_column: >
                         IFNULL(cc.content_item_text_wordcount, 0)
                     align_right: true
@@ -573,7 +566,6 @@ zenario__content:
                     tooltip: "Word count of version controlled plugins on the content item."
                 attachment_word_count:
                     title: Attachment word count
-                    sortable: true
                     db_column: >
                         IFNULL(cc.file_extract_wordcount, 0)
                     align_right: true
@@ -582,7 +574,6 @@ zenario__content:
                     tooltip: "Word count of the attachment on the content item."
                 extract_pagecount:
                     title: Attachment page count
-                    sortable: true
                     db_column: cc.file_extract_pagecount
                     empty_value: 'n/a'
                     align_right: true
@@ -592,7 +583,6 @@ zenario__content:
                         as recorded by Amazon Textract.
                 accesses:
                     title: User accesses
-                    sortable: true
                     table_join: |
                         LEFT JOIN [[DB_PREFIX]]user_content_accesslog AS uca
                             ON v.id = uca.content_id
@@ -605,7 +595,6 @@ zenario__content:
                     show_by_default: false
                 lock_owner_id:
                     db_column: c.lock_owner_id
-                lock_owner_name:
                 writer_name:
                     title: Writer name
                     table_join: |
@@ -680,14 +669,13 @@ zenario__content:
                     hidden: true
                 
                     
-            default_sort_desc: true
             label_format_for_grid_view: |
                 [[tag]]
                         Version [[version]]
             label_format_for_picked_items: '[[tag]] [[visitor_version_status]]'
             label_format_for_popouts: '[[tag]] Version [[version]] [[[admin_version_status]]]'
-            default_sort_column: tag
-            default_sort_desc: false
+            default_sort_column: last_activity_datetime
+            default_sort_desc: true
             collection_buttons:
                 new_dropdown:
                     hide_when_children_are_not_visible: true
@@ -733,7 +721,6 @@ zenario__content:
                         zenarioO.tuix.key.cType == 'document'
                     label: Find items with duplicate file attachments
                     link:
-                        branch: true
                         path: zenario__content/panels/content
                         refiner: find_duplicates
                 export:
@@ -805,7 +792,7 @@ zenario__content:
                         uses_access_code: true
                     label: Enable more content types
                     link:
-                        path: zenario__library/panels/modules~-zenario_ctype
+                        path: zenario__library/panels/modules_running_and_suspended/collection_buttons/view_all_modules////~-zenario_ctype
                 help:
                     label: Help
                     hide_in_select_mode: true
@@ -1202,7 +1189,6 @@ zenario__content:
                     label: Translation chain
                     link:
                         path: zenario__content/panels/chained
-                        branch: true
                         refiner: zenario_trans__chained_in_link
                 open:
                     parent: view_dropdown
@@ -1254,8 +1240,6 @@ zenario__content:
                     label: View picture
                     popout:
                         href: 'zenario/file.php?usage=content&popout=1'
-                        options:
-                            type: image
                     with_columns_set:
                         has_picture: true
                     without_columns_set:
@@ -1266,7 +1250,6 @@ zenario__content:
                     label: Attached images
                     link:
                         path: zenario__library/panels/image_library
-                        branch: true
                         refiner: images_for_content_item
                     without_columns_set:
                         no_images: true
@@ -1278,7 +1261,6 @@ zenario__content:
                     label: Slots and plugins on this content item
                     link:
                         path: zenario__content/panels/slots
-                        branch: true
                         refiner: content_item
                 
                 categories_add:

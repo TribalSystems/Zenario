@@ -74,11 +74,11 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 		switch ($path) {
 			case 'plugin_settings':
 				$box['tabs']['first_tab']['fields']['image_width']['hidden'] = 
-					$box['tabs']['first_tab']['fields']['canvas']['hidden']
+					!empty($box['tabs']['first_tab']['fields']['canvas']['hidden'])
 				 || !ze::in($values['first_tab/canvas'], 'fixed_width', 'resize_and_crop', 'resize');
 
 				$box['tabs']['first_tab']['fields']['image_height']['hidden'] = 
-					$box['tabs']['first_tab']['fields']['canvas']['hidden']
+					!empty($box['tabs']['first_tab']['fields']['canvas']['hidden'])
 				 || !ze::in($values['first_tab/canvas'], 'fixed_height', 'resize_and_crop', 'resize');
 		 
 				if (isset($box['tabs']['first_tab']['fields']['canvas'])
@@ -228,9 +228,7 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 			}
 
 			$pagination = ''; 
-			$this->pagination(
-					'zenario_common_features::pagAllWithNPIfNeeded',
-					$this->page, $pages, $pagination);
+			$this->pagination($this->page, $pages, $pagination);
 					
 						$pagination = str_replace('zenario_project_plocations_search.refreshPluginSlot', 
 								   'zenario_project_plocations_search.refreshListSection', $pagination);

@@ -38,13 +38,10 @@ zenario__content:
                     width: xsmall
             
             item:
-                name: Access code
-                names: Access codes
                 css_class: access_code
                 tooltip_when_link_is_active: 'View content items using the access code [[access_code]]'
                 link:
                     path: zenario__content/panels/content
-                    branch: true
                     refiner: uses_access_code
             
             collection_buttons:
@@ -64,7 +61,6 @@ zenario__content:
                     multiple_select: true
                     link:
                         path: zenario__content/panels/content
-                        branch: true
                         refiner: uses_access_code
                 delete_access_code:
                     label: Delete access code

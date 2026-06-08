@@ -138,7 +138,6 @@ class zenario_breadcrumbs extends zenario_menu {
 			'url' => ze\link::absolute(),
 			'visitor_version' => '',
 			'invisible' => '',
-			'accesskey' => '',
 			'ordinal' => '',
 			'rel_tag' => '',
 			'image_id' => '',

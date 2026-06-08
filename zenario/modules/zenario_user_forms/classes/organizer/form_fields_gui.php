@@ -243,7 +243,23 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 					}
 				}
 				
-				$field['invalid_responses'] = array_map('strval', array_values(ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', 'id', ['form_field_id' => $field['id'], 'is_invalid' => true], 'ord')));
+				if ($field['dataset_field_id']) {
+					$field['invalid_responses'] = [];
+				} else {
+					$field['invalid_responses'] = array_map(
+						'strval', array_values(
+							ze\row::getAssocs(
+								ZENARIO_USER_FORMS_PREFIX. 'form_field_values',
+								'id',
+								[
+									'form_field_id' => $field['id'],
+									'is_invalid' => true
+								],
+								'ord'
+							)
+						)
+					);
+				}
 				
 			}
 			
@@ -592,7 +608,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 						$values['ord'] = $pageIndex + 1;
 					}
 					//Update page data
-					if (isset($page['_changed']) || isset($page['_new'])) {
+					if (isset($page['_cms_changed']) || isset($page['_new'])) {
 						$values = array_merge(
 							$values, 
 							$this->getFormPageOptions($page, $fields, $tempFieldIdLink, $tempValueIdLink),
@@ -619,7 +635,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 							$values['page_id'] = $page['id'];
 						}
 						//Update field data
-						if (isset($field['_changed']) || isset($field['_new'])) {
+						if (isset($field['_cms_changed']) || isset($field['_new'])) {
 							$fieldId = $field['id'];
 							$values = array_merge(
 								$values, 

@@ -13,15 +13,15 @@ description: |
     <p>On a Blog content item, you should have a Metadata plugin to display the release date and writer, and a WYSIWYG area for the main content.</p>
     <p>It's also typical to have blog articles appearing on the site's home page, and on a blog listing page, both of which can be achieved by putting a Content Summary List plugin in a slot on each page, and selecting a filter content type of Blog.</p>
 category: content_type
-keywords: news, rss, blog, article
+keywords: news, rss, blog, article, articles, entry, entries, post, posts
 content_types:
     content_type:
         content_type_id: blog
-        content_type_name_en: Blog entry
-        content_type_plural_en: Blog entries
-        default_template_name: Blog Layout
+        content_type_name_en: Blog post
+        content_type_plural_en: Blog posts
+        default_template_name: Blog layout
         description_field: optional
-        tooltip_text: Blog articles, to show a blog on your site, and keep an archive of older articles
+        tooltip_text: Blog posts, to show a blog on your site, and keep an archive of older posts
         keywords_field: hidden
         summary_field: optional
         release_date_field: optional

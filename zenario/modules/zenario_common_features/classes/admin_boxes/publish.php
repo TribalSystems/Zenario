@@ -62,8 +62,6 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			'[[count]] content items have an access code. These will be removed when it is published.'
 		);
 		
-		$clash = static::checkForClashingPublicationDates($box['key']['id']);
-		
 		// Scheduled publishing options
 		$scheduledTaskManagerInc = ze\module::inc('zenario_scheduled_task_manager');
 		if ($scheduledTaskManagerInc) {
@@ -184,27 +182,6 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			}
 		} else {
 			$fields['publish/featured_image_grouping']['hidden'] = $fields['publish/content_item_details']['hidden'] = true;
-		}
-		
-		if ($clash) {
-			$href = ze\link::absolute() . 'organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//' . $box['key']['id'] . '~.zenario_content~tmeta_data~k{"id"%3A"' . $box['key']['id'] . '"}';
-			$linkStart = '<a href="' . htmlspecialchars($href) . '" target="blank">';
-			$linkEnd = '</a>';
-			ze\lang::applyMergeFields(
-				$fields['publish/publishing_before_release_date_warning']['notices_above']['notice']['message'],
-				[
-					'publishing_before_release_date_warning_note' => ze\admin::phrase(
-						'This content item has a release date of [[date]], which is in the future. If that is not correct, [[link_start]]edit its meta data[[link_end]] to change the release date.',
-						[
-							'link_start' => $linkStart,
-							'date' => $clash['date'],
-							'link_end' => $linkEnd
-						]
-					)
-				]
-			);
-			
-			$fields['publish/publishing_before_release_date_warning']['notices_above']['notice']['hidden'] = false;
 		}
 		
 		
@@ -351,7 +328,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			  AND v.version = c.admin_version
 			WHERE c.tag_id IN (". ze\escape::in($tagIds, 'asciiInSQL'). ")
 			  AND v.release_date IS NOT NULL
-			  AND DATE(v.release_date) > ";
+			  AND DATE(v.release_date) <> ";
 		
 		if ($date) {
 			$sql .= "DATE('". ze\escape::sql($date). "')";
@@ -385,6 +362,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		}
 		return '';
 	}
+	
 	protected function setPublishOption(&$values, $option) {
 		$values['publish/publish_options__unlisted'] =
 		$values['publish/publish_options__immediately'] =
@@ -393,7 +371,117 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		
 		$values['publish/publish_options__'. $option] = 1;
 	}
-
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		$tags = ze\ray::explodeAndTrim($box['key']['id']);
+		
+		if ($box['key']['cID']) {
+			$tagsCount = 1;
+		} else {
+			$tagsCount = count($tags);
+		}
+		
+		$date = false;
+		if ($values['publish/publish_options__schedule'] && $values['publish/publish_date']) {
+			$date = $values['publish/publish_date'];
+		}
+		
+		$clash = static::checkForClashingPublicationDates($box['key']['id'], $date);
+		
+		$fields['publish/release_date']['notices_below']['release_date_is_not_the_scheduled_publishing_date']['hidden'] =
+		$fields['publish/release_date']['notices_below']['release_date_is_not_today']['hidden'] =
+		$fields['publish/multiple_items__publishing_date_not_set_correctly']['notices_above']['notice']['hidden'] = true;
+		
+		if ($tagsCount == 1) {
+			$version = ze\content::version($box['key']['cID'], $box['key']['cType']);
+			$cTypeDetails = ze\contentAdm::cTypeDetails($box['key']['cType']);
+			
+			if ($cTypeDetails['release_date_field'] == 'optional') {
+				$fields['publish/release_date']['hidden'] = false;
+				
+				$dateToday = ze\date::now();
+				$dateTodayFormatted = ze\date::format($dateToday);
+				
+				$releaseDate = ze\row::get('content_item_versions', 'release_date', ['id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $version]);
+				$releaseDateFormatted = ze\date::format($releaseDate);
+				
+				$href = ze\link::absolute() . 'organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//' . $box['key']['id'] . '~.zenario_content~tmeta_data~k{"id"%3A"' . $box['key']['id'] . '"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="blank">';
+				$linkEnd = '</a>';
+				
+				if ($releaseDate) {
+					$values['publish/release_date'] = ze\admin::phrase('Release date [[release_date]]', ['release_date' => $releaseDateFormatted]);
+					
+					if ($clash) {						
+						$replace = [
+							'intended_date' => $dateTodayFormatted,
+							'link_start' => $linkStart,
+							'date' => $clash['date'],
+							'link_end' => $linkEnd
+						];
+						
+						if ($values['publish/publish_options__schedule'] && $values['publish/publish_date']) {
+							$fields['publish/release_date']['notices_below']['release_date_is_not_the_scheduled_publishing_date']['hidden'] = false;
+							
+							$replace['intended_date'] = ze\date::format($values['publish/publish_date']);
+							
+							$fields['publish/release_date']['notices_below']['release_date_is_not_the_scheduled_publishing_date']['message'] =
+								ze\admin::phrase(
+									"The release date is not set to the scheduled publishing date ([[intended_date]]). If that is not correct, [[link_start]]edit the meta data[[link_end]].",
+									$replace
+								);
+						} else {
+							$fields['publish/release_date']['notices_below']['release_date_is_not_today']['hidden'] = false;
+							
+							if (!$date) {
+								$date = ze\date::now();
+							}
+							
+							$intendedReleaseDateTimestamp = strtotime($date);
+							$releaseDateTimestamp = strtotime($releaseDate);
+							
+							$replace['release_date'] = $releaseDateFormatted;
+							
+							if ($releaseDateTimestamp < $intendedReleaseDateTimestamp) {
+								$message = 'The release date is in the past ([[release_date]]). If that is not correct, [[link_start]]edit the meta data[[link_end]].';
+							} else {
+								$message = 'The release date is in the future ([[release_date]]). If that is not correct, [[link_start]]edit the meta data[[link_end]].';
+							}
+							
+							$fields['publish/release_date']['notices_below']['release_date_is_not_today']['message'] = ze\admin::phrase($message, $replace);
+						}
+					}
+				} else {
+					if ($cTypeDetails['auto_set_release_date']) {
+						if ($values['publish/publish_options__schedule']) {
+							$values['publish/release_date'] = ze\admin::phrase('Release date will be set to the date of publishing ([[date_of_publishing]])', ['date_of_publishing' => ze\date::format($values['publish/publish_date'])]);
+						} else {
+							$values['publish/release_date'] = ze\admin::phrase('Release date will be set to today ([[today]])', ['today' => $dateTodayFormatted]);
+						}
+					} else {
+						$values['publish/release_date'] = ze\admin::phrase('Release date not set');
+						
+						$replace = [
+							'today' => $dateTodayFormatted,
+							'link_start' => $linkStart,
+							'link_end' => $linkEnd
+						];
+						ze\lang::applyMergeFields($fields['publish/release_date']['notices_below']['release_date_not_set']['message'], $replace);
+						$fields['publish/release_date']['notices_below']['release_date_not_set']['hidden'] = false;
+					}
+				}
+			}
+		} elseif ($tagsCount > 1 && $clash) {
+			if ($values['publish/publish_options__schedule'] && $values['publish/publish_date']) {
+				$message = 'At least one selected content item has a release date that is not set to the scheduled publishing date. If that is not correct, edit the meta data to change the release date.';
+			} else {
+				$message = 'At least one selected content item has a release date that is not set to today. If that is not correct, edit the meta data to change the release date.';
+			}
+			
+			$fields['publish/multiple_items__publishing_date_not_set_correctly']['notices_above']['notice']['message'] = ze\admin::nPhrase($message);
+			$fields['publish/multiple_items__publishing_date_not_set_correctly']['notices_above']['notice']['hidden'] = false;
+		}
+	}
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		

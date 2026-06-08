@@ -550,6 +550,21 @@ class lang {
 	}
 
 
+	public static function formatInt($value) {
+		//load the thousands separator and decimal point for the visitor's language
+		if (!is_null(\ze::$visLang)
+		 && isset(\ze::$langs[\ze::$visLang])) {
+			$thousands_sep = \ze::$langs[\ze::$visLang]['thousands_sep'];
+			$dec_point = \ze::$langs[\ze::$visLang]['dec_point'];
+		} else {
+			$thousands_sep = ',';
+			$dec_point = '.';
+		}
+		
+		return number_format($value, 0, $dec_point, $thousands_sep);
+	}
+
+
 
 
 

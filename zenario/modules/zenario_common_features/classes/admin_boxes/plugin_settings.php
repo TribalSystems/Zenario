@@ -128,6 +128,11 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		ze\tuix::setupPluginFABKey($box['key'], $module, $instance, $egg);
 		
 		
+		//Don't try and show the "save and continue" button when creating a plugin!
+		if (!$box['key']['instanceId']) {
+			unset($box['save_and_continue_button_message']);
+		}
+		
 		
 		$module['display_name'] = ze\module::displayName($box['key']['moduleId']);
 
@@ -300,7 +305,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			case 'plugin_settings':
 
 				if (empty($instance['name'])) {
-					//Load the XML description for this plugin, and get the default instance name
+					//Load the YAML description for this plugin, and get the default instance name
 					$desc = false;
 					if (ze\moduleAdm::loadDescription($module['class_name'], $desc)) {
 						$instanceName = $desc['default_instance_name'];
@@ -481,6 +486,17 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				}
 				$fields['last_tab/module_description']['snippet']['html'] = 
 					'<div class="module_description">' . $moduleDescription . '</div>';
+				
+				$moduleFullDetails = ze\module::details($box['key']['moduleId']);
+				$values['last_tab/pluggable'] = ze\moduleAdm::pluggableDesc($moduleFullDetails);
+				
+				$href = 'organizer.php#zenario__library/panels/modules_running_and_suspended//' . (int) $module['module_id'] . '~.zenario_module_info~tmodule_info~k{"id"%3A"' . (int) $module['module_id'] . '"}';
+				$linkStart = "<a href='" . $href . "' target='_blank'>";
+				$linkEnd = '</a>';
+				$fields['last_tab/view_module_info']['notices_below']['module_info_link']['message'] = ze\admin::phrase(
+					'[[link_start]]View module info[[link_end]]',
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 				
 				
 				//Load a list of TUIX Snippet names defined on the site
@@ -934,6 +950,16 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 
 		} else {
 			$instance = ze\plugin::details($box['key']['instanceId']);
+			
+			if ($box['key']['isSlideshow']) {
+				$mrg = ['plugin' => ze\admin::phrase('slideshow')];
+			
+			} elseif ($box['key']['isNest']) {
+				$mrg = ['plugin' => ze\admin::phrase('nest')];
+			
+			} else {
+				$mrg = ['plugin' => ze\admin::phrase('plugin')];
+			}
 	
 			if ($instance['content_id']) {
 				if (!ze\content::isDraft($status = ze\content::status($instance['content_id'], $instance['content_type']))) {
@@ -946,26 +972,23 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			
 			} elseif ($duplicate_or_rename == 'duplicate') {
 				//Add a warning when duplicating
+				$mrg['name'] = $values['first_tab/instance_name'];
 				$box['confirm']['show'] = true;
 				$box['confirm']['button_message'] = ze\admin::phrase('Save');
 				$box['confirm']['message'] = 
-					ze\admin::phrase("This will create a new plugin oin the library with the name \"[[name]]\".\n\nProceed?",
-						['name' => $values['first_tab/instance_name']]
-					);
+					ze\admin::phrase("This will create a new [[plugin]] in the library with the name \"[[name]]\".\n\nProceed?", $mrg);
 			
 			} elseif ($duplicate_or_rename == 'replace') {
 				//Add a warning when replacing...
+				$mrg['name'] = $values['first_tab/instance_name'];
 				$box['confirm']['show'] = true;
 				$box['confirm']['button_message'] = ze\admin::phrase('Save');
 				$box['confirm']['message'] = 
-					ze\admin::phrase("This will create a new plugin with the name \"[[name]]\".\n\nThe new plugin will be inserted into the slot.\n\nProceed?",
-						['name' => $values['first_tab/instance_name']]
-					);
+					ze\admin::phrase("This will create a new [[plugin]] with the name \"[[name]]\".\n\nThe new [[plugin]] will be inserted into the slot.\n\nProceed?", $mrg);
 				
 			} else {
-				$mrg = [
-					'pages' => ze\pluginAdm::usage($box['key']['instanceId'], false),
-					'published' => ze\pluginAdm::usage($box['key']['instanceId'], true)];
+				$mrg['pages'] = ze\pluginAdm::usage($box['key']['instanceId'], false);
+				$mrg['published'] = ze\pluginAdm::usage($box['key']['instanceId'], true);
 		
 				if ($mrg['published'] > 0) {
 			
@@ -974,7 +997,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					$box['confirm']['button_message'] = ze\admin::phrase('Save');
 			
 					$box['confirm']['message'] = 
-						'<p>'. ze\admin::phrase('You are changing the settings of this plugin. The change will be <b>immediate</b> and cannot be undone.'). '</p>';
+						'<p>'. ze\admin::phrase('You are changing the settings of this [[plugin]]. The change will be <b>immediate</b> and cannot be undone.', $mrg). '</p>';
 					
 					if ($mrg['pages'] > 1) {
 						$mrg['link'] = htmlspecialchars(ze\pluginAdm::usageOrganizerLink($instance['instance_id'], $instance['module_id']));
@@ -1003,16 +1026,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					//Add a warning when just renaming...
 					$box['confirm']['show'] = true;
 					$box['confirm']['button_message'] = ze\admin::phrase('Save');
-					
-					if ($box['key']['isSlideshow']) {
-						$box['confirm']['message'] = ze\admin::phrase("Rename this slideshow?");
-					
-					} elseif ($box['key']['isNest']) {
-						$box['confirm']['message'] = ze\admin::phrase("Rename this nest?");
-					
-					} else {
-						$box['confirm']['message'] = ze\admin::phrase("Rename this plugin?");
-					}
+					$box['confirm']['message'] = ze\admin::phrase("Rename this [[plugin]]?", $mrg);
 				}
 			}
 		}
@@ -1170,9 +1184,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 										
 										//Don't save a value for a field if it was hidden...
 										if (!empty($tab['hidden'])
-										 || !empty($tab['_was_hidden_before'])
+										 || !empty($tab['_cms_hidden'])
 										 || (!empty($field['hidden']) && empty($settingOpts['save_when_field_is_hidden']))
-										 || (!empty($field['_was_hidden_before']) && empty($settingOpts['save_when_field_is_hidden']))) {
+										 || (!empty($field['_cms_hidden']) && empty($settingOpts['save_when_field_is_hidden']))) {
 											ze\row::delete('plugin_settings', $pk);
 				
 										//...or a multiple edit field that is not marked as changed
@@ -1417,7 +1431,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						}
 					}
 					
-					if (!ze::request('_save_and_continue')) {
+					if (!ze::request('_cms_isSaveAndContinue')) {
 						//If the CSS files have changed, and we opened up from the front-end,
 						//unset the slotName from the key to force the toolkit to reload the whole page.
 						if ((isset($fields['this_css_tab/use_css_file']['current_value']) && $fields['this_css_tab/use_css_file']['current_value'] != $fields['this_css_tab/use_css_file']['value'])
@@ -1535,11 +1549,16 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				$mi = count($tokens) - 4;
 			
 				for ($i = 0; $i < $mi; ++$i) {
+					
+					$isFunctionCall = 
+						$tokens[$i    ] == '$this'
+						 && $tokens[$i + 1] == '->'
+						 && $tokens[$i + 3] == '(';
+					$functionName = strtolower($tokens[$i + 2]);
+					$hasTwoInputs = $isFunctionCall && isset($tokens[$i + 6]) && $tokens[$i + 5] == ',';
+					$hasThreeInputs = $hasTwoInputs && isset($tokens[$i + 8]) && $tokens[$i + 7] == ',';
 	
-					if ($tokens[$i    ] == '$this'
-					 && $tokens[$i + 1] == '->'
-					 && $tokens[$i + 2] == 'phrase'
-					 && $tokens[$i + 3] == '(') {
+					if ($isFunctionCall && $functionName == 'phrase') {
 						$phrase = $tokens[$i + 4];
 					
 						//Check that the phrase code is a string.
@@ -1551,12 +1570,67 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 							$pInCode = true;
 						}
 					}
+					
+					//From Zenario 10.4, we're also tracking calls to the nPhrase() function
+					if ($isFunctionCall && $hasTwoInputs && $functionName == 'nphrase') {
+						$phrase = $tokens[$i + 4];
+					
+						if ($phrase[0] == "'"
+						 || $phrase[0] == '"') {
+							$code = stripslashes(substr($phrase, 1, -1));
+							$phrases[$code] = $code;
+							$pInCode = true;
+						}
+						
+						$phrase = $tokens[$i + 6];
+					
+						if ($phrase[0] == "'"
+						 || $phrase[0] == '"') {
+							$code = stripslashes(substr($phrase, 1, -1));
+							$phrases[$code] = $code;
+							$pInCode = true;
+						}
+					}
+					
+					if ($isFunctionCall && $hasThreeInputs && $functionName == 'nzphrase') {
+						$phrase = $tokens[$i + 4];
+					
+						if ($phrase[0] == "'"
+						 || $phrase[0] == '"') {
+							$code = stripslashes(substr($phrase, 1, -1));
+							$phrases[$code] = $code;
+							$pInCode = true;
+						}
+						
+						$phrase = $tokens[$i + 6];
+					
+						if ($phrase[0] == "'"
+						 || $phrase[0] == '"') {
+							$code = stripslashes(substr($phrase, 1, -1));
+							$phrases[$code] = $code;
+							$pInCode = true;
+						}
+						
+						$phrase = $tokens[$i + 8];
+					
+						if ($phrase[0] == "'"
+						 || $phrase[0] == '"') {
+							$code = stripslashes(substr($phrase, 1, -1));
+							$phrases[$code] = $code;
+							$pInCode = true;
+						}
+					}
 				
-					//Watch out for plugin modes that extend other plugins
+					//Watch out for plugin modes that extend other plugins.
+					//Note: As of version 10.4 I am requiring the developer to add the
+					//### ENABLE OVERRIDING TEXT FROM EXTENDED CLASS ### meta token to enable this.
 					if ($usesClassesDir
+					 && isset($tokens[$i + 5])
 					 && $tokens[$i    ] == 'class'
 					 && $tokens[$i + 1] == $moduleClassName. '__visitor__'. $mode
 					 && $tokens[$i + 2] == 'extends'
+					 && $tokens[$i + 4] == '{'
+					 && strtoupper(trim(strtr($tokens[$i + 5], '/*/#', '    '))) == 'ENABLE OVERRIDING TEXT FROM EXTENDED CLASS'
 					 && ($extendedMode = ze\ring::chopPrefix($moduleClassName. '__visitor__', $tokens[$i + 3]))) {
 						$nextMode = $extendedMode;
 					}
@@ -1595,11 +1669,11 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			<p class="zfab_customise_phrases_explainer">';
 		
 		if ($pInCode && $pInTwig) {
-			$html .= htmlspecialchars(ze\admin::phrase("This module's program code and Twig framework contain the following text and messages. Use this tab to override and customise them when they are displayed."));
+			$html .= htmlspecialchars(ze\admin::phrase("This module's program code and Twig framework contain the following text for display. Use this tab to override with custom text."));
 		} elseif ($pInCode) {
-			$html .= htmlspecialchars(ze\admin::phrase("This module's program code contains the following text and messages. Use this tab to override and customise them when they are displayed."));
+			$html .= htmlspecialchars(ze\admin::phrase("This module's program code contains the following text for display. Use this tab to override with custom text."));
 		} else {
-			$html .= htmlspecialchars(ze\admin::phrase("This module's Twig framework contains the following text and messages. Use this tab to override and customise them when they are displayed."));
+			$html .= htmlspecialchars(ze\admin::phrase("This module's Twig framework contains the following text for display. Use this tab to override with custom text."));
 		}
 		
 		$html .= '
@@ -1607,8 +1681,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			<table class="zfab_customise_phrases cols_2">
 				<thead>
 					<tr>
-						<th>Original text/message</th>
-						<th>Customised text/message</th>
+						<th>Original text</th>
+						<th>Custom text</th>
 					</tr>
 				</thead>
 				<tbody>';

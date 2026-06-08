@@ -151,4 +151,15 @@ _sql
 	WHERE `name` IN ('content_notification_email_subject', 'content_notification_email_body')
 _sql
 
+
+//
+//	Zenario 10.4
+//
+
+);	ze\dbAdm::revision(64745
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admins`
+	CHANGE COLUMN `authtype` `authtype` enum('local','super') CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT 'local'
+_sql
+
 );

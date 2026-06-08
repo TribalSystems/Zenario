@@ -23,7 +23,7 @@ common_definitions:
         description: >
             This controls the order in which elements are drawn on the screen.
             
-            If not set, it defaults to the order the CMS finds them in.
+            If not set, it defaults to the order Zenario finds them in.
             
             From version 10.1 onwards, we have some logic where you can place a field or a button
             immediately before or after an existing field or button using an offset.
@@ -69,13 +69,26 @@ properties:
     meta_info:
         type: object
         description: >
-            This contains variables that can be accessed later in various parts of the
-            JavaScript and/or MicroTemplate code.
+            This contains variables about the current content item that can be accessed
+            later in JavaScript and/or microtemplate code.
         additionalProperties:
             type: string
             description: >
-                A variable that can be accessed later in various parts of the
-                JavaScript and/or MicroTemplate code.
+                A variable that can be accessed later in JavaScript and/or microtemplate code.
+    flags:
+        type: object
+        description: >
+            This contains boolean variables that can be accessed later in JavaScript and/or
+            microtemplate code.
+            
+            They'll also be added to the <body> of the page as a CSS class name with either
+            "_off" or "_on" as a suffix.
+            
+            These work from version 10.4 onwards.
+        additionalProperties:
+            type: boolean
+            description: >
+                A variable that can be accessed later in JavaScript and/or microtemplate code.
     toolbars:
         type: object
         description: >

@@ -30,7 +30,6 @@ zenario__social:
                         WHERE cm.status='pending'
                     id_column: cm.id
                 default_sort_column: comment_on_page
-                enable_close_up_view: Yes
                 default_sort_column: comment_last_edit
                 default_sort_desc: Yes
                 columns:
@@ -65,14 +64,11 @@ zenario__social:
                         db_column: cm.poster_name
                 item:
                     css_class: pending_comment
-                    name: Pending comment
-                    names: Pending comments
                 inline_buttons:
                     view_frontend:
                         css_class: view_frontend
                         tooltip: View in front-end window
-                        frontend_link:
-                            exists: Yes
+                        frontend_link: true
                         visible_if: >
                             zenario.engToBoolean(item.frontend_link)
                     inspect:

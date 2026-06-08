@@ -30,8 +30,6 @@ zenario__library:
                 [[[width]] × [[height]]]
             
             item:
-                name: Image
-                names: Images
                 css_class: media_image
 
             columns:
@@ -163,7 +161,6 @@ zenario__library:
                     label: View image
                     popout:
                         href: zenario/file.php?popout=1
-                        type: image
                 download:
                     parent: actions_dropdown
                     hide_in_select_mode: true

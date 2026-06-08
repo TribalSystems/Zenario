@@ -9,6 +9,7 @@ zenario_slide:
         idInOrganizer: ''
         usesConductor: false
         breadcrumbsOverridden: false
+        groups_exist: true
         cID: ""
         cType: ""
         cVersion: ""
@@ -152,13 +153,24 @@ zenario_slide:
                     indent: 1
                     hide_with_previous_outdented_field: true
                     hide_if_previous_outdented_value_isnt: inner_slide
-                    label: |
-                        Show a "Back" button
-                    note_below: |
-                        Appears at the top of the slide.
+                    label: Show a "Back" button
                     type: checkbox
                     value: 1
-                    redraw_onchange: true
+                show_back_to_1st:
+                    indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: inner_slide
+                    label: Show a "Back to first slide" button (goes to the first key slide of the nest)
+                    type: checkbox
+                show_exit:
+                    indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: inner_slide
+                    label: Show "Exit" button (goes to the page above in the menu)
+                    type: checkbox
+                    readonly: true
+                    note_below: |
+                        These buttons appear at the top of the slide.
                 
                 slide_link_image_id:
                     label: 'Image for tab link:'
@@ -170,12 +182,13 @@ zenario_slide:
                         select_phrase: Select image...
                     upload:
                         multi: false
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                         reorder_items: false
@@ -237,8 +250,11 @@ zenario_slide:
                         zenarioAB.value('privacy') == 'group_members'
                     type: checkboxes
                     no_values_message: No groups found
-                    validation:
-                        required_if_not_hidden: Please select a group
+                    notices_below:
+                        no_group_selected:
+                            type: warning
+                            message: 'Item is shared to no groups; this disallows all user access'
+                            visible_if: zenarioAB.value('privacy') == 'group_members' && (!zenarioAB.value('group_ids') || !zenarioAB.tuix.key.groups_exist)
                 smart_group_id:
                     indent: 2
                     hide_with_previous_outdented_field: true

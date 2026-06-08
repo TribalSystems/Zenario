@@ -49,7 +49,7 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 
 		foreach ($panel['items'] as $id => &$item) {
 			if (!empty($item['thumbnail_id'])) {
-				$item['traits']['has_image'] = true;
+				$item['has_image'] = true;
 			
 				$img = '&usage=zenario_video_image&c='. $item['thumbnail_checksum'];
 

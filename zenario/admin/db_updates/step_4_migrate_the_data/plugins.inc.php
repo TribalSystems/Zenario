@@ -33,247 +33,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 ze\moduleAdm::addNew($skipIfFilesystemHasNotChanged = false);
 
 
-//Code for handling renaming Plugin directories
-function renameModuleDirectory($oldName, $newName, $movePlugins, $moveEditableCSS, $movePhrases, $uninstallOldModule = false) {
-	
-	$oldId = ze\module::id($oldName);
-	$newId = ze\module::id($newName);
-	
-	if ($newName) {
-		
-		if ($movePlugins && $oldId && $newId) {
-			foreach([
-				'content_types', 'jobs', 'signals',
-				'module_dependencies', 'plugin_setting_defs',
-				'nested_plugins', 'plugin_instances',
-				'plugin_item_link', 'plugin_layout_link', 'plugin_sitewide_link'
-			] as $table) {
-				$sql = "
-					UPDATE IGNORE ". DB_PREFIX. $table. " SET
-						module_id = ". (int) $newId. "
-					WHERE module_id = ". (int) $oldId;
-				ze\sql::update($sql);
-			}
-			
-			$oldStatus = ze\row::get('modules', 'status', $oldId);
-			$newStatus = ze\row::get('modules', 'status', $newId);
-			
-			if (ze::in($newStatus, 'module_not_initialized', 'module_suspended')) {
-				ze\row::set('modules', ['status' => $oldStatus], $newId);
-			}
-		}
-		
-		if ($movePhrases) {
-			$sql = "
-				UPDATE IGNORE ". DB_PREFIX. "visitor_phrases SET
-					module_class_name = '". ze\escape::sql($newName). "'
-				WHERE module_class_name = '". ze\escape::sql($oldName). "'";
-			ze\sql::update($sql);
-		}
-		
-		if ($moveEditableCSS
-		 && is_dir($gtDir = CMS_ROOT. 'zenario_custom/skins/')) {
-			
-			foreach (scandir($gtDir) as $skin) {
-				
-				if ($skin[0] != '.'
-				 && is_dir($cssDir = $gtDir. $skin. '/editable_css/')
-				 && is_writable($cssDir = $gtDir. $skin. '/editable_css/')) {
-					
-					foreach (scandir($cssDir) as $oldFile) {
-						if (is_file($cssDir. $oldFile)
-						 && ($suffix = ze\ring::chopPrefix('2.'. $oldName, $oldFile))
-						 && ($contents = file_get_contents($cssDir. $oldFile))) {
-							
-							$contents = preg_replace('/\b'. $oldName. '_(\d)/', $newName. '_$1', $contents);
-							
-							$newFile = '2.'. $newName. $suffix;
-							
-							if (file_exists($cssDir. $newFile)) {
-								if (is_writable($cssDir. $newFile)) {
-									file_put_contents(
-										$cssDir. $newFile,
-										"\n\n\n". $contents,
-										FILE_APPEND | LOCK_EX
-									);
-									unlink($cssDir. $oldFile);
-								}
-							} else {
-								file_put_contents($cssDir. $newFile, $contents);
-								unlink($cssDir. $oldFile);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	if ($uninstallOldModule && $oldId) {
-		ze\row::update('modules', ['status' => 'module_not_initialized'], $oldId);
-		ze\row::delete('special_pages', ['module_class_name' => $oldName]);
-	}
-}
-
-//Code for one Module replacing functionality from another
-function replaceModule($oldName, $newName) {
-	if (($oldId = ze\module::id($oldName)) && ($newId = ze\module::id($newName))) {
-		foreach([
-			'content_types',
-			'nested_plugins', 'plugin_instances',
-			'plugin_item_link', 'plugin_layout_link'
-		] as $table) {
-			$sql = "
-				UPDATE IGNORE ". DB_PREFIX. $table. " SET
-					module_id = ". (int) $newId. "
-				WHERE module_id = ". (int) $oldId;
-			ze\sql::update($sql);
-		}
-		
-		$oldStatus = ze\row::get('modules', 'status', $oldId);
-		$newStatus = ze\row::get('modules', 'status', $newId);
-		
-		if ($oldStatus == 'module_running' || $newStatus == 'module_running') {
-			ze\row::set('modules', ['status' => 'module_running'], $newId);
-		
-		} elseif ($oldStatus == 'module_suspended' || $newStatus == 'module_suspended') {
-			ze\row::set('modules', ['status' => 'module_suspended'], $newId);
-		}
-		
-		ze\moduleAdm::uninstall($oldId, $uninstallRunningModules = true);
-		
-		return true;
-	}
-	
-	return false;
-}
-
-//Code for one Module replacing specific plugins from another
-//Currently only supports replacing plugins that are in a nest
-function replaceModulePlugins($oldName, $newName, $settingName, $settingValue) {
-	if (($oldId = ze\module::id($oldName)) && ($newId = ze\module::id($newName))) {
-		$sql = "
-			UPDATE IGNORE ". DB_PREFIX. "nested_plugins np
-			INNER JOIN " . DB_PREFIX . "plugin_settings ps
-				ON np.id = ps.egg_id
-				AND ps.name = '" . ze\escape::sql($settingName) . "'
-			SET np.module_id = ". (int) $newId. "
-			WHERE np.module_id = ". (int) $oldId;
-		if (is_array($settingValue)) {
-			$sql .= "
-				AND ps.value IN (" . ze\escape::in($settingValue) . ")";
-		} else {
-			 $sql .= "
-				AND ps.value = '" . ze\escape::sql($settingValue) . "'";
-		}
-		ze\sql::update($sql);
-		
-		$oldStatus = ze\row::get('modules', 'status', $oldId);
-		$newStatus = ze\row::get('modules', 'status', $newId);
-		
-		if ($oldStatus == 'module_running' || $newStatus == 'module_running') {
-			ze\row::set('modules', ['status' => 'module_running'], $newId);
-		
-		} elseif ($oldStatus == 'module_suspended' || $newStatus == 'module_suspended') {
-			ze\row::set('modules', ['status' => 'module_suspended'], $newId);
-		}
-		
-		return true;
-	}
-	
-	return false;
-}
-
-//Code for running a dependency, if a previously existing Module gains a new dependancy
-function runNewModuleDependency($moduleName, $dependencyName) {
-	if (($moduleId = ze\module::id($moduleName)) && ($dependencyId = ze\module::id($dependencyName))) {
-		$moduleStatus = ze\row::get('modules', 'status', $moduleId);
-		$dependencyStatus = ze\row::get('modules', 'status', $dependencyId);
-		
-		if ($moduleStatus == 'module_running' && !ze::in($dependencyStatus, 'module_running', 'module_is_abstract')) {
-			ze\row::set('modules', ['status' => 'module_running'], $dependencyId);
-		
-		} elseif ($moduleStatus == 'module_suspended' && !ze::in($dependencyStatus, 'module_running', 'module_suspended', 'module_is_abstract')) {
-			ze\row::set('modules', ['status' => 'module_suspended'], $dependencyId);
-		}
-		
-		return true;
-	}
-	
-	return false;
-}
-
-
-function convertSpecialPageToPluginPage($specialPage, $pluginPageModule = '', $pluginPageMode = '') {
-	if ($spDetails = ze\row::get('special_pages', true, $specialPage)) {
-		
-		ze\row::insert('plugin_pages_by_mode', [
-			'equiv_id' => $spDetails['equiv_id'],
-			'content_type' => $spDetails['content_type'],
-			'module_class_name' => $pluginPageModule ?: $spDetails['module_class_name'],
-			'mode' => $pluginPageMode ?: '',
-		], $ignore = true);
-		
-		ze\row::delete('special_pages', $specialPage);
-	}
-}
-
-
-function renamePluginSetting(
-	$moduleNames, $oldPluginSettingName, $newPluginSettingName,
-	$checkNonNestedPlugins = true, $checkNestedPlugins = true,
-	$extraSetSQL = '', $extraWhereSQL = ''
-) {
-	
-	if ($checkNonNestedPlugins) {
-		$sql = "
-			UPDATE IGNORE `". DB_PREFIX. "modules` AS m
-			INNER JOIN `". DB_PREFIX. "plugin_instances` AS pi
-			   ON pi.module_id = m.id
-			INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
-			   ON ps.instance_id = pi.id
-			  AND ps.egg_id = 0
-			  AND ps.name = '". ze\escape::sql($oldPluginSettingName). "'
-			SET ps.name = '". ze\escape::sql($newPluginSettingName). "'
-			". $extraSetSQL. "
-			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'asciiInSQL'). ")
-			". $extraWhereSQL;
-		ze\sql::update($sql);
-	}
-
-	if ($checkNestedPlugins) {
-		$sql = "
-			UPDATE IGNORE `". DB_PREFIX. "modules` AS m
-			INNER JOIN `". DB_PREFIX. "nested_plugins` AS np
-			   ON np.module_id = m.id
-			INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
-			   ON ps.instance_id = np.instance_id
-			  AND ps.egg_id = np.id
-			  AND ps.name = '". ze\escape::sql($oldPluginSettingName). "'
-			SET ps.name = '". ze\escape::sql($newPluginSettingName). "'
-			". $extraSetSQL. "
-			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'asciiInSQL'). ")
-			". $extraWhereSQL;
-		ze\sql::update($sql);
-	}
-}
-
-
-function uninstalledRemovedModule($moduleName) {
-	if (ze\module::isRunning($moduleName)) {
-		$moduleId = ze\module::id($moduleName);
-		ze\moduleAdm::uninstall($moduleId, $uninstallRunningModules = true, $checkForDependenciesBeforeUninstalling = false);
-	}
-}
-
-
 
 
 
 
 //Rename a plugin setting used by slideshows
 if (ze\dbAdm::needRevision(53600)) {
-	renamePluginSetting(['zenario_slideshow', 'zenario_slideshow_simple'], 'mode', 'animation_library', $checkNonNestedPlugins = true, $checkNestedPlugins = true);
+	ze\pluginAdm::renameSetting(['zenario_slideshow', 'zenario_slideshow_simple'], 'mode', 'animation_library', $checkNonNestedPlugins = true, $checkNestedPlugins = true);
 	
 	ze\dbAdm::revision(53600);
 }
@@ -281,56 +47,56 @@ if (ze\dbAdm::needRevision(53600)) {
 
 //Rename a *lot* of inconsistent plugin settings
 if (ze\dbAdm::needRevision(55900)) {
-	renamePluginSetting(['zenario_content_list'], 'author_canvas', 'image_canvas', true, true);
-	renamePluginSetting(['zenario_content_list'], 'author_width', 'image_width', true, true);
-	renamePluginSetting(['zenario_content_list'], 'author_height', 'image_height', true, true);
-	renamePluginSetting(['zenario_content_list'], 'author_retina', 'image_retina', true, true);
+	ze\pluginAdm::renameSetting(['zenario_content_list'], 'author_canvas', 'image_canvas', true, true);
+	ze\pluginAdm::renameSetting(['zenario_content_list'], 'author_width', 'image_width', true, true);
+	ze\pluginAdm::renameSetting(['zenario_content_list'], 'author_height', 'image_height', true, true);
+	ze\pluginAdm::renameSetting(['zenario_content_list'], 'author_retina', 'image_retina', true, true);
 
-	renamePluginSetting(['zenario_user_profile_search'], 'photo_list_canvas', 'image_canvas', true, true);
-	renamePluginSetting(['zenario_user_profile_search'], 'photo_list_width', 'image_width', true, true);
-	renamePluginSetting(['zenario_user_profile_search'], 'photo_list_height', 'image_height', true, true);
-	renamePluginSetting(['zenario_user_profile_search'], 'photo_list_retina', 'image_retina', true, true);
+	ze\pluginAdm::renameSetting(['zenario_user_profile_search'], 'photo_list_canvas', 'image_canvas', true, true);
+	ze\pluginAdm::renameSetting(['zenario_user_profile_search'], 'photo_list_width', 'image_width', true, true);
+	ze\pluginAdm::renameSetting(['zenario_user_profile_search'], 'photo_list_height', 'image_height', true, true);
+	ze\pluginAdm::renameSetting(['zenario_user_profile_search'], 'photo_list_retina', 'image_retina', true, true);
 
-	renamePluginSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_canvas', 'image_canvas', true, true);
-	renamePluginSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_width', 'image_width', true, true);
-	renamePluginSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_height', 'image_height', true, true);
-	renamePluginSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_retina', 'image_retina', true, true);
+	ze\pluginAdm::renameSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_canvas', 'image_canvas', true, true);
+	ze\pluginAdm::renameSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_width', 'image_width', true, true);
+	ze\pluginAdm::renameSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_height', 'image_height', true, true);
+	ze\pluginAdm::renameSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_retina', 'image_retina', true, true);
 
-	renamePluginSetting(['zenario_event_slideshow'], 'slide_canvas', 'image_canvas', true, true);
-	renamePluginSetting(['zenario_event_slideshow'], 'slide_width', 'image_width', true, true);
-	renamePluginSetting(['zenario_event_slideshow'], 'slide_height', 'image_height', true, true);
-	renamePluginSetting(['zenario_event_slideshow'], 'slide_retina', 'image_retina', true, true);
+	ze\pluginAdm::renameSetting(['zenario_event_slideshow'], 'slide_canvas', 'image_canvas', true, true);
+	ze\pluginAdm::renameSetting(['zenario_event_slideshow'], 'slide_width', 'image_width', true, true);
+	ze\pluginAdm::renameSetting(['zenario_event_slideshow'], 'slide_height', 'image_height', true, true);
+	ze\pluginAdm::renameSetting(['zenario_event_slideshow'], 'slide_retina', 'image_retina', true, true);
 
-	renamePluginSetting(['zenario_conference_fea'], 'thumbnail_canvas', 'image_canvas', true, true);
-	renamePluginSetting(['zenario_conference_fea'], 'thumbnail_width', 'image_width', true, true);
-	renamePluginSetting(['zenario_conference_fea'], 'thumbnail_height', 'image_height', true, true);
-	renamePluginSetting(['zenario_conference_fea'], 'thumbnail_retina', 'image_retina', true, true);
+	ze\pluginAdm::renameSetting(['zenario_conference_fea'], 'thumbnail_canvas', 'image_canvas', true, true);
+	ze\pluginAdm::renameSetting(['zenario_conference_fea'], 'thumbnail_width', 'image_width', true, true);
+	ze\pluginAdm::renameSetting(['zenario_conference_fea'], 'thumbnail_height', 'image_height', true, true);
+	ze\pluginAdm::renameSetting(['zenario_conference_fea'], 'thumbnail_retina', 'image_retina', true, true);
 
-	renamePluginSetting(['zenario_ctype_document'], 'sticky_image_canvas', 'image_canvas', true, true);
-	renamePluginSetting(['zenario_ctype_document'], 'sticky_image_width', 'image_width', true, true);
-	renamePluginSetting(['zenario_ctype_document'], 'sticky_image_height', 'image_height', true, true);
-	renamePluginSetting(['zenario_ctype_document'], 'sticky_image_retina', 'image_retina', true, true);
+	ze\pluginAdm::renameSetting(['zenario_ctype_document'], 'sticky_image_canvas', 'image_canvas', true, true);
+	ze\pluginAdm::renameSetting(['zenario_ctype_document'], 'sticky_image_width', 'image_width', true, true);
+	ze\pluginAdm::renameSetting(['zenario_ctype_document'], 'sticky_image_height', 'image_height', true, true);
+	ze\pluginAdm::renameSetting(['zenario_ctype_document'], 'sticky_image_retina', 'image_retina', true, true);
 
-	renamePluginSetting(['zenario_meta_data'], 'sticky_image_canvas', 'image_2_canvas', true, true);
-	renamePluginSetting(['zenario_meta_data'], 'sticky_image_width', 'image_2_width', true, true);
-	renamePluginSetting(['zenario_meta_data'], 'sticky_image_height', 'image_2_height', true, true);
-	renamePluginSetting(['zenario_meta_data'], 'sticky_image_retina', 'image_2_retina', true, true);
+	ze\pluginAdm::renameSetting(['zenario_meta_data'], 'sticky_image_canvas', 'image_2_canvas', true, true);
+	ze\pluginAdm::renameSetting(['zenario_meta_data'], 'sticky_image_width', 'image_2_width', true, true);
+	ze\pluginAdm::renameSetting(['zenario_meta_data'], 'sticky_image_height', 'image_2_height', true, true);
+	ze\pluginAdm::renameSetting(['zenario_meta_data'], 'sticky_image_retina', 'image_2_retina', true, true);
 
-	renamePluginSetting(['zenario_user_profile_search'], 'photo_popup_canvas', 'image_2_canvas', true, true);
-	renamePluginSetting(['zenario_user_profile_search'], 'photo_popup_width', 'image_2_width', true, true);
-	renamePluginSetting(['zenario_user_profile_search'], 'photo_popup_height', 'image_2_height', true, true);
-	renamePluginSetting(['zenario_user_profile_search'], 'photo_popup_retina', 'image_2_retina', true, true);
+	ze\pluginAdm::renameSetting(['zenario_user_profile_search'], 'photo_popup_canvas', 'image_2_canvas', true, true);
+	ze\pluginAdm::renameSetting(['zenario_user_profile_search'], 'photo_popup_width', 'image_2_width', true, true);
+	ze\pluginAdm::renameSetting(['zenario_user_profile_search'], 'photo_popup_height', 'image_2_height', true, true);
+	ze\pluginAdm::renameSetting(['zenario_user_profile_search'], 'photo_popup_retina', 'image_2_retina', true, true);
 
-	renamePluginSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_canvas', 'image_2_canvas', true, true);
-	renamePluginSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_width', 'image_2_width', true, true);
-	renamePluginSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_height', 'image_2_height', true, true);
-	renamePluginSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_retina', 'image_2_retina', true, true);
+	ze\pluginAdm::renameSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_canvas', 'image_2_canvas', true, true);
+	ze\pluginAdm::renameSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_width', 'image_2_width', true, true);
+	ze\pluginAdm::renameSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_height', 'image_2_height', true, true);
+	ze\pluginAdm::renameSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_retina', 'image_2_retina', true, true);
 	
-	renamePluginSetting(['zenario_content_list', 'zenario_event_listing', 'zenario_location_listing', 'zenario_blog_news_list', 'zenario_event_calendar', 'zenario_forum_list'], 'show_sticky_images', 'show_featured_image', true, true);
-	renamePluginSetting(['zenario_meta_data'], 'show_sticky_image', 'show_featured_image', true, true);
+	ze\pluginAdm::renameSetting(['zenario_content_list', 'zenario_event_listing', 'zenario_location_listing', 'zenario_blog_news_list', 'zenario_event_calendar', 'zenario_forum_list'], 'show_sticky_images', 'show_featured_image', true, true);
+	ze\pluginAdm::renameSetting(['zenario_meta_data'], 'show_sticky_image', 'show_featured_image', true, true);
 	
-	renamePluginSetting(['zenario_meta_data'], 'show_feature_image_fallback', 'fall_back_to_default_image', true, true);
-	renamePluginSetting(['zenario_meta_data'], 'feature_image_fallback', 'default_image_id', true, true);
+	ze\pluginAdm::renameSetting(['zenario_meta_data'], 'show_feature_image_fallback', 'fall_back_to_default_image', true, true);
+	ze\pluginAdm::renameSetting(['zenario_meta_data'], 'feature_image_fallback', 'default_image_id', true, true);
 	
 	
 	ze\dbAdm::revision(55900);
@@ -420,7 +186,7 @@ if (ze\dbAdm::needRevision(56290)) {
 //Change the format of the "enlarge image" plugin settings in nests and slideshow to be a select list rather than a checkbox,
 //to be consistent with everything else
 if (ze\dbAdm::needRevision(57100)) {
-	renamePluginSetting(['zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple'], 'enlarge_image', 'link_type', true, false,
+	ze\pluginAdm::renameSetting(['zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple'], 'enlarge_image', 'link_type', true, false,
 		$extraSetSQL = ", ps.value = '_ENLARGE_IMAGE'",
 		$extraWhereSQL = "AND ps.value IS NOT NULL AND ps.value"
 	);
@@ -433,7 +199,7 @@ if (ze\dbAdm::needRevision(57100)) {
 //Remove the old jQuery Cycle plugin.
 //Anything that had it selected should now use Cycle 2
 if (ze\dbAdm::needRevision(57130)) {
-	renamePluginSetting(['zenario_slideshow', 'zenario_slideshow_simple'], 'animation_library', 'animation_library', true, false,
+	ze\pluginAdm::renameSetting(['zenario_slideshow', 'zenario_slideshow_simple'], 'animation_library', 'animation_library', true, false,
 		$extraSetSQL = ", ps.value = 'cycle2'",
 		$extraWhereSQL = "AND ps.value = 'cycle'"
 	);
@@ -445,8 +211,8 @@ if (ze\dbAdm::needRevision(57130)) {
 //Rename Advanced Search settings to have more sensible code names.
 if (ze\dbAdm::needRevision(57981)) {
 	if (ze\module::inc('zenario_advanced_search')) {
-		renamePluginSetting(['zenario_advanced_search'], 'show_private_items', 'search_private_items', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'hide_private_items', 'show_private_content_item_link_control', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'show_private_items', 'search_private_items', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'hide_private_items', 'show_private_content_item_link_control', true, true);
 	}
 	
 	ze\dbAdm::revision(57981);
@@ -458,7 +224,7 @@ if (ze\dbAdm::needRevision(57981)) {
 //whether the plugin is set to display the language name and/or ISO code.
 if (ze\dbAdm::needRevision(58751)) {
 	if (ze\module::inc('zenario_meta_data')) {
-		renamePluginSetting(['zenario_meta_data'], 'show_language', 'show_language_iso_code', true, true);
+		ze\pluginAdm::renameSetting(['zenario_meta_data'], 'show_language', 'show_language_iso_code', true, true);
 		
 		$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_meta_data');
 		
@@ -552,7 +318,7 @@ if (ze\dbAdm::needRevision(60665)) {
 
 if (ze\dbAdm::needRevision(60666)) {
 	if (ze\module::inc('zenario_ctype_document')) {
-		renamePluginSetting(['zenario_ctype_document'], 'show_default_stick_image', 'show_featured_image', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ctype_document'], 'show_default_stick_image', 'show_featured_image', true, true);
 	}
 	
 	ze\dbAdm::revision(60666);
@@ -560,30 +326,30 @@ if (ze\dbAdm::needRevision(60666)) {
 
 if (ze\dbAdm::needRevision(60670)) {
 	if (ze\module::inc('zenario_advanced_search')) {
-		renamePluginSetting(['zenario_advanced_search'], 'html_show_feature_image', 'html_show_featured_image', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'html_feature_image_canvas', 'html_canvas', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'html_feature_image_width', 'html_width', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'html_feature_image_height', 'html_height', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'html_show_feature_image', 'html_show_featured_image', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'html_feature_image_canvas', 'html_canvas', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'html_feature_image_width', 'html_width', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'html_feature_image_height', 'html_height', true, true);
 		
-		renamePluginSetting(['zenario_advanced_search'], 'document_show_feature_image', 'document_show_featured_image', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'document_feature_image_canvas', 'document_canvas', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'document_feature_image_width', 'document_width', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'document_feature_image_height', 'document_height', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'document_show_feature_image', 'document_show_featured_image', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'document_feature_image_canvas', 'document_canvas', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'document_feature_image_width', 'document_width', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'document_feature_image_height', 'document_height', true, true);
 		
-		renamePluginSetting(['zenario_advanced_search'], 'news_show_feature_image', 'news_show_featured_image', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'news_feature_image_canvas', 'news_canvas', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'news_feature_image_width', 'news_width', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'news_feature_image_height', 'news_height', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'news_show_feature_image', 'news_show_featured_image', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'news_feature_image_canvas', 'news_canvas', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'news_feature_image_width', 'news_width', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'news_feature_image_height', 'news_height', true, true);
 		
-		renamePluginSetting(['zenario_advanced_search'], 'blog_show_feature_image', 'blog_show_featured_image', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'blog_feature_image_canvas', 'blog_canvas', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'blog_feature_image_width', 'blog_width', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'blog_feature_image_height', 'blog_height', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'blog_show_feature_image', 'blog_show_featured_image', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'blog_feature_image_canvas', 'blog_canvas', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'blog_feature_image_width', 'blog_width', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'blog_feature_image_height', 'blog_height', true, true);
 		
-		renamePluginSetting(['zenario_advanced_search'], 'other_module_image_canvas', 'canvas', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'other_module_retina', 'retina', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'other_module_image_width', 'width', true, true);
-		renamePluginSetting(['zenario_advanced_search'], 'other_module_image_height', 'height', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'other_module_image_canvas', 'canvas', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'other_module_retina', 'retina', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'other_module_image_width', 'width', true, true);
+		ze\pluginAdm::renameSetting(['zenario_advanced_search'], 'other_module_image_height', 'height', true, true);
 	}
 	
 	ze\dbAdm::revision(60670);
@@ -591,25 +357,25 @@ if (ze\dbAdm::needRevision(60670)) {
 
 if (ze\dbAdm::needRevision(60671)) {
 	if (ze\module::inc('zenario_ai_qdrant_search')) {
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'html_show_feature_image', 'html_show_featured_image', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'html_feature_image_canvas', 'html_canvas', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'html_feature_image_width', 'html_width', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'html_feature_image_height', 'html_height', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'html_show_feature_image', 'html_show_featured_image', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'html_feature_image_canvas', 'html_canvas', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'html_feature_image_width', 'html_width', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'html_feature_image_height', 'html_height', true, true);
 		
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'document_show_feature_image', 'document_show_featured_image', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'document_feature_image_canvas', 'document_canvas', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'document_feature_image_width', 'document_width', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'document_feature_image_height', 'document_height', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'document_show_feature_image', 'document_show_featured_image', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'document_feature_image_canvas', 'document_canvas', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'document_feature_image_width', 'document_width', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'document_feature_image_height', 'document_height', true, true);
 		
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'news_show_feature_image', 'news_show_featured_image', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'news_feature_image_canvas', 'news_canvas', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'news_feature_image_width', 'news_width', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'news_feature_image_height', 'news_height', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'news_show_feature_image', 'news_show_featured_image', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'news_feature_image_canvas', 'news_canvas', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'news_feature_image_width', 'news_width', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'news_feature_image_height', 'news_height', true, true);
 		
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'blog_show_feature_image', 'blog_show_featured_image', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'blog_feature_image_canvas', 'blog_canvas', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'blog_feature_image_width', 'blog_width', true, true);
-		renamePluginSetting(['zenario_ai_qdrant_search'], 'blog_feature_image_height', 'blog_height', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'blog_show_feature_image', 'blog_show_featured_image', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'blog_feature_image_canvas', 'blog_canvas', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'blog_feature_image_width', 'blog_width', true, true);
+		ze\pluginAdm::renameSetting(['zenario_ai_qdrant_search'], 'blog_feature_image_height', 'blog_height', true, true);
 	}
 	
 	ze\dbAdm::revision(60671);
@@ -670,7 +436,7 @@ if (ze\dbAdm::needRevision(61220)) {
 //In 10.1, the Email Template Manager module was moved into Common Features.
 //Uninitialise ETM if it was running before.
 if (ze\dbAdm::needRevision(61240)) {
-	uninstalledRemovedModule('zenario_email_template_manager');
+	ze\moduleAdm::uninstalledRemovedModule('zenario_email_template_manager');
 	
 	ze\dbAdm::revision(61240);
 }
@@ -678,7 +444,7 @@ if (ze\dbAdm::needRevision(61240)) {
 
 //Also in 10.1, the ctype picture module has been scrapped and should be uninstalled
 if (ze\dbAdm::needRevision(61400)) {
-	uninstalledRemovedModule('zenario_ctype_picture');
+	ze\moduleAdm::uninstalledRemovedModule('zenario_ctype_picture');
 	
 	ze\dbAdm::revision(61400);
 }
@@ -695,9 +461,9 @@ if (ze\dbAdm::needRevision(61450)) {
 	if (ze\module::id('zenario_plugin_nest')
 	 || ze\module::id('zenario_slideshow_simple')) {
 		
-		renameModuleDirectory('zenario_slideshow', 'zenario_nest', $movePlugins = true, $moveEditableCSS = false, $movePhrases = true, $uninstallOldModule = false);
-		renameModuleDirectory('zenario_slideshow_simple', 'zenario_slideshow', $movePlugins = true, $moveEditableCSS = false, $movePhrases = true, $uninstallOldModule = true);
-		renameModuleDirectory('zenario_plugin_nest', 'zenario_ajax_nest', $movePlugins = true, $moveEditableCSS = false, $movePhrases = true, $uninstallOldModule = true);
+		ze\moduleAdm::renameDirectory('zenario_slideshow', 'zenario_nest', $movePlugins = true, $moveEditableCSS = false, $movePhrases = true, $uninstallOldModule = false);
+		ze\moduleAdm::renameDirectory('zenario_slideshow_simple', 'zenario_slideshow', $movePlugins = true, $moveEditableCSS = false, $movePhrases = true, $uninstallOldModule = true);
+		ze\moduleAdm::renameDirectory('zenario_plugin_nest', 'zenario_ajax_nest', $movePlugins = true, $moveEditableCSS = false, $movePhrases = true, $uninstallOldModule = true);
 		
 		//What was the old advanced slideshow plugin is now classed as a nest not a slideshow.
 		//Update any cached flags for its plugins.
@@ -751,8 +517,8 @@ if (ze\dbAdm::needRevision(61940)) {
 	
 	if (ze\module::inc('zenario_user_timers_list')) {
 		
-		renamePluginSetting(['zenario_user_timers_list'], 'allow_renew', 'show_warning_about_expiring_timer');
-		renamePluginSetting(['zenario_user_timers_list'], 'allow_renew_when', 'show_expiring_timer_warning_when');
+		ze\pluginAdm::renameSetting(['zenario_user_timers_list'], 'allow_renew', 'show_warning_about_expiring_timer');
+		ze\pluginAdm::renameSetting(['zenario_user_timers_list'], 'allow_renew_when', 'show_expiring_timer_warning_when');
 	}
 	
 	ze\dbAdm::revision(61940);
@@ -773,9 +539,9 @@ if (ze\dbAdm::needRevision(63400)) {
 	
 	if (ze\module::inc('zenario_meta_data')) {
 		
-		renamePluginSetting(['zenario_meta_data'], 'show_date', 'show_release_date');
-		renamePluginSetting(['zenario_meta_data'], 'date_format', 'release_date_format');
-		renamePluginSetting(['zenario_meta_data'], 'date_html_tag', 'release_date_html_tag');
+		ze\pluginAdm::renameSetting(['zenario_meta_data'], 'show_date', 'show_release_date');
+		ze\pluginAdm::renameSetting(['zenario_meta_data'], 'date_format', 'release_date_format');
+		ze\pluginAdm::renameSetting(['zenario_meta_data'], 'date_html_tag', 'release_date_html_tag');
 		
 		$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_meta_data');
 		
@@ -810,8 +576,8 @@ if (ze\dbAdm::needRevision(63405)) {
 	
 	if (ze\module::inc('zenario_ctype_document')) {
 		
-		renamePluginSetting(['zenario_ctype_document'], 'date_format', 'release_date_format');
-		renamePluginSetting(['zenario_ctype_document'], 'show_time', 'show_release_time');
+		ze\pluginAdm::renameSetting(['zenario_ctype_document'], 'date_format', 'release_date_format');
+		ze\pluginAdm::renameSetting(['zenario_ctype_document'], 'show_time', 'show_release_time');
 	}
 	
 	ze\dbAdm::revision(63405);
@@ -902,10 +668,68 @@ if (ze\dbAdm::needRevision(64115)) {
 	ze\dbAdm::revision(64115);
 }
 
+if (ze\dbAdm::needRevision(64510)) {
+	
+	if (ze\module::inc('zenario_users_fea')) {
+		
+		ze\pluginAdm::renameMode(['zenario_users_fea'], 'add_user', 'add_user_to_location');
+		ze\pluginAdm::renameSetting(['zenario_users_fea'], 'enable.add_user', 'enable.add_user_to_location');
+		
+		ze\sql::update('
+			UPDATE '. DB_PREFIX. 'nested_paths
+			SET command = "add_user_to_location"
+			WHERE command = "add_user"'
+		);
+	}
+	
+	ze\dbAdm::revision(64510);
+}
+
+//In 10.4, we reworked pagination settings.
+//Clean up old data.
+if (ze\dbAdm::needRevision(64605)) {
+	$modules = [
+		'zenario_advanced_search',
+		'zenario_blog_news_list',
+		'zenario_content_list',
+		'zenario_event_listing',
+		'zenario_google_programmable_search',
+		'zenario_user_profile_search',
+		'zenario_abstract_list',
+		'zenario_ctype_document_search',
+		'zenario_dataset_output_constructor',
+		'zenario_search_entry_box_predictive_probusiness',
+		'zenario_search_results',
+	];
+	
+	ze\pluginAdm::deleteSettingFromModules($modules, 'pagination_style');
+	
+	ze\pluginAdm::deleteSettingFromModules('zenario_location_listing', 'pagination');
+	
+	$modules = [
+		'zenario_forum',
+		'zenario_comments',
+		'zenario_forum_search',
+		'zenario_anonymous_comments'
+	];
+	
+	$settingsToDelete = [
+		'pagination_style_threads',
+		'pagination_style_posts',
+		'pagination_style_search'
+	];
+	
+	foreach ($settingsToDelete as $settingToDelete) {
+		ze\pluginAdm::deleteSettingFromModules($modules, $settingToDelete);
+	}
+	
+	ze\dbAdm::revision(64605);
+}
+
 //Previously, an indented textbox was not mandatory if visible.
 //It is now as of 10.4. Fix any bad data that might have resulted from lack of validation.
-//PLEASE NOTE: This was backpatched from 10.4 to 10.3, but is safe to run more than once.
-if (ze\dbAdm::needRevision(64132)) {
+//PLEASE NOTE: This was backpatched to 10.3, but is safe to run more than once.
+if (ze\dbAdm::needRevision(64610)) {
 	$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_event_listing');
 	
 	foreach ($instances as $instance) {
@@ -918,5 +742,71 @@ if (ze\dbAdm::needRevision(64132)) {
 		}
 	}
 	
-	ze\dbAdm::revision(64132);
+	ze\dbAdm::revision(64610);
+}
+
+if (ze\dbAdm::needRevision(64615)) {
+	$modules = [
+		'zenario_content_list',
+		'zenario_job_vacancy_summary_list'
+	];
+	
+	foreach ($modules as $module) {
+		if (ze\module::isRunning($module)) {
+			$instances = ze\module::getModuleInstancesAndPluginSettings($module);
+			
+			foreach ($instances as $instance) {
+				if (
+					!empty($instance['settings']['show_headings'])
+					&& empty($instance['settings']['heading_if_items'])
+				) {
+					ze\row::delete('plugin_settings', ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'show_headings']);
+				}
+				
+				if (
+					!empty($instance['settings']['show_headings_if_no_items'])
+					&& empty($instance['settings']['heading_if_no_items'])
+				) {
+					ze\row::delete('plugin_settings', ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'show_headings_if_no_items']);
+				}
+			}
+		}
+	}
+	
+	$module = 'zenario_blog_news_list';
+	if (ze\module::isRunning($module)) {
+		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
+		
+		foreach ($instances as $instance) {
+			if (
+				!empty($instance['settings']['show_headings'])
+				&& empty($instance['settings']['heading_if_items'])
+			) {
+				ze\row::delete('plugin_settings', ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'show_headings']);
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(64615);
+}
+
+//In 10.4, we removed the option to choose a different content item for ctype plugins.
+//Remove obsolete settings.
+if (ze\dbAdm::needRevision(64810)) {
+	$modules = ['zenario_ctype_audio', 'zenario_ctype_document', 'zenario_ctype_event', 'zenario_ctype_job_vacancies'];
+	ze\pluginAdm::deleteSettingFromModules($modules, 'show_details_and_link');
+	
+	$module = ['zenario_ctype_audio'];
+	ze\pluginAdm::deleteSettingFromModules($module, 'another_audio');
+	
+	$module = ['zenario_ctype_document'];
+	ze\pluginAdm::deleteSettingFromModules($module, 'another_document');
+	
+	$module = ['zenario_ctype_event'];
+	ze\pluginAdm::deleteSettingFromModules($module, 'another_event');
+	
+	$module = ['zenario_ctype_job_vacancies'];
+	ze\pluginAdm::deleteSettingFromModules($module, 'another_job_vacancy');
+	
+	ze\dbAdm::revision(64810);
 }

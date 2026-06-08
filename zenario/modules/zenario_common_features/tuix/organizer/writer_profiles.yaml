@@ -67,8 +67,6 @@ zenario__content:
 			
 			item:
 				css_class: writer_profile
-				name: Writer profile
-				names: Writer profiles
 
 			collection_buttons:
 				add:

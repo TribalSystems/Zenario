@@ -122,6 +122,20 @@ plugin_settings:
                     ord: 1
                     snippet:
                         html: {}
+                
+                pluggable:
+                    label: 'Plugins can be inserted:'
+                    ord: 2
+                    type: text
+                    show_as_a_span: true
+                
+                view_module_info:
+                    ord: 3
+                    notices_below:
+                        module_info_link:
+                            type: information
+                            message: ''
+                            html: true
     confirm:
         show: No
         message: |

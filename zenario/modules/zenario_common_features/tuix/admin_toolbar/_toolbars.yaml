@@ -206,7 +206,7 @@ sections:
         buttons:
             head_foot_dropdown:
                 label: HTML/JS
-                hide_when_children_are_not_visible: false
+                hide_when_children_are_not_visible: true
             item_head:
                 parent: head_foot_dropdown
                 priv: _PRIV_MANAGE_ITEM_SLOT
@@ -265,3 +265,4 @@ sections:
 meta_info:
     title: ''
     version: ''
+flags: {}

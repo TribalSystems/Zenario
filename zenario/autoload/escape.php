@@ -112,6 +112,10 @@ class escape {
 		}
 	}
 	
+	public static function regexp($text) {
+		return preg_quote($text, '/');
+	}
+	
 	public static function microtemplate($text) {
 		return strtr(htmlspecialchars($text), ['{' => '&#123;', '}' => '&#125;']);
 	}

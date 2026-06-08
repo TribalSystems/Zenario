@@ -502,7 +502,7 @@ if (ze\priv::check()) {
 				$mrg['itemLayerUsage'] = implode('; ', ze\miscAdm::getUsageText($itemLayerUsage, true));
 				
 				
-				echo ze\admin::phrase('Are you sure you wish to remove [[slotName]]?', $mrg);
+				echo ze\admin::phrase('Remove [[slotName]]?', $mrg);
 				
 				if (!empty($contentItemsWithPluginsInThisSlot)) {
 					echo '<br/><br/>';
@@ -541,7 +541,7 @@ if (ze\priv::check()) {
 			//Show a message if a version controlled plugin is being removed from the layout
 			} elseif ($isVersionControlled) {
 				if (ze::get('movePlugin')) {
-					echo ze\admin::phrase('Are you sure you wish to move the [[moduleDisplayName]]?<br/><br/>This will affect [[pages]] (<b>[[published]] published</b>) content item(s).', $mrg);
+					echo ze\admin::phrase('Move the [[moduleDisplayName]]?<br/><br/>This will affect [[pages]] (<b>[[published]] published</b>) content item(s).', $mrg);
 				
 				} else {
 					echo ze\admin::phrase('Remove the [[moduleDisplayName]] from slot [[slotName]] on layout [[codeName]]?', $mrg);
@@ -554,10 +554,10 @@ if (ze\priv::check()) {
 			//Show a message if a plugin from the plugin library is being removed from the layout
 			} else {
 				if (ze::get('movePlugin')) {
-					echo ze\admin::phrase('Are you sure you wish to move this plugin?<br/><br/>This will affect [[pages]] (<b>[[published]] published</b>) content item(s).', $mrg);
+					echo ze\admin::phrase('Move this plugin?<br/><br/>This will affect [[pages]] (<b>[[published]] published</b>) content item(s).', $mrg);
 				
 				} else {
-					echo ze\admin::phrase('Plugin &ldquo;[[pluginName]]&rdquo; (from the [[moduleDisplayName]] module) is in slot [[slotName]] on layout [[codeName]], used on [[layoutUsage]]. [[organizerLink]]<br/><br/> Are you sure you wish to remove this plugin from slot on the layout?', $mrg);
+					echo ze\admin::phrase('Plugin &ldquo;[[pluginName]]&rdquo; (from the [[moduleDisplayName]] module) is in slot [[slotName]] on layout [[codeName]], used on [[layoutUsage]]. [[organizerLink]]<br/><br/>Remove this plugin from slot on the layout?', $mrg);
 				}
 			}
 		
@@ -591,7 +591,7 @@ if (ze\priv::check()) {
 			
 			//Removing a slot from Gridmaker
 			if (ze::get('removeSlot')) {
-				echo ze\admin::phrase('Are you sure you wish to remove [[slotName]]?', $mrg);
+				echo ze\admin::phrase('Remove [[slotName]]?', $mrg);
 				
 				if ($placement) {
 					echo '<br/><br/>';
@@ -600,10 +600,10 @@ if (ze\priv::check()) {
 			
 			//Moving a plugin
 			} elseif (ze::get('movePlugin')) {
-				echo ze\admin::phrase('Are you sure you wish to move this plugin?', $mrg);
+				echo ze\admin::phrase('Move this plugin?', $mrg);
 			
 			} else {
-				echo ze\admin::phrase('Are you sure you wish to remove plugin &ldquo;[[pluginName]]&rdquo; ([[moduleDisplayName]] module) from the slot [[slotName]]?', $mrg);
+				echo ze\admin::phrase('Remove plugin &ldquo;[[pluginName]]&rdquo; ([[moduleDisplayName]] module) from the slot [[slotName]]?', $mrg);
 			}
 			
 			if ($placement || ze::get('movePlugin')) {

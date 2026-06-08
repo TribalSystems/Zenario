@@ -154,7 +154,7 @@ if (ze::setting('show_generator_meta_tag')) {
 echo '
 <meta name="keywords" content="', (ze::$pageKeywords ? htmlspecialchars(ze::$pageKeywords) : ''), '" />';
 
-ze\content::pageHead('zenario/');
+ze\content::pageHead($scriptPrefix = 'zenario/', $scriptMode = 'page');
 
 echo "</head>";
 
@@ -197,7 +197,7 @@ if (ze::$skinCSS) {
 
 $skinDiv .= '">';
 
-ze\content::pageBody('', '', true);
+ze\content::pageBody($scriptPrefix, $scriptMode, '', '', true);
 ze\cookie::showConsentBox(false, false, false);
 
 
@@ -309,7 +309,7 @@ if ($tplFile = ze\layout::htmlPath(ze::$layoutId, true)) {
 }
 
 echo "\n", '</div></div></div>';
-ze\content::pageFoot('zenario/', false, false, false, true);
+ze\content::pageFoot($scriptPrefix, $scriptMode, false, false, true);
 
 echo "\n</body>\n</html>";
 

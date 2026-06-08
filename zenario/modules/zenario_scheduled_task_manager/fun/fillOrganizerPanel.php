@@ -80,8 +80,6 @@ switch ($path) {
 		
 		foreach ($panel['items'] as $id => &$item) {
 			
-			$item['traits'] = [];
-			
 			if ($item['enabled']) {
 				if ($item['status'] != 'rerun_scheduled') {
 					$item['can_rerun'] = true;

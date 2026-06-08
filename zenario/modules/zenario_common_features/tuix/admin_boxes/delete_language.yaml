@@ -25,5 +25,13 @@ zenario_delete_language:
                 password:
                     label: 'Password:'
                     type: password
+                    autocomplete: "off_yes_really_i_want_this_off"
+                    pre_field_html: |
+                        <input type="password" name="dummy_password" autocomplete="off_yes_really_i_want_this_off" tabindex="-1" style="
+                            position: fixed;
+                            top: -1000px;
+                            width: 1px;
+                            height: 1px;
+                        "/>
     save_button_message: Delete
     cancel_button_message: Cancel

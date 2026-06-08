@@ -38,9 +38,6 @@ zenario__administration:
                     no_phrase: System-defined
                     show_by_default: true
             default_sort_column: type
-            item:
-                name: File type
-                names: File types
             collection_buttons:
                 create:
                     priv: _PRIV_EDIT_CONTENT_TYPE

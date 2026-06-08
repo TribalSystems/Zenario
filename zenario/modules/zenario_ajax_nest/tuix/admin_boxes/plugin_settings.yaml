@@ -281,6 +281,27 @@ plugin_settings:
                     value: ''
                     style: 'width: 5em;'
                 
+                
+                show_exit:
+                    plugin_setting:
+                        name: show_exit
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: conductor
+                    type: checkbox
+                    label: Show "Exit" button (goes to the page above in the menu)
+                    redraw_onchange: true
+                exit_text:
+                    plugin_setting:
+                        name: exit_text
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Exit button text:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter some text.
+                
+                
                 show_global_tabs:
                     plugin_setting:
                         name: show_global_tabs

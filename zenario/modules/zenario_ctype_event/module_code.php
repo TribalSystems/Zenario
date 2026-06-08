@@ -48,26 +48,13 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 	}
 	
 	function showSlot() {
-		if ($this->setting('show_details_and_link') == 'another_content_item') {
-			$item = $this->setting('another_event');
-			if (count($arr = explode("_", $item)) == 2) {
-				$this->targetID = $arr[1];
-				$this->targetType = $arr[0];
-				if (!$this->targetVersion = ze\content::showableVersion($this->targetID, $this->targetType)) {
-					return;
-				}
-			}
-		}
-		
-		if (!($this->targetID && $this->targetVersion && $this->targetType)) {
-			$this->targetID = $this->cID;
-			$this->targetVersion = $this->cVersion;
-			$this->targetType = $this->cType;
-		}
+		$this->targetID = $this->cID;
+		$this->targetVersion = $this->cVersion;
+		$this->targetType = $this->cType;
 		
 		if ($this->targetType != 'event') {
 			if (ze\admin::id()) {
-				echo "This plugin will only work when placed on an Event content item, or when configured to point to another Event content item. Please check your plugin settings.";
+				echo ze\admin::phrase("This plugin must be placed on a layout used by Event content items.");
 			}
 			return;
 		}
@@ -195,6 +182,30 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 					$atLocationText = $this->setting('at_location_text');
 
 					$this->data['At_Location_Text'] = $atLocationText;
+				}
+			}
+			
+			$allowPinnedContent = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => 'event']);
+			if ($allowPinnedContent) {
+				$pinned = ze\row::get('content_item_versions', 'pinned', ['id' => $this->targetID, 'type' => 'event', 'version' => $this->targetVersion]);
+				
+				if ($pinned) {
+					$isAdmin = false;
+					if (ze\admin::id()) {
+						$isAdmin = true;
+					}
+					
+					$showPinnedIcon = $this->setting('pinned_events_icon');
+					if ($showPinnedIcon == 'show_to_all' || ($showPinnedIcon == 'show_to_admins_only' && $isAdmin)) {
+						$this->data['Show_Pinned_Icon'] = true;
+					}
+					
+					$showPinnedText = $this->setting('pinned_events_text');
+					if ($showPinnedText == 'show_to_all' || ($showPinnedText == 'show_to_admins_only' && $isAdmin)) {
+						$this->data['Show_Pinned_Text'] = true;
+						$this->data['Pinned_Text'] = $this->phrase($this->setting('pinned_events_text_wording'));
+						$this->data['Pinned_Text_Html_Tag'] = $this->setting('pinned_events_text_html_tag');
+					}
 				}
 			}
 			
@@ -361,7 +372,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 							$fields['zenario_ctype_event__when_and_where/at_physical_location']['value'] = 'location_picker';
 						
 							$fields['zenario_ctype_event__when_and_where/at_physical_location']['notices_below']['enable_address_text']['message'] = ze\admin::phrase(
-								'You can enable support for addresses not in the database in the [[site_setting_link_start]]Content type site settings[[site_setting_link_end]].',
+								'To use this setting, enable location support (if not enabled already) and support for addresses not in the database. See settings for the [[site_setting_link_start]]Event content type[[site_setting_link_end]].',
 								['site_setting_link_start' => $siteSettingLinkStart, 'site_setting_link_end' => $siteSettingLinkEnd]
 							);
 							$fields['zenario_ctype_event__when_and_where/at_physical_location']['notices_below']['enable_address_text']['hidden'] = false;
@@ -398,7 +409,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 						$fields['zenario_ctype_event__when_and_where/event_timezone']['disabled'] = $fields['zenario_ctype_event__when_and_where/event_other_timezone']['disabled'] = true;
 					
 						$fields['zenario_ctype_event__when_and_where/event_timezone']['notices_below']['enable_timezone_support']['message'] = ze\admin::phrase(
-							'You can enable timezone support in the [[site_setting_link_start]]Content type site settings[[site_setting_link_end]].',
+							'To use this setting, enable timezone support. See settings for the [[site_setting_link_start]]Event content type[[site_setting_link_end]].',
 							['site_setting_link_start' => $siteSettingLinkStart, 'site_setting_link_end' => $siteSettingLinkEnd]
 						);
 						$fields['zenario_ctype_event__when_and_where/event_timezone']['notices_below']['enable_timezone_support']['hidden'] = false;
@@ -475,30 +486,64 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 			case 'plugin_settings':
 				$siteSettingLinkStart = "<a href='organizer.php#zenario__content/panels/content_types//event~.zenario_content_type_details~tdetails~k{\"id\"%3A\"event\"}' target='_blank'>";
 				$siteSettingLinkEnd = "</a>";
-				$disabledPhrase = ze\admin::phrase(
-					'You can enable this setting in the [[site_setting_link_start]]Content type site settings[[site_setting_link_end]].',
-					['site_setting_link_start' => $siteSettingLinkStart, 'site_setting_link_end' => $siteSettingLinkEnd]
-				);
 
 				$locationFieldSetting = ze::setting('zenario_ctype_event__location_field');
 				$locationTextSetting = ze::setting('zenario_ctype_event__location_text');
 				
+				$disabledPhraseOnlineOption = ze\admin::phrase(
+					'To use this setting, enable location support. See settings for the [[site_setting_link_start]]Event content type[[site_setting_link_end]].',
+					['site_setting_link_start' => $siteSettingLinkStart, 'site_setting_link_end' => $siteSettingLinkEnd]
+				);
+				
 				if ($locationFieldSetting === false || $locationFieldSetting == 'hidden') {
+					$disabledPhrasePhysicalLocation = ze\admin::phrase(
+						'To use this setting, enable location support and choose at least one of the available address options. See settings for the [[site_setting_link_start]]Event content type[[site_setting_link_end]].',
+						['site_setting_link_start' => $siteSettingLinkStart, 'site_setting_link_end' => $siteSettingLinkEnd]
+					);
+					
 					$fields['first_tab/show_online_when_event_is_online']['disabled'] =
 					$fields['first_tab/online_text']['disabled'] =
 					$fields['first_tab/show_address']['disabled'] = true;
+					$fields['first_tab/show_address']['note_below'] = $disabledPhrasePhysicalLocation;
 
 					$values['first_tab/show_online_when_event_is_online'] =
 					$values['first_tab/show_address'] = false;
+					
+					$disabledPhrase = ze\admin::phrase(
+						'To use this setting, enable location support. See settings for the [[site_setting_link_start]]Event content type[[site_setting_link_end]].',
+						['site_setting_link_start' => $siteSettingLinkStart, 'site_setting_link_end' => $siteSettingLinkEnd]
+					);
 
-					$fields['first_tab/show_online_when_event_is_online']['side_note'] =
-					$fields['first_tab/online_text']['side_note'] =
-					$fields['first_tab/show_address']['side_note'] = $disabledPhrase;
-				} elseif (!$locationTextSetting) {
-					$fields['first_tab/show_address']['disabled'] = true;
-					$values['first_tab/show_address'] = false;
-					$fields['first_tab/show_address']['side_note'] = $disabledPhrase;
+					$fields['first_tab/show_online_when_event_is_online']['note_below'] =
+					$fields['first_tab/online_text']['note_below'] = $disabledPhraseOnlineOption;					
+				} else {
+					if (!$locationTextSetting && !ze\module::isRunning('zenario_location_manager')) {
+						$disabledPhrasePhysicalLocation = ze\admin::phrase(
+							'To use this setting, choose at least one of the available address options. See settings for the [[site_setting_link_start]]Event content type[[site_setting_link_end]].',
+							['site_setting_link_start' => $siteSettingLinkStart, 'site_setting_link_end' => $siteSettingLinkEnd]
+						);
+						
+						$fields['first_tab/show_address']['disabled'] = true;
+						$values['first_tab/show_address'] = false;
+						$fields['first_tab/show_address']['note_below'] = $disabledPhrasePhysicalLocation;
+					}
 				}
+				
+				$allowPinnedContent = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => 'event']);
+				if (!$allowPinnedContent) {
+					$fields['first_tab/pinned_events_icon']['disabled'] =
+					$fields['first_tab/pinned_events_text']['disabled'] =
+					$fields['first_tab/pinned_events_text_wording']['disabled'] =
+					$fields['first_tab/pinned_events_text_html_tag']['disabled'] = true;
+					
+					$values['first_tab/pinned_events_icon'] = $values['first_tab/pinned_events_text'] = 'do_not_show';
+					
+					$fields['first_tab/pinned_events_icon']['note_below'] = $fields['first_tab/pinned_events_text']['note_below'] =
+						ze\admin::phrase('To use this feature, allow content items to be pinned. See settings for the [[site_setting_link_start]]Event content type[[site_setting_link_end]].',
+						['site_setting_link_start' => $siteSettingLinkStart, 'site_setting_link_end' => $siteSettingLinkEnd]
+					);
+				}
+				
 				break;
 		}
 	}
@@ -561,9 +606,6 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 						$fields['zenario_ctype_event__when_and_where/start_time_minutes']['last_value'] = $values['zenario_ctype_event__when_and_where/start_time_minutes'];
 					}
 				}
-				break;
-			case 'plugin_settings':
-				$fields['first_tab/another_event']['hidden'] = !(($values['first_tab/show_details_and_link'] ?? false) == 'another_content_item');
 				break;
 		}
 	}

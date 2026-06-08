@@ -688,7 +688,7 @@ zenario__user_forms:
                                                                 
                             invalid_responses:
                                 visible_if: |
-                                    ['checkboxes', 'select', 'radios'].indexOf(item.type) != -1                                    
+                                    (['checkboxes', 'select', 'radios'].indexOf(item.type) != -1) && !item.dataset_field_id
                                 label: 'Invalid responses:'
                                 type: checkboxes
                                 values: field_lov
@@ -698,7 +698,7 @@ zenario__user_forms:
                                 indent: 1
                                 hide_with_previous_field: true
                                 visible_if: |
-                                    item.invalid_responses && item.invalid_responses.length
+                                    item.invalid_responses && item.invalid_responses.length && !item.dataset_field_id
                                 label: 'Invalid response error message:'
                                 type: text
                                 maxlength: 250

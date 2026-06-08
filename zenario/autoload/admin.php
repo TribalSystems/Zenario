@@ -296,6 +296,15 @@ class admin {
 		return \ze\row::exists('admins', ['id' => $adminId, 'authtype' => 'super']);
 	}
 	
+	public static function isClient($adminId = null) {
+		
+		if (is_null($adminId)) {
+			$adminId = $_SESSION['admin_userid'] ?? 0;
+		}
+		
+		return \ze\row::get('admins', 'is_client_account', $adminId);
+	}
+	
 	public static $englishDatePhrases = [
 		'_MONTH_SHORT_01' => 'Jan',
 		'_MONTH_SHORT_02' => 'Feb',

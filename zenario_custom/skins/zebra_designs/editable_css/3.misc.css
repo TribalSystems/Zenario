@@ -555,7 +555,6 @@ a.link_external:hover::after {
 
 .zenario_banner .banner_image {
 	display:inline-block;
-	overflow:hidden;
 }
 
 .zenario_banner .banner_wrap_inner > a,
@@ -705,21 +704,70 @@ div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap {
 	text-align:center;
 }
 
-.pag_pagination span a {
+.pag_pagination span a,
+.pag_pagination span.pag_page_on,
+.pag_pagination .pag_prev span span,
+.pag_pagination .pag_next span span {
 	display:inline-block;
     margin: 0 1px 5px;
     padding: 0 8px 3px;
-	color:#FFF;
-	background:#555;
+    font-size:0.9em;
+	border-radius:3px;
    	-webkit-transition: all 0.2s ease-in-out;
     -moz-transition: all 0.2s ease-in-out;
     transition: all 0.2s ease-in-out;
 }
 
-.pag_pagination span a:hover,
-.pag_pagination span.pag_page_on a {
-    background:#000;
+.pag_pagination span.pag_page_on,
+.pag_pagination .pag_prev span span,
+.pag_pagination .pag_next span span {
+    cursor:default;
+}
+
+.pag_pagination .pag_prev span span,
+.pag_pagination .pag_next span span {
+	color:#717171;
+	background:#bbb; 
+}
+
+.pag_pagination span a,
+.pag_pagination span.pag_page_on,
+.pag_pagination .pag_prev span a,
+.pag_pagination .pag_next span a {
+	color:#FFF;
+	background:#555;
+	cursor:pointer;
+}
+
+.pag_pagination span a:hover {
+	background:#00659b;
     text-decoration:none;
+}
+
+.pag_pagination span.pag_page_on {
+    background:#2a98ce;
+}
+
+.pag_pagination .pag_next span a:after,
+.pag_pagination .pag_next span span:after,
+.pag_pagination .pag_prev span a:before,
+.pag_pagination .pag_prev span span:before {
+	font-family:"FontAwesome";  
+	font-size: 9px;
+  	position: relative;
+  	top: -1px;
+}
+
+.pag_pagination .pag_next span a:after,
+.pag_pagination .pag_next span span:after {
+	content:"\f101";
+  	margin-left: 5px;
+}
+
+.pag_pagination .pag_prev span a:before,
+.pag_pagination .pag_prev span span:before {
+	content:"\f100";
+  	margin-right: 5px;
 }
 
 /* Sensitive content */

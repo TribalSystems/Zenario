@@ -124,7 +124,6 @@ zenario__email_template_manager:
                     record_count: sent_email_count
                     link:
                         path: zenario__email_template_manager/panels/email_log
-                        branch: true
                         refiner: email_template
                 action_dropdown:
                     label: Actions

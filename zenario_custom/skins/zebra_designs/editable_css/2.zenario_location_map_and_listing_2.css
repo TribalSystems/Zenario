@@ -62,10 +62,26 @@ body.zenario_showing_plugin_without_layout .zenario_location_map_and_listing_2 >
 	height:100%;
 }
 
+body.in_iframe .zenario_location_map_and_listing_2 {
+	height:548px;
+}
+
 /* Google map styles */
 
 .zenario_location_map_and_listing_2 div[class*="gm-"] button {
 	min-width:auto;
+}
+
+.zenario_location_map_and_listing_2 div[class*="gm-"] button.gm-ui-hover-effect {
+  	width: 24px !important;
+  	height: 24px !important;
+  	position: absolute !important;
+  	right: 5px;
+  	top: 5px;
+}
+
+.zenario_location_map_and_listing_2 div[class*="gm-"] button.gm-ui-hover-effect > span {
+  margin: 0 !important;
 }
 
 .zenario_location_map_and_listing_2 .gm-style-iw-d {
@@ -421,11 +437,12 @@ body.desktop .zenario_location_map_and_listing_2__default_style .interface_body 
 	outline:0;
 }
 
+.zenario_lmal_marker,
 .zenario_lmal_marker__cafes_and_coffee {
 	width: 21px;
 	height: 21px;
 	display: block;
-	background: url("../images/icon_cafes_and_coffee.png") no-repeat center !important;
+	background: url("../images/icon_location.svg") no-repeat center !important;
 	background-size:21px 21px !important;
 }
 

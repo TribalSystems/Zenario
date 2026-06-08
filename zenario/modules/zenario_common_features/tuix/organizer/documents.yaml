@@ -20,8 +20,6 @@ zenario__library:
             
             reorder:
                 column: ordinal
-                hierarchy_view_mode: parent_ids_and_ordinals
-                lazy_load: true
             
             hierarchy:
                 column: folder_id
@@ -116,9 +114,9 @@ zenario__library:
                     css_class: "zenario_document_sub_fields"
                     
                     document_line_number: 2
-                date_uploaded:
-                    title: Date uploaded
-                    db_column: d.file_datetime
+                created:
+                    title: Created
+                    db_column: d.created
                     show_by_default: true
                     css_class: "zenario_document_sub_fields"
                     
@@ -179,7 +177,7 @@ zenario__library:
                     admin_box:
                         path: zenario_document_upload
                     with_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                 add_folder:
                     priv: _PRIV_EDIT_DOCUMENTS
                     label: Create subfolder
@@ -190,7 +188,7 @@ zenario__library:
                         key:
                             add_folder: true
                     with_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                 
                 document_properties:
                     priv: _PRIV_EDIT_DOCUMENTS
@@ -198,7 +196,7 @@ zenario__library:
                     label: Edit document metadata
                     multiple_select: false
                     without_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                     admin_box:
                         path: zenario_document_properties
                 view_dropdown:
@@ -211,7 +209,7 @@ zenario__library:
                     multiple_select: false
                     hide_in_select_mode: true
                     without_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                     onclick: |
                         var item = zenarioO.selectedItemDetails();
                         window.open(URLBasePath + 'zenario/file.php?usage=documents&showInWindow=1&document_id=' + item.id);
@@ -222,7 +220,7 @@ zenario__library:
                     label: Download
                     multiple_select: false
                     without_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                     ajax:
                         confirm:
                             download: true
@@ -236,9 +234,9 @@ zenario__library:
                     label: View public link
                     multiple_select: false
                     with_columns_set:
-                        traits.public: true
+                        public: true
                     without_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                     admin_box:
                         path: zenario_document_link
                 
@@ -255,7 +253,7 @@ zenario__library:
                     admin_box:
                         path: zenario_document_rename
                     with_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                 generate_public_link:
                     priv: _PRIV_EDIT_DOCUMENTS
                     parent: actions_dropdown
@@ -263,8 +261,8 @@ zenario__library:
                     label: Make public
                     multiple_select: true
                     without_columns_set:
-                        traits.is_folder: true
-                        traits.public: true
+                        is_folder: true
+                        public: true
                     ajax: 
                         confirm:
                             message: Make this document public? This will generate a public link to the document, with which it will be accessible by anyone.
@@ -282,8 +280,8 @@ zenario__library:
                     label: Make private
                     multiple_select: true
                     without_columns_set:
-                        traits.is_folder: true
-                        traits.private: true
+                        is_folder: true
+                        private: true
                     ajax: 
                         confirm:
                             message: Make this document private?
@@ -304,7 +302,7 @@ zenario__library:
                     label: Remove all metadata
                     multiple_select: true
                     without_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                     ajax: 
                         confirm: 
                             message: "Remove all of the metadata from the document \"[[name]]\"?"
@@ -324,7 +322,7 @@ zenario__library:
                         && zenarioA.siteSettings.ghostscript_path
                     label: Rescan text and thumbnail
                     without_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                     ajax:
                         confirm: 
                             message: | 
@@ -344,7 +342,7 @@ zenario__library:
                         ["image/jpeg", "image/webp", "image/png", "image/gif"].indexOf(item.mime_type) !== -1
                     label: Rescan thumbnail
                     without_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                     ajax:
                         confirm: 
                             message: | 
@@ -367,7 +365,7 @@ zenario__library:
                         item.name.match(/.pdf$/i) && zenarioA.siteSettings.pdftotext_path
                     label: Rescan text
                     without_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                     ajax:
                         request: 
                             rescan_text: true
@@ -397,7 +395,7 @@ zenario__library:
                     label: Delete
                     multiple_select: true
                     without_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                     ajax: 
                         class_name: zenario_common_features
                         confirm: 
@@ -415,8 +413,8 @@ zenario__library:
                     label: Make offline
                     multiple_select: true
                     without_columns_set:
-                        traits.is_folder: true
-                        traits.offline: true
+                        is_folder: true
+                        offline: true
                     ajax: 
                         confirm:
                             message: | 
@@ -461,9 +459,9 @@ zenario__library:
                     label: Delete
                     multiple_select: false
                     with_columns_set:
-                        traits.is_folder: true
+                        is_folder: true
                     without_columns_set:
-                        traits.is_empty_folder: true
+                        is_empty_folder: true
                     ajax: 
                         class_name: zenario_common_features
                         confirm: 
@@ -482,7 +480,7 @@ zenario__library:
                     label: Delete
                     multiple_select: false
                     with_columns_set:
-                        traits.is_empty_folder: true
+                        is_empty_folder: true
                     ajax: 
                         class_name: zenario_common_features
                         confirm: 

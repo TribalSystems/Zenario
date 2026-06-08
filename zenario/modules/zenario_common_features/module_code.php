@@ -49,62 +49,6 @@ class zenario_common_features extends ze\moduleBaseClass {
 	}
 	
 	
-	/*	Pagination  */
-	
-	public function pagSelectList($currentPage, &$pages, &$html) {
-		
-		$html = '
-			<select onChange="eval(this.value);" class="pagination">';
-			
-		foreach($pages as $page => &$params) {
-			$html .= '
-				<option '. ($currentPage == $page? 'selected="selected"' : ''). '" value="'.
-					$this->refreshPluginSlotJS($params).
-				'">'.
-					htmlspecialchars($page).
-				'</options>';
-		}
-			
-		$html .= '
-			</select>';
-	}
-	
-	
-	
-	public function pagCurrentWithNP($currentPage, &$pages, &$html) {
-		$this->pageNumbers($currentPage, $pages, $html, 'Current', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = true);
-	}
-	
-	public function pagCurrentWithFNPL($currentPage, &$pages, &$html) {
-		$this->pageNumbers($currentPage, $pages, $html, 'Current', $showNextPrev = true, $showFirstLast = true, $alwaysShowNextPrev = true);
-	}
-	
-	public function pagAll($currentPage, &$pages, &$html) {
-		$this->pageNumbers($currentPage, $pages, $html, 'All', $showNextPrev = false, $showFirstLast = false, $alwaysShowNextPrev = false);
-	}
-	
-	public function pagAllWithNPIfNeeded($currentPage, &$pages, &$html) {
-		$this->pageNumbers($currentPage, $pages, $html, 'All', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = false);
-	}
-	
-	public function pagCloseWithNPIfNeeded($currentPage, &$pages, &$html, &$links = [], $extraAttributes = []) {
-		$this->pageNumbers($currentPage, $pages, $html, 'Close', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = false, $links, $extraAttributes);
-	}
-	
-	public function pagCloseWithNP($currentPage, &$pages, &$html) {
-		$this->pageNumbers($currentPage, $pages, $html, 'Close', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = true);
-	}
-	
-	public function pagCloseWithFNPLIfNeeded($currentPage, &$pages, &$html) {
-		$this->pageNumbers($currentPage, $pages, $html, 'Close', $showNextPrev = true, $showFirstLast = true, $alwaysShowNextPrev = false);
-	}
-	
-	public function pagCloseWithFNPL($currentPage, &$pages, &$html) {
-		$this->pageNumbers($currentPage, $pages, $html, 'Close', $showNextPrev = true, $showFirstLast = true, $alwaysShowNextPrev = true);
-	}
-	
-	
-	
 	protected function drawPageLink($pageName, $request, $page, $currentPage, $prevPage, $nextPage, $css = 'pag_page', &$links = [], $extraAttributes = []) {
 		$link = [];
 		
@@ -119,16 +63,19 @@ class zenario_common_features extends ze\moduleBaseClass {
 		
 		return '
 			<span class="'. $css. ($page === $currentPage? '_on' : ''). '" ' . $extraAttributes . '><span>
-				<a '.
-					($request? $this->refreshPluginSlotAnchor($request) : '').
+				' . ($page && $page !== $currentPage? '<a ' : '<span ') .
+					($page && $page !== $currentPage? ($request? $this->refreshPluginSlotAnchor($request) : '') : '').
 					($page === $prevPage? ' rel="prev"' : ($page === $nextPage? ' rel="next"' : '')).
 				'>'.
 					$pageName.
-				'</a>
+				($page && $page !== $currentPage? '</a>' : '</span>') . '
 			</span></span>';
 	}
 		
-	protected function pageNumbers($currentPage, &$pages, &$html, $pageNumbers = 'Close', $showNextPrev = true, $showFirstLast = true, $alwaysShowNextPrev = false, &$links = [], $extraAttributes = []) {
+	public function pagCloseWithFNPLAlwaysVisible($currentPage, &$pages, &$html, &$links = [], $extraAttributes = []) {
+		$this->pageNumbers($currentPage, $pages, $html, $links, $extraAttributes);
+	}
+	protected function pageNumbers($currentPage, &$pages, &$html, &$links = [], $extraAttributes = []) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
@@ -1166,8 +1113,8 @@ Requesting admin: [[requesting_admin]]
 	public static function getExportWindowFilters() {
 		$selectedFilters = [];
 		
-		if (isset($_GET['_filters'])) {	
-			$filters = json_decode($_GET['_filters'], true);
+		if (isset($_GET['_cms_filters'])) {	
+			$filters = json_decode($_GET['_cms_filters'], true);
 			if (!empty($filters)) {
 				foreach ($filters as $filterColumn => $filterValues) {
 					if (!empty($filterValues)) {
@@ -1208,8 +1155,8 @@ Requesting admin: [[requesting_admin]]
 			}
 		}
 		
-		if (isset($_GET['_search'])) {
-			$searchTerms = $_GET['_search'];
+		if (isset($_GET['_cms_searchTerm'])) {
+			$searchTerms = $_GET['_cms_searchTerm'];
 			$selectedFilters[] = ze\admin::phrase('records matching the search term(s) "[[search_terms]]"', ['search_terms' => htmlspecialchars($searchTerms)]);
 		}
 		

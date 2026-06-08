@@ -140,7 +140,7 @@ class date {
 		return \ze\date::format($date, $format_type, $languageId, true, $rss, $adminPhrase);
 	}
 
-	public static function formatTime($time, $format_type) {
+	public static function formatTime($time, $format_type = ' %H:%i') {
 	
 		if (is_numeric($time)) {
 			$time = \ze\date::convertToUsersTimeZone($time);

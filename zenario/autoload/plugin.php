@@ -84,7 +84,7 @@ class plugin {
 		}
 		
 		$methodCall = $_REQUEST['method_call'] ?? '';
-		$fullPagePreview = $_REQUEST['_show_page_preview'] ?? false;
+		$fullPagePreview = $_REQUEST['_cms_showPagePreview'] ?? false;
 		
 		return $fullPagePreview || $methodCall == 'showSingleSlot' || $methodCall == 'showIframe';
 	}
@@ -1276,7 +1276,7 @@ class plugin {
 			'zenario_custom/twig/'. $subdir,
 			'zenario/twig/'. $subdir
 		] as $path) {
-			$twigPath = $path. \ze\file::safeName($twigSnippet);
+			$twigPath = $path. \ze\file::validName($twigSnippet);
 			if (file_exists(CMS_ROOT. $twigPath)) {
 				return $twigPath;
 			}

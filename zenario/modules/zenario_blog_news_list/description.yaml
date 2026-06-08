@@ -30,6 +30,12 @@ vlp_class_name: zenario_content_list
 css_class_name: zenario_content_list
 is_pluggable: true
 can_be_version_controlled: false
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: false
+    regular_nests: true
+    slideshows: false
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: false
 default_framework: image_title_text_more
 default_instance_name: Untitled Blog/News List

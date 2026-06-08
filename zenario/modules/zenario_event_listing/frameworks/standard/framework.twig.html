@@ -36,9 +36,9 @@
 			{% endif %}
 			
 			{% if Event_elements_equal_height %}
-				<div class="single_event tothesameheight">
+				<div class="single_event tothesameheight {% if Event.Show_Pinned_Text or Event.Show_Pinned_Icon %} pinned_item {% endif %}">
 			{% else %}
-				<div class="single_event">
+				<div class="single_event {% if Event.Show_Pinned_Text or Event.Show_Pinned_Icon %} pinned_item {% endif %}">
 			{% endif %}
 			    {% if Event.Sticky_image_HTML_tag %}
                     <div class="single_event_sticky_image">
@@ -48,6 +48,13 @@
                     </div>
 				{% endif %}
 				<div class="single_event_description">
+					{% if Event.Show_Pinned_Text or Event.Show_Pinned_Icon %}
+						<div class="{% if Event.Pinned_Text %} pinned {% endif %} {% if Event.Show_Pinned_Icon %} pinned_icon {% endif %}">
+							{% if Event.Pinned_Text %}
+								<{{Event.Pinned_Text_Html_Tag|e}}>{{Event.Pinned_Text}}</{{Event.Pinned_Text_Html_Tag|e}}>
+							{% endif %}
+						</div>
+					{% endif %}
 					<div class="event_title">
 						<{{Event_Title_Tags|e}}><a href="{{Event.Link_To_Event}}">{{Event.Event_Title}}</a></{{Event_Title_Tags|e}}>
 					</div>

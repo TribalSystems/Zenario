@@ -11,6 +11,5 @@ zenario__content:
     hidden_nav:
         zenario__locations__create_content:
             link:
-                branch: Yes
                 path: zenario__content/panels/content
                 refiner: zenario__locations/panel__create_content

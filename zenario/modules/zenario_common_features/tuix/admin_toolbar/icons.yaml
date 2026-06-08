@@ -45,7 +45,6 @@ sections:
             layout_id:
                 ord: 6
                 css_class: zenario_at_icon_layout
-                tooptip: Content Item Layout
                 admin_box:
                     path: zenario_content_layout
                     key:
@@ -75,7 +74,6 @@ sections:
                 ord: 10
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                    && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
                 parent: alias_dropdown
                 label: Edit alias
                 admin_box:

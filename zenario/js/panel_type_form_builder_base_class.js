@@ -553,7 +553,7 @@ methods.saveTUIXField = function(tuixField, tuixFieldId, item) {
 	
 	if (tuixField.type == 'values_list') {
 		thus.saveFieldListOfValues(item.id);
-		item._changed = true;
+		item._cms_changed = true;
 		
 	} else if (tuixField.type == 'translations') {
 		$('#organizer_field_translations input.translation').map(function(index, input) {
@@ -575,14 +575,14 @@ methods.saveTUIXField = function(tuixField, tuixFieldId, item) {
 			
 			item.translations[column][languageId] = input.value;
 		});
-		item._changed = true;
+		item._cms_changed = true;
 		
 	} else if (tuixField.type == 'crm_values') {
 		$('#organizer_field_crm_values input.crm_value_input').map(function(index, input) {
 			var valueId = $(this).data('id');
 			item.crm_lov[valueId] = $(this).val();
 		});
-		item._changed = true;
+		item._cms_changed = true;
 	} else {
 		var value = thus.getTUIXFieldValue(tuixField, tuixFieldId);
 		
@@ -592,7 +592,7 @@ methods.saveTUIXField = function(tuixField, tuixFieldId, item) {
 	}
 	
 	if (oldValue != item[tuixFieldId]) {
-		item._changed = true;
+		item._cms_changed = true;
 	}
 };
 
@@ -735,11 +735,7 @@ methods.displayPageFieldOrderErrors = function() {
 //Wrapper for an AJAX request
 methods.sendAJAXRequest = function(requests, after) {
 	var actionRequests = zenarioO.getKey(),
-		actionTarget = 
-		'zenario/ajax.php?' +
-			'__pluginClassName__=' + thus.tuix.class_name +
-			'&__path__=' + zenarioO.path +
-			'&method_call=handleOrganizerPanelAJAX',
+		actionTarget = zenario.ajaxURL('handleOrganizerPanelAJAX', thus.tuix.class_name, zenarioO.path),
 		clearPreloader = function() {
 			get('organizer_preloader_circle').style.display = 'none';
 			zenarioA.nowDoingSomething();
@@ -751,7 +747,7 @@ methods.sendAJAXRequest = function(requests, after) {
 	get('organizer_preloader_circle').style.display = 'block';
 	//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError)
 	var result = zenario.ajax(
-		zenario.addBasePath(actionTarget),
+		actionTarget,
 		actionRequests,
 		true,
 		false,

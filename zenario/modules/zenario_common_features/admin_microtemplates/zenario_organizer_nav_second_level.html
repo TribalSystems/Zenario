@@ -5,10 +5,18 @@
 	<% if (m.separator_after_this) { %>
 		zenario_separator_after_this
 	<% } %>
+	<% if (m.new_window) { %>
+		zenario_nav_link_new_window
+	<% } %>
 ">
 	<a
 		href="{{m.href|escape}}"
-		onclick="{{m.onclick|escape}}">
+		onclick="{{m.onclick|escape}}"
+		
+		<% if (m.new_window) { %>
+			target="_blank"
+		<% } %>
+	>	
 		<span>
 			<span class="organizer_item_image {{m.css_class|escape}}"></span>
 			{{m.label|escape}}

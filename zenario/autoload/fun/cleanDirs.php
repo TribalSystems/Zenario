@@ -28,6 +28,17 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+//Note: We're experimenting with a new option to control how long cached pages stay in the cache.
+//Right now all you can do is set a time in days, however in the future we're planning for
+//this to be more advanced, e.g. you'll be able to set a size limit instead.
+//(See T13432, Cache: stats, accessed files, cache size.)
+
+if (defined('EXPERIMENTAL_CACHE_OPTION_LIFETIME')) {
+	$pcLifetime = EXPERIMENTAL_CACHE_OPTION_LIFETIME;
+} else {
+	$pcLifetime = 7;
+}
+
 
 
 //Define the directory tree in the following format:
@@ -46,8 +57,8 @@ $directories = [
 		'fabs' => 4 * 60 * 60,
 		'frameworks' => 14 * 24 * 60 * 60,
 		'layouts' => 14 * 24 * 60 * 60,
-		'pages' => 7 * 24 * 60 * 60,
-		'plugins' => 7 * 24 * 60 * 60,
+		'pages' => $pcLifetime * 24 * 60 * 60,
+		'plugins' => $pcLifetime * 24 * 60 * 60,
 		'scans' => 5 * 60,
 		'stop_flags' => 4 * 60 * 60
 	], 

@@ -60,16 +60,10 @@ var $toolbar = $('#toolbar'),
 
 //devTools.editingPositions = {};
 devTools.internalCMSProperties = {
-	id: {description: 'The CMS will automatically add an "id" property to some objects and set it to the object\'s codename. This is a &ldquo;Quality of Life&rdquo; feature, to help any developer who has a variable with a reference to the object in TUIX, but not a variable with its codename.'},
-	class_name: {description: 'This property tracks which module created each element.'},
-	only_merge_into_an_existing_object: {isGlobal: true, description: "This property is helpful when trying to add properties to an existing object defined in another TUIX file, but cannot be sure if the object will be there or not. If this property is set, its sibling properties will be ignored if the object is not there when the TUIX is merged."},
-	priv: {isGlobal: true, description: "If you give an element the <code>priv</code> property and enter the name of an admin permission, the element will be <code>unset()</code> if the current admin does not have the permission you specified.\n\nThis property must be written in your .yaml file. It can't be changed in php."},
-	_filters: {description: 'Data on the filters that the admin selected'},
-	_path_here: {description: 'This is the tag-path to a panel; i.e. the names of all of the elements and properties that lead here.'},
-	_sync: {description: 'This property helps sync the TUIX of this Admin Box between the client and the server. All elements and properties are download from the server to the client, but only certain elements and properties may be uploaded by the client.'},
-	_was_hidden_before: {description: 'This flags that a field was hidden when the admin box was last drawn. It can be modified by the client, so you shouldn\'t rely on it in your PHP code for security decisions.'},
-	__source_files: {description: 'Used for the &ldquo;open in editor&rdquo; feature.'},
-	__dumps: {description: 'Used by the ze::dump() function to pass debug information to the console.'}
+	id: {description: 'Zenario automatically sets this property to the codename of its element.\n\nThis is a &ldquo;Quality of Life&rdquo; feature, to help any developer who has a variable with a reference to the element, but not a variable with its codename.'},
+	class_name: {description: 'The name of the module that created this element.\n\nZenario sets this property automatically when reading elements from <code>.yaml</code> files, but if you construct elements in your PHP code then you will need to add this yourself.'},
+	only_merge_into_an_existing_object: {isGlobal: true, description: "This property is helpful when trying to add properties to an existing element defined in another TUIX file, but cannot be sure if the element will be there or not. If this property is set, its sibling properties will be ignored if the element is not there when the TUIX is merged."},
+	priv: {isGlobal: true, description: "If you give an element the <code>priv</code> property and enter the name of an admin permission, the element will be <code>unset()</code> if the current admin does not have the permission you specified.\n\nThis property must be written in your <code>.yaml</code> file. It can't be changed in PHP."}
 };
 
 //A little hack to turn on flagging undefined additional properties in tv4
@@ -234,12 +228,16 @@ devTools.init = function(mode, schemaName, schema, orgMap) {
 					text = '';
 					if (sche.exact) {
 						text = zenarioT.microTemplate('zenario_dev_tools_tooltip', sche);
+					
+					//Ignore cms internal properties that start with "_cms_"
+					} else if (sche.tag.substr(0, 5) == '_cms_') {
+						text = zenarioT.microTemplate('zenario_dev_tools_internal_property_tooltip', sche);
+					
+					} else if (sche.internalCMSProperty = devTools.internalCMSProperties[sche.tag]) {
+						text = zenarioT.microTemplate('zenario_dev_tools_internal_property_tooltip', sche);
+					
 					} else {
-						if (sche.internalCMSProperty = devTools.internalCMSProperties[sche.tag]) {
-							text = zenarioT.microTemplate('zenario_dev_tools_internal_property_tooltip', sche);
-						} else {
-							text = '';
-						}
+						text = '';
 					}
 					$tooltip.html(text);
 				});
@@ -286,21 +284,21 @@ devTools.load = function() {
 	//Work out the full URL to the TUIX ajax file, including the appropriate mode and any requests
 	var url;
 	if (devTools.orgMap) {
-		url = URLBasePath + 'zenario/admin/organizer.ajax.php?_debug=1';
+		url = URLBasePath + 'zenario/admin/organizer.ajax.php?_cms_debug=1';
 		devTools.path = '';
 	
 	} else {
 		if (sourceLib.devToolsURL) {
-			url = sourceLib.devToolsURL + '&_debug=1';
+			url = sourceLib.devToolsURL + '&_cms_debug=1';
 		} else {
-			url = sourceLib.url + '&_debug=1';
+			url = sourceLib.url + '&_cms_debug=1';
 		}
 		
 		devTools.path = sourceLib.path;
 	}
 	
 	
-	//Attempt to load the data from the TUIX ajax file, with the _debug flag set
+	//Attempt to load the data from the TUIX ajax file, with the _cms_debug flag set
 	//This gives the data in a slightly different format with more information than usual
 	zenario.ajax(url, false, true).after(function(data) {
 			
@@ -370,8 +368,8 @@ devTools.filterNav = function(tuix, topLevel, parentKey, parentParentKey) {
 		//that are not top level items. Don't filter these.
 		if (!defined(parentKey)
 		 && (key == 'dummy_item'
-		  || key == '__dumps'
-		  || key == '__source_files'
+		  || key == '_cms_dumps'
+		  || key == '_cms_sourceFileList'
 		  || key == 'top_right_buttons')) {
 			continue;
 		}
@@ -386,8 +384,8 @@ devTools.filterNav = function(tuix, topLevel, parentKey, parentParentKey) {
 		 || (!defined(parentParentKey) || parentParentKey === 'nav')
 			//The properties of links
 		 || (parentKey === 'link')
-			//The _path_here property of panels
-		 || (parentKey === 'panel' && key === '_path_here')
+			//The _cms_pathToHere property of panels
+		 || (parentKey === 'panel' && key === '_cms_pathToHere')
 		)) {
 			//This code would hide second levels for non-selected sections
 			//if (!defined(parentParentKey)
@@ -482,7 +480,7 @@ devTools.removeHiddenItems = function(tuix) {
 	
 	foreach (tuix as k => v) {
 		if ('object' == typeof v) {
-			if (v._was_hidden_before) {
+			if (v._cms_hidden) {
 				delete tuix[k];
 			} else {
 				devTools.removeHiddenItems(v);
@@ -559,7 +557,7 @@ devTools.updateEditor = function() {
 	
 	//Show the HTML used for a tuix form
 	} else if (view == 'form_html') {
-		editor.setValue(sourceLib.__lastFormHTML || '');
+		editor.setValue(sourceLib._cms_formHTML || '');
 		//editor.setReadOnly(true);
 		format = 'html';
 		wordWrap = true;
@@ -1012,6 +1010,10 @@ devTools.validate = function() {
 					
 					//Ignore properties called "custom"
 					} else if (('' + tag).substr(0, 7) == 'custom_') {
+						continue;
+					
+					//Ignore cms internal properties that start with "_cms_"
+					} else if (('' + tag).substr(0, 5) == '_cms_') {
 						continue;
 					
 					//Ignore errors for some system generated tags

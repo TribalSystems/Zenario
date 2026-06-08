@@ -893,6 +893,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					) {
 						if ($row['pinned']) {
 							$item['Pinned_Text'] = $this->setting('pinned_text');
+							$item['Pinned_Text_Tags'] = $this->setting('pinned_text_html_tag');
 						}
 					}
 				}
@@ -1080,7 +1081,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$paginationLinks = [];
 		
 		if ($this->setting('show_pagination') && count($this->pages) > 1) {
-			$this->pagination('pagination_style', $this->page, $this->pages, $pagination, $paginationLinks);
+			$this->pagination($this->page, $this->pages, $pagination, $paginationLinks);
 		} else {
 			$pagination = false;
 		}
@@ -1431,9 +1432,6 @@ class zenario_content_list extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$fields['pagination/pagination_style']['values'] = 
-					ze\pluginAdm::paginationOptions();
-				
 				if (empty($values['pagination/maximum_results_number'])) {
 					$values['pagination/maximum_results_number'] = 5;
 				}

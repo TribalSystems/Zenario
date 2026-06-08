@@ -24,6 +24,29 @@
 		this.containerId = containerId;
 		var that = this;
 		
+		//If a form is set to output its ID (e.g. form_1), make sure the ID is unique.
+		//Add extra numbers, e.g. form_1_1, form_1_2 and so on in case the form ID is not unique.
+		var formElement = $('#' + containerId + '_user_form').find('form');
+		if (formElement) {
+			formElementId = formElement.prop('id');
+			
+			if (formElementId) {
+				var allFormsWithThisId = $("[id='" + formElementId + "']");
+				
+				if (allFormsWithThisId && allFormsWithThisId.length > 1) {
+					for (var ordinal = 1; ordinal <= 10; ordinal++) {
+						newId = formElementId + "_" + ordinal;
+						var allFormsWithNewId = $("[id='" + newId + "']");
+						
+						if (!allFormsWithNewId.length) {
+							formElement.attr('id', newId);
+							break;
+						}
+					}
+				}
+			}
+		}
+		
 		phrases = JSON.parse(phrases);
 		if (isErrors) {
 			$('#' + containerId + '_user_form').effect("shake", {distance: 10, times: 3, duration: 300});

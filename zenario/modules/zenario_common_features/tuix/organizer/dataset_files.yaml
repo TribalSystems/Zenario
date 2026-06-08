@@ -18,10 +18,6 @@ zenario__content:
                     WHERE f.`usage` = 'dataset_file'
             
             panel_type: grid_or_list
-            #panel_type: multi_line_list_or_grid
-            #use_tall_rows: true
-            #grid_view_microtemplate: zenario_grid_view_image
-            #slidedown_view_microtemplate: zenario_slidedown_view_image
             
             refiners:
                 field:
@@ -65,7 +61,3 @@ zenario__content:
                     align_right: true
                     width: xsmall
             default_sort_column: filename
-            
-            item:
-                name: File
-                names: Files

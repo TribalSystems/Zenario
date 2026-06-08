@@ -24,6 +24,12 @@ keywords: menu, navigation
 css_class_name: zenario_menu
 is_pluggable: true
 can_be_version_controlled: false
-nestable: true
+can_be_plugged_into:
+    content_items: false
+    layouts: true
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 default_framework: standard
 default_instance_name: Horizontal Menu

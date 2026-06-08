@@ -38,10 +38,6 @@ zenario_document_properties:
                     maxlength: 5
                     hidden: true
                     readonly: true
-                date_uploaded:
-                    label: 'Date uploaded:'
-                    type: datetime
-                    readonly: Yes
                 privacy:
                     label: 'Privacy'
                     type: radios
@@ -141,12 +137,13 @@ zenario_document_properties:
                     upload:
                         multi: false
                         drag_and_drop: true
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
         extract:
             label: Extract

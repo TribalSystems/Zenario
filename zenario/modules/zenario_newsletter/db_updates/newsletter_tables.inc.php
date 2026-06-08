@@ -1090,12 +1090,84 @@ _sql
 //Try to replace links to file.php with links to the actual files in the public/images/ directory.
 //Also try to replace links to WebP images with links to the original JPEG/PNG versions.
 //Note: this was backpatched from 10.4 to 10.3, but is safe to run multiple times.
-if (ze\dbAdm::needRevision(191)) {
+if (ze\dbAdm::needRevision(193)) {
 	
 	if (ze\module::inc('zenario_newsletter')) {
 		zenario_newsletter::checkAllImagePublicLinksInNewsletters();
 		zenario_newsletter::checkAllImagePublicLinksInNewsletterTemplates();
 	}
 
-	ze\dbAdm::revision(191);
+	ze\dbAdm::revision(193);
+}
+
+//Add sample newsletter templates
+if (ze\dbAdm::needRevision(197)) {
+	
+	//This script initially did not work properlly during development.
+	//Catch the case where someone had a dev site and these didn't install properly, and deal with it
+	//by deleteing the bugged templates to then make new ones.
+	ze\row::delete(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_templates', ['name' => 'Sample newsletter template 1']);
+	ze\row::delete(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_templates', ['name' => 'Sample newsletter template 2']);
+	
+	$mergeFields = [];
+	
+	$tags = ze\tuix::readFile(CMS_ROOT. 'zenario/modules/zenario_newsletter/sample_newsletter_templates/sample_image_list.yaml');
+	
+	if ($tags) {
+		foreach ($tags['imagelist'] as $image) {
+			$imagePath = CMS_ROOT . 'zenario/modules/zenario_newsletter/sample_newsletter_templates/sample_images/' . $image['name'];
+			$imageId = ze\fileAdm::addToDatabase(
+				$usage = 'image', $imagePath, $image['name'], true, false, false,
+				$image['alt_tag'], false, false, $image['mime_type'],
+				$imageCredit = '', $setPrivacy = 'public'
+			);
+			
+			//This script initially did not work properlly during development.
+			//Catch the case where someone had a dev site and these images didn't have the
+			//correct privacy set.
+			//Make sure the images are always public, even if they existed before.
+			$imagePrivacy = ze\row::get('files', 'privacy', $imageId);
+			
+			//All images used in emails/newsletters must be public images.
+			ze\image::addToPublicDir($imageId);
+						
+			$width = $height = $url = false;
+			ze\image::unTranscodedLink(
+				$width, $height, $url, $imageId,
+				$image['max_width'], $image['max_height'], $canvas = 'crop_and_zoom', $offset = 0,
+				$retina = true, $fullPath = true, $privacy = 'public'
+			);
+			
+			$imageDetails = ['url' => $url, 'width' => $width, 'height' => $height];
+			
+			if ($image['name'] == 'logo-zebra-designs.svg') {
+				$mergeFields['zebra_logo_url'] = $url;
+				$mergeFields['zebra_logo_width'] = $width;
+				$mergeFields['zebra_logo_height'] = $height;
+			} elseif ($image['name'] == 'apples-green.jpg') {
+				$mergeFields['green_apples_url'] = $url;
+				$mergeFields['green_apples_width'] = $width;
+				$mergeFields['green_apples_height'] = $height;
+			} elseif ($image['name'] == 'apples-red.jpg') {
+				$mergeFields['red_apples_url'] = $url;
+				$mergeFields['red_apples_width'] = $width;
+				$mergeFields['red_apples_height'] = $height;
+			}
+		}
+		
+		$mergeFields['first_name'] = '[[first_name]]';
+		$mergeFields['last_name'] = '[[last_name]]';
+		
+		$template1 = file_get_contents(CMS_ROOT. 'zenario/modules/zenario_newsletter/sample_newsletter_templates/sample_template_content/sample_newsletter_template_1.html');
+		ze\lang::applyMergeFields($template1, $mergeFields);
+		$template2 = file_get_contents(CMS_ROOT. 'zenario/modules/zenario_newsletter/sample_newsletter_templates/sample_template_content/sample_newsletter_template_2.html');
+		ze\lang::applyMergeFields($template2, $mergeFields);
+		
+		$dateNow = ze\date::now();
+		$adminId = ze\admin::id();
+		ze\row::insert(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_templates', ['name' => 'Sample newsletter template 1', 'body' => $template1, 'apply_css_rules' => true, 'date_created' => $dateNow, 'created_by_id' => $adminId]);
+		ze\row::insert(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_templates', ['name' => 'Sample newsletter template 2', 'body' => $template2, 'apply_css_rules' => true, 'date_created' => $dateNow, 'created_by_id' => $adminId]);
+	}
+	
+	ze\dbAdm::revision(196);
 }

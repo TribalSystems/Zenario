@@ -95,13 +95,12 @@ if (!ze\priv::check()) {
 
 ze\miscAdm::checkForChangesInYamlFiles();
 
-$prefix = 'zenario/';
-ze\content::pageHead($prefix, 'organizer', true);
+ze\content::pageHead($scriptPrefix = 'zenario/', $scriptMode = 'organizer', true);
 $v = ze\db::codeVersion();
 
 
 echo '</head>';
-ze\content::pageBody();
+ze\content::pageBody($scriptPrefix, $scriptMode);
 
 
                         	
@@ -164,7 +163,7 @@ if (!empty($_GET['openedInIframe'])) {
 
 
 <?php
-ze\content::pageFoot($prefix, 'organizer', true, false);
+ze\content::pageFoot($scriptPrefix, $scriptMode, true, false);
 
 echo '
 	<script type="text/javascript">';

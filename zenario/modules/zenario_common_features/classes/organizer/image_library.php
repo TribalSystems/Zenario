@@ -60,7 +60,9 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				];
 		
 				$panel['title'] = ze\admin::phrase('Images attached to the content item [[tag]], version [[version]]', $mrg);
-				$panel['no_items_message'] = ze\admin::phrase('There are no images attached to the content item [[tag]], version [[version]]', $mrg);
+				$panel['collection_buttons']['help']['help']['message'] = ze\admin::phrase('This panel shows images attached to this content item (whether being shown or not). Of images attached to a content item, one can be its "featured image", to appear on content summary lists and search results that include the content item.
+', $mrg);
+				$panel['no_items_message'] = ze\admin::phrase('No images attached', $mrg);
 
 				//Display notices when the content item has or hasn't got a featured image.
 				//Also warn if the featured image of a public content item is an .svg file, as they do not work on social media.
@@ -663,7 +665,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 						}
 			
 						//If the image is public, a public link will be automatically generated.
-						ze\document::create($fileId, $file['filename'], 0, $file['privacy']);
+						ze\document::create($fileId, $file['filename'], 0, $file['privacy'], $adminFacing = true);
 					}
 				}
 			}

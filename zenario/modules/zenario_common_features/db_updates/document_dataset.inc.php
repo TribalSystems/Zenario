@@ -97,3 +97,16 @@ if (ze\dbAdm::needRevision(322)) {
 	
 	ze\dbAdm::revision(322);
 }
+
+if (ze\dbAdm::needRevision(347)) {
+	$dataset = ze\dataset::details('documents');
+	
+	$fieldId = ze\datasetAdm::registerSystemField($dataset['id'], 'date', 'details', 'date_uploaded', 'file_datetime');
+	
+	if ($fieldId && $dataset) {
+		ze\row::delete('custom_dataset_fields', $fieldId);
+		ze\row::delete('custom_dataset_field_values', ['field_id' => $fieldId]);
+	}
+	
+	ze\dbAdm::revision(347);
+}

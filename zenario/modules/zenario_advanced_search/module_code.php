@@ -380,14 +380,14 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			}
 			
 			$this->mergeFields['Record_count_total'] = 0;
-			$this->mergeFields['Press_enter_to_see_all_results_phrase'] = $this->phrase('Press Enter to see all results');
+			$showPressEnter = false;
 
 			foreach ($this->results as $type => &$result) {
 				if ($this->mergeFields['Mode'] == 'search_page' && $type != $this->cTypeToSearch) {
 					continue;
 				}
 				
-				$maximumResultsNumber = $this->setting('maximum_results_number');
+				$maxResultsShowable = $this->setting('maximum_results_number');
 
 				switch ($type) {
 					case 'html':
@@ -397,9 +397,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 							$this->mergeFields['Search_Result_Rows'] = true;
 							$this->mergeFields['Html_Page_Search_Results'] = $result['search_results'];
 							
-							if ($result['Record_count_total'] > $maximumResultsNumber) {
-								$moreResultsCount = $result['Record_count_total'] - $maximumResultsNumber;
-								$this->mergeFields['Html_Page_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more', 'and [[count]] more', $moreResultsCount);
+							if ($result['Record_count_total'] > $maxResultsShowable) {
+								$additionalResultsCount = $result['Record_count_total'] - $maxResultsShowable;
+								$this->mergeFields['Html_Page_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more', 'and [[count]] more', $additionalResultsCount);
+								$showPressEnter = true;
 							}
 						} else {
 							$this->mergeFields['Html_Page_Search_No_Results'] = true;
@@ -417,9 +418,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 							$this->mergeFields['Search_Result_Rows'] = true;
 							$this->mergeFields['Document_Search_Results'] = $result['search_results'];
 							
-							if ($result['Record_count_total'] > $maximumResultsNumber) {
-								$moreResultsCount = $result['Record_count_total'] - $maximumResultsNumber;
-								$this->mergeFields['Document_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more document', 'and [[count]] more documents', $moreResultsCount);
+							if ($result['Record_count_total'] > $maxResultsShowable) {
+								$additionalResultsCount = $result['Record_count_total'] - $maxResultsShowable;
+								$this->mergeFields['Document_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more document', 'and [[count]] more documents', $additionalResultsCount);
+								$showPressEnter = true;
 							}
 						} else {
 							$this->mergeFields['Document_Search_No_Results'] = true;
@@ -437,9 +439,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 							$this->mergeFields['Search_Result_Rows'] = true;
 							$this->mergeFields['News_Search_Results'] = $result['search_results'];
 							
-							if ($result['Record_count_total'] > $maximumResultsNumber) {
-								$moreResultsCount = $result['Record_count_total'] - $maximumResultsNumber;
-								$this->mergeFields['News_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more news item', 'and [[count]] more news items', $moreResultsCount);
+							if ($result['Record_count_total'] > $maxResultsShowable) {
+								$additionalResultsCount = $result['Record_count_total'] - $maxResultsShowable;
+								$this->mergeFields['News_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more news item', 'and [[count]] more news items', $additionalResultsCount);
+								$showPressEnter = true;
 							}
 						} else {
 							$this->mergeFields['News_Search_No_Results'] = true;
@@ -457,9 +460,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 							$this->mergeFields['Search_Result_Rows'] = true;
 							$this->mergeFields['Blog_Search_Results'] = $result['search_results'];
 							
-							if ($result['Record_count_total'] > $maximumResultsNumber) {
-								$moreResultsCount = $result['Record_count_total'] - $maximumResultsNumber;
-								$this->mergeFields['Blog_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more blog post', 'and [[count]] more blog posts', $moreResultsCount);
+							if ($result['Record_count_total'] > $maxResultsShowable) {
+								$additionalResultsCount = $result['Record_count_total'] - $maxResultsShowable;
+								$this->mergeFields['Blog_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more blog post', 'and [[count]] more blog posts', $additionalResultsCount);
+								$showPressEnter = true;
 							}
 						} else {
 							$this->mergeFields['Blog_Search_No_Results'] = true;
@@ -477,9 +481,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 							$this->mergeFields['Search_Result_Rows'] = true;
 							$this->mergeFields['Project_Search_Results'] = $result['search_results'];
 							
-							if ($result['Record_count_total'] > $maximumResultsNumber) {
-								$moreResultsCount = $result['Record_count_total'] - $maximumResultsNumber;
-								$this->mergeFields['Project_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more project', 'and [[count]] more projects', $moreResultsCount);
+							if ($result['Record_count_total'] > $maxResultsShowable) {
+								$additionalResultsCount = $result['Record_count_total'] - $maxResultsShowable;
+								$this->mergeFields['Project_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more project', 'and [[count]] more projects', $additionalResultsCount);
+								$showPressEnter = true;
 							}
 						} else {
 							$this->mergeFields['Project_Search_No_Results'] = true;
@@ -503,13 +508,14 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 						if ($this->mergeFields['Mode'] == 'search_page') {
 							$this->pagination(
-								'pagination_style',
 								$this->page, $result['pagination'],
 								$this->mergeFields['Search_Pagination']);
 						}
 					}
 				}
 			}
+
+			if ($showPressEnter) $this->mergeFields['Press_enter_to_see_all_results_phrase'] = $this->phrase('Press Enter to see all results');
 
 			if ($this->setting('search_in_other_modules') && !empty($this->mergeFields['Results_From_Module'])) {
 				$this->mergeFields['Search_Result_Rows'] = true;
@@ -886,7 +892,6 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						if ($this->mergeFields['Mode'] == 'search_page') {
 							$this->mergeFields['Search_Pagination'] = '';
 							$this->pagination(
-								'pagination_style',
 								$this->page, $pagination,
 								$this->mergeFields['Search_Pagination']);
 						}
@@ -908,12 +913,12 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						"Tab_Onclick" => $this->refreshPluginSlotAnchor('&ctab='. rawurlencode('results_from_module'). $this->getSearchRequestParameters() . '&searchString='. rawurlencode($this->searchString))
 					];
 					
-					$maximumResultsNumber = $this->setting('maximum_results_number');
+					$maxResultsShowable = $this->setting('maximum_results_number');
 					$this->mergeFields['Module_Search_Results_Count'] = $countResultsFromModule;
 					
-					if ($countResultsFromModule > $maximumResultsNumber) {
-						$moreResultsCount = $countResultsFromModule - $maximumResultsNumber;
-						$this->mergeFields['Module_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more result', 'and [[count]] more results', $moreResultsCount, ['count' => $moreResultsCount]);
+					if ($countResultsFromModule > $maxResultsShowable) {
+						$additionalResultsCount = $countResultsFromModule - $maxResultsShowable;
+						$this->mergeFields['Module_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more result', 'and [[count]] more results', $additionalResultsCount, ['count' => $additionalResultsCount]);
 					}
 
 					$this->mergeFields['Results_From_Module_Heading_Text'] = $resultsFromModulePhrase;

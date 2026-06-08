@@ -22,18 +22,6 @@ zenario_email_template:
                     show: ""
                     type: warning
                     message: ""
-                test_send_sucesses:
-                    show: ""
-                    type: success
-                    message: ""
-                test_send_error:
-                    show: ""
-                    type: error
-                    message: ""
-                test_send_attachment_not_sent:
-                    show: ""
-                    type: warning
-                    message: ""
             fields:
                 template_name:
                     label: 'Email template name:'
@@ -104,21 +92,30 @@ zenario_email_template:
                         emails: Please enter a valid Bcc email address.
                     side_note: |
                         Tip: You can enter multiple email addresses separated by commas.
-                
-                use_standard_email_template:
-                    label: 'Format:'
-                    type: select
-                    values:
-                        yes:
-                            label: Use standard email template; edit email body using WYSIWYG-type editor (recommended)
-                        twig:
-                            label: Use standard email template; edit email body using raw HTML and Twig code (advanced)
-                        no:
-                            label: Don't use standard email template; edit ENTIRE email using rich text (advanced)
-                    note_below: "Using the standard email template is recommended as it provides the top and bottom of emails. [[standard_email_template_link]]"
-                    format_onchange: true
-                body_label:
-                    label: 'Email body:'
+
+        email_body:
+            label: Email body
+            edit_mode:
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+                enabled: true
+            notices:
+                debug_mode:
+                    show: ""
+                    type: warning
+                    message: ""
+                test_send_sucesses:
+                    show: ""
+                    type: success
+                    message: ""
+                test_send_error:
+                    show: ""
+                    type: error
+                    message: ""
+                test_send_attachment_not_sent:
+                    show: ""
+                    type: warning
+                    message: ""
+            fields:
                 body:
                     type: editor
                     editor_type: email_editor
@@ -137,6 +134,18 @@ zenario_email_template:
                             min_path: 'zenario__library/panels/image_library'
                             max_path: 'zenario__library/panels/image_library'
                             disallow_refiners_looping_on_min_path: true
+                use_standard_email_template:
+                    label: 'Format:'
+                    type: select
+                    values:
+                        yes:
+                            label: Use standard email template; edit email body using WYSIWYG-type editor (recommended)
+                        twig:
+                            label: Use standard email template; edit email body using raw HTML and Twig code (advanced)
+                        no:
+                            label: Don't use standard email template; edit ENTIRE email using rich text (advanced)
+                    note_below: "Using the standard email template is recommended as it provides the top and bottom of emails. [[standard_email_template_link]]"
+                    format_onchange: true
                 include_a_fixed_attachment:
                     label: Attach a file
                     type: checkbox
@@ -203,7 +212,7 @@ zenario_email_template:
                     value: Test Send
                     visible_if: 'zenarioAB.tuix.key.id'
                     class: 'zenario_submit_button'
-
+        
         preview:
             label: Preview
             edit_mode:

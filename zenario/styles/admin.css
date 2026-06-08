@@ -1059,7 +1059,7 @@ body.zenario_showing_plugin_preview div#zenario_skin {
 	Link status, some placeholder styles
 */
 
-del.zenario_link_status {
+x-zenario-link-status {
 	text-decoration: none;
 	position: absolute;
 	z-index: 90;
@@ -1070,9 +1070,15 @@ del.zenario_link_status {
 	width: 0;
 	height: 0;
 	margin-left: -15px;
+	
+	display: none;
 }
 
-del.zenario_link_status > del {
+body.zenario_show_link_status x-zenario-link-status {
+	display: block;
+}
+
+x-zenario-link-status > x-zenario-status-icon {
 	text-decoration: none;
 	position: absolute;
 	z-index: 91;
@@ -1082,65 +1088,65 @@ del.zenario_link_status > del {
 	opacity: 0.7;
 }
 
-del.zenario_link_status__content_not_found > del {
+x-zenario-link-status.zenario_link_status__content_not_found > x-zenario-status-icon {
 	background:url('../admin/images/link_status/doesnt-exist-v3.svg') no-repeat center / 16px 16px;
 }
 
-del.zenario_link_status__hidden > del {
+x-zenario-link-status.zenario_link_status__hidden > x-zenario-status-icon {
 	background:url('../admin/images/link_status/icon-triangle-grey.svg') no-repeat center / 16px 16px;
 }
 
-del.zenario_link_status__unpublished > del {
+x-zenario-link-status.zenario_link_status__unpublished > x-zenario-status-icon {
 	background:url('../admin/images/link_status/draft-v3.svg') no-repeat center / 16px 16px;
 }
 
-del.zenario_link_status__published_with_draft > del {
+x-zenario-link-status.zenario_link_status__published_with_draft > x-zenario-status-icon {
 	background:url('../admin/images/link_status/published-with-draft-v3.svg') no-repeat center / 16px 16px;
 }
 
-del.zenario_link_status__published_with_draft_401 > del {
+x-zenario-link-status.zenario_link_status__published_with_draft_401 > x-zenario-status-icon {
 	background:url('../admin/images/link_status/published-with-draft-protected-v3.svg') no-repeat center;
 }
 
-del.zenario_link_status__published_with_draft_403 > del {
+x-zenario-link-status.zenario_link_status__published_with_draft_403 > x-zenario-status-icon {
 	background:url('../admin/images/link_status/published-with-draft-403-v3.svg') no-repeat center;
 }
 
-del.zenario_link_status__published_401 > del {
+x-zenario-link-status.zenario_link_status__published_401 > x-zenario-status-icon {
 	background:url('../admin/images/link_status/published-protected-v3.svg') no-repeat center / 16px 16px;
 }
 
-del.zenario_link_status__published_403 > del {
+x-zenario-link-status.zenario_link_status__published_403 > x-zenario-status-icon {
 	background:url('../admin/images/link_status/published-403-v3.svg') no-repeat center;
 }
 
-del.zenario_link_status__unlisted_with_draft > del {
+x-zenario-link-status.zenario_link_status__unlisted_with_draft > x-zenario-status-icon {
 	background:url('../admin/images/link_status/published-with-draft-v3.svg') no-repeat center / 16px 16px;
 }
 
-del.zenario_link_status__unlisted_with_draft_401 > del {
+x-zenario-link-status.zenario_link_status__unlisted_with_draft_401 > x-zenario-status-icon {
 	background:url('../admin/images/link_status/published-with-draft-protected-v3.svg') no-repeat center;
 }
 
-del.zenario_link_status__unlisted_with_draft_403 > del {
+x-zenario-link-status.zenario_link_status__unlisted_with_draft_403 > x-zenario-status-icon {
 	background:url('../admin/images/link_status/published-with-draft-403-v3.svg') no-repeat center;
 }
 
-del.zenario_link_status__unlisted_401 > del {
+x-zenario-link-status.zenario_link_status__unlisted_401 > x-zenario-status-icon {
 	background:url('../admin/images/link_status/published-protected-v3.svg') no-repeat center / 16px 16px;
 }
 
-del.zenario_link_status__unlisted_403 > del {
+x-zenario-link-status.zenario_link_status__unlisted_403 > x-zenario-status-icon {
 	background:url('../admin/images/link_status/published-403-v3.svg') no-repeat center;
 }
 
-del.zenario_link_status__spare_alias > del,
-del.zenario_link_status__published_301 > del,
-del.zenario_link_status__unlisted_301 > del {
+x-zenario-link-status.zenario_link_status__spare_alias > x-zenario-status-icon,
+x-zenario-link-status.zenario_link_status__published_301 > x-zenario-status-icon,
+x-zenario-link-status.zenario_link_status__unlisted_301 > x-zenario-status-icon {
 	background:url('../admin/images/link_status/spare-domain-v3.svg') no-repeat center / 16px 16px;
 }
 
-del.zenario_link_status__menu_warning > del {
+x-zenario-link-status.zenario_link_status__menu_warning > x-zenario-status-icon {
 	background:url('../admin/images/icon-warning.svg') no-repeat center / 16px 16px;
 }
 
@@ -1286,8 +1292,8 @@ body.zenario_showing_plugin_preview .zenario_image_properties_button {
 }
 
 #zenario_debug_menu.ui-menu-icons .ui-menu-item-wrapper {
-    padding: 0 10px;
-	line-height:30px;
+    padding: 5px 10px;
+	line-height:1.6;
 	font-family: Verdana,Arial,Helvetica,sans-serif;
   	font-size: 9pt;
   	border-top:1px solid #DCDCDC;
@@ -1361,7 +1367,10 @@ body.zenario_showing_plugin_preview .zenario_image_properties_button {
   	content: '';
 }
 
-
+#zenario_debug_menu.ui-menu {
+	max-height:90vh;
+	overflow-y:auto;
+}
 
 
 

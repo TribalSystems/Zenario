@@ -1729,7 +1729,7 @@ span.continue_to_block > span.continue_to_label {
 }
 
 span.continue_to_block > span.continue_to_icon__citem {
-	background-image: url('../admin/images/icon-back-to-html-off.svg');
+	background-image: url('../admin/images/icon-back-to-html-green-off.svg');
 }
 
 span.continue_to_block > span.continue_to_icon__home {

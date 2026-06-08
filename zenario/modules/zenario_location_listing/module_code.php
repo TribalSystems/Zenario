@@ -298,7 +298,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 			
 			
 			$this->data['Pagination']='';
-			$this->pagination('pagination', $this->page, $pages, $this->data['Pagination']);
+			$this->pagination($this->page, $pages, $this->data['Pagination']);
 		} else {
 			$this->data['Msg_Empty_List']=	$this->phrase('There are no locations to show');
 		}
@@ -309,8 +309,6 @@ class zenario_location_listing extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['display']['fields']['pagination']['values'] = ze\pluginAdm::paginationOptions();
-				
 				//Checkboxes
 				$dataset = ze\dataset::details(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
 				$datasetId = $dataset['id'];

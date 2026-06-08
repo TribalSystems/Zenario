@@ -8,28 +8,28 @@ license_info: 'Modified BSD License'
 display_name: Country Manager
 description: |
     <p>
-                This Module is a management tool for countries and regions. The list of countries and/or regions typically
-            appears via a Plugin which appears on a visitor-facing page.
-            After the Module is installed and set running, its management panel appears beneath International.
-            </p>
-            <p>
-            Each Country has an internal name for admnistration purposes, and a 2-letter ISO code.    
-            Countries also have localized names in all of the languages defined for this Module.
-            </p>
-            <p>
-                Double-clicking on a Country in its management panel displays a Regions panel for that
-                Country. Using this panel you can define Regions within the Country.
-            </p>
-            <p>
-            Countries have a Status which may be set to Active or Suspended. Only countries marked as Active will
-                be displayed to visitors. The Module comes with over 240 countries defined, and countries can be added or deleted
-            by an administrator.
-            </p>
-            <p>
-                This Module is not slotable, but its features may be used by other Modules. It is designed so that
-                another Module can make a static method call from its framework to obtain a list of
-                Countries or Regions, for example in a form in which a visitor should select his country and/or region.
-            </p>
+        This module is a management tool for countries and regions. The list of countries and/or regions typically
+        appears via a plugin which appears on a visitor-facing page.
+        After the module is installed and set running, its management panel appears beneath International.
+    </p>
+    <p>
+        Each country has an internal name for admnistration purposes, and a 2-letter ISO code.    
+        Countries also have localised names in all of the languages defined for this module.
+    </p>
+    <p>
+        Clicking the folder icon of a country on its management panel displays another panel
+        where all its regions can be managed.
+    </p>
+    <p>
+        Countries have a status which may be set to Active or Suspended. Only countries marked as Active will
+        be displayed to visitors. The module comes with over 240 countries defined, and countries can be added or deleted
+        by an administrator.
+    </p>
+    <p>
+        This module is not pluggable, but its features may be used by other modules,
+        which can make static method calls to obtain a list of countries or regions.
+        For example in a user, a visitor could select his country and/or region.
+    </p>
 category: management
 keywords: country, county, location, place, region, state, world
 

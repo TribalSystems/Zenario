@@ -303,16 +303,6 @@ methods.refreshParentAndClose = function(disallowNavigation, saveAndContinue, cr
 	if (saveAndContinue) {
 		thus.changed = {};
 		
-		if (thus.tuix.tabs) {
-			foreach (thus.tuix.tabs as var i => var zenarioABTab) {
-				if (zenarioABTab) {
-					if (thus.editModeOn(i)) {
-						thus.tuix.tabs[i]._saved_and_continued = true;
-					}
-				}
-			}
-		}
-		
 		thus.sortTabs();
 		thus.draw();
 	
@@ -521,9 +511,9 @@ methods.draw2 = function() {
 				field.current_value = copiedField.current_value;
 				field.pressed = copiedField.pressed;
 				field.selected_option = copiedField.selected_option;
-				field._display_value = copiedField._display_value;
+				field._cms_displayValue = copiedField._cms_displayValue;
 				field.hidden = copiedField.hidden;
-				field._was_hidden_before = copiedField._was_hidden_before;
+				field._cms_hidden = copiedField._cms_hidden;
 			}
 		};
 		
@@ -578,8 +568,8 @@ methods.returnAJAXURL = function(action) {
 	 && zenarioO.lastRequests) {
 		return URLBasePath +
 			'zenario/admin/organizer.ajax.php' +
-			'?_get_matched_ids=1' +
-			'&_fab_path=' + encodeURIComponent(thus.path) +
+			'?_cms_fetchMatchedIds=1' +
+			'&_cms_fabPath=' + encodeURIComponent(thus.path) +
 			'&path=' + encodeURIComponent(zenarioO.path) +
 			zenario.urlRequest(zenarioO.lastRequests) +
 			zenario.urlRequest(thus.getRequestKey);
@@ -632,10 +622,10 @@ methods.typeaheadSearchAJAXURL = function(field, id, tab) {
 		
 		//T12820, When all content items are listed, e.g. picker box, put HTML items first
 		//The order that the typeahead results appear in the pickers should match the order they appear in the Organizer panel
-		pAndR.request._sort_col = zenarioO.followPathOnMap(pAndR.path, 'default_sort_column');
-		pAndR.request._sort_desc = engToBoolean(zenarioO.followPathOnMap(pAndR.path, 'default_sort_desc'));
+		pAndR.request._cms_sortCol = zenarioO.followPathOnMap(pAndR.path, 'default_sort_column');
+		pAndR.request._cms_sortDesc = engToBoolean(zenarioO.followPathOnMap(pAndR.path, 'default_sort_desc'));
 		
-		return URLBasePath + 'zenario/admin/organizer.ajax.php?_typeahead_search=1&path=' + encodeURIComponent(pAndR.path) + zenario.urlRequest(pAndR.request);
+		return URLBasePath + 'zenario/admin/organizer.ajax.php?_cms_orgTypeahead=1&path=' + encodeURIComponent(pAndR.path) + zenario.urlRequest(pAndR.request);
 	}
 };
 
@@ -908,7 +898,7 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 			}
 		}
 	} else {
-		requests._show_page_preview = 1;
+		requests._cms_showPagePreview = 1;
 	}
 	
 	if (slotName) {
@@ -977,7 +967,7 @@ methods.submitPreview = function(preview, $parent, cssClassName) {
 		scrollTop = 1 * (doc && $(doc).scrollTop());
 	
 	if (scrollTop) {
-		preview.url += '&_scroll_to=' + scrollTop;
+		preview.url += '&_cms_scrollTo=' + scrollTop;
 	}
 	
 	if ($old[0]) {
@@ -1154,10 +1144,10 @@ methods.save = function(confirm, saveAndContinue, createAnother, saveAndNext) {
 			thus.checkValues();
 	
 			var post = {
-				_save: true,
-				_confirm: confirm? 1 : '',
-				_save_and_continue: saveAndContinue,
-				_box: thus.sendStateToServer()};
+				_cms_isSave: true,
+				_cms_confirm: confirm? 1 : '',
+				_cms_isSaveAndContinue: saveAndContinue,
+				_cms_box: thus.sendStateToServer()};
 	
 			if (engToBoolean(thus.tuix.download) || (thus.tuix.confirm && engToBoolean(thus.tuix.confirm.download))) {
 				thus.save2(zenario.nonAsyncAJAX(thus.getURL('save'), zenario.urlRequest(post), true), saveAndContinue, createAnother, saveAndNext);
@@ -1180,8 +1170,8 @@ methods.save2 = function(data, saveAndContinue, createAnother, saveAndNext) {
 	delete thus.saving;
 	
 	var flags = data
-			 && data._sync
-			 && data._sync.flags || {},
+			 && data._cms_sync
+			 && data._cms_sync.flags || {},
 		isOrganizer = zenarioO.init && !window.zenarioOQuickMode && !window.zenarioOSelectMode;
 	
 	
@@ -1226,8 +1216,8 @@ methods.save2 = function(data, saveAndContinue, createAnother, saveAndNext) {
 			zenarioA.doDownload(
 				thus.getURL('download'),
 				{
-					_download: 1,
-					_box: thus.sendStateToServer()
+					_cms_isDownload: 1,
+					_cms_box: thus.sendStateToServer()
 				}
 			);
 			
@@ -1257,15 +1247,14 @@ methods.save2 = function(data, saveAndContinue, createAnother, saveAndNext) {
 
 
 methods.showConfirm = function(saveAndContinue, createAnother, saveAndNext) {
-	if (thus.tuix && thus.tuix.confirm && engToBoolean(thus.tuix.confirm.show)) {
+	
+	var message, buttons,
+		confirm = thus.tuix && thus.tuix.confirm;
+	
+	if (confirm && confirm.show) {
 		
-		var message = thus.tuix.confirm.message;
-		
-		if (!engToBoolean(thus.tuix.confirm.html)) {
-			message = htmlspecialchars(message, true);
-		}
-		
-		var buttons =
+		message = thus.messageHTML(confirm);
+		buttons =
 			'<input type="button" class="zenario_submit_button selected" value="' + thus.tuix.confirm.button_message + '" onclick="' + thus.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ', ' + engToBoolean(createAnother) + ', ' + engToBoolean(saveAndNext) + ');"/>' +
 			'<input type="button" class="zenario_gp_button" value="' + (thus.tuix.confirm.cancel_button_message || zenarioA.phrase.cancel) + '"/>';
 		

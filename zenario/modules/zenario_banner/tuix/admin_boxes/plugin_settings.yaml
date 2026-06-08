@@ -45,12 +45,13 @@ plugin_settings:
                     format_onchange: true
                     upload:
                         multi: false
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                         reorder_items: false
@@ -179,12 +180,13 @@ plugin_settings:
                     value: ""
                     upload:
                         multi: false
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: false
                         reorder_items: false
@@ -260,12 +262,13 @@ plugin_settings:
                     format_onchange: true
                     upload:
                         multi: false
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                         reorder_items: false
@@ -421,8 +424,9 @@ plugin_settings:
                     type: radios
                     values: 
                         use_default: 
-                            label: 'Use the image\'s default floating box caption ("")'
+                            label: "Use the image's default floating box caption"
                             ord: 1
+                            note_below: ''
                         overwrite: 
                             label: 'Use custom floating box caption on this plugin'
                             ord: 2
@@ -436,7 +440,10 @@ plugin_settings:
                         name: floating_box_title
                         translate: true
                     label: 'Overwrite default floating box caption (may contain HTML):'
-                    type: textarea
+                    type: editor
+                    editor_type: description_editor
+                    editor_options:
+                        height: 150
                     dont_trim: true
                     cols: 70
                     rows: 4

@@ -7,12 +7,16 @@
 	<% if (m.separator_after_this) { %>
 		zenario_separator_after_this
 	<% } %>
+	<% if (m.new_window) { %>
+		zenario_nav_link_new_window
+	<% } %>
 ">
 	<a
-		<% if (m.href) { %>
-			href="{{URLBasePath + (zenarioATLinks.organizer || 'organizer.php') + zenarioAT.customiseOrganizerLink(m.href, true)|escape}}"
-		<% } else if (m.onclick) { %>
-			onclick="{{m.onclick|escape}}"
+		href="{{m.href|escape}}"
+		onclick="{{m.onclick|escape}}"
+		
+		<% if (m.new_window) { %>
+			target="_blank"
 		<% } %>
 	>
 		<span>

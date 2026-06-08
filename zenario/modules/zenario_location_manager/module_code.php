@@ -215,7 +215,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					}
 					
 					if (!ze\ray::issetArrayKey($locationDetails,"parent_id") && !ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX . "locations",["parent_id" => $id])) {
-						$item['traits']['not_in_hierarchy'] = true;
+						$item['not_in_hierarchy'] = true;
 					}
 					
 					if ($item['checksum'] && $item['image_usage']) {
@@ -235,8 +235,8 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					
 					//Create the location full name. It will be used in certain confirmation buttons.
 					$locationFullName = [];
-					if (!empty($item['parent_customer'])) {
-						$locationFullName[] = $item['parent_customer'];
+					if (!empty($item['parent_organization'])) {
+						$locationFullName[] = $item['parent_organization'];
 					}
 					$locationFullName[] = $item['description'];
 					
@@ -423,26 +423,26 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						$locationSector = self::getLocationSectorDetails($refinerId,$id);
 						$sector = self::getSectorDetails($id);
 	
-						$item['traits']['can_delete'] = "Yes";
-						$item['traits']['not_sticky'] = "No";
+						$item['can_delete'] = true;
+						$item['not_sticky'] = false;
 						
 						if ($locationSector['score_id']<5) {
-							$item['traits']['not_at_max'] = "Yes";
+							$item['not_at_max'] = true;
 						}
 						
 						if ($locationSector['score_id']>1) {
-							$item['traits']['not_at_min'] = "Yes";
+							$item['not_at_min'] = true;
 						}
 	
 						if ($item['sticky']==1 && !$sector['parent_id'] && $stickyCounter==1) {
 							if (!$sector['parent_id'] && $topLevelSectorCount>1) {
-								$item['traits']['can_delete'] = "No";
+								$item['can_delete'] = false;
 							}
 						}
 						
 	
 						if (($item['sticky']==0 && !$sector['parent_id'] && $topLevelSectorCount>1) || $stickyCounter>1) {
-							$item['traits']['not_sticky'] = "Yes";
+							$item['not_sticky'] = true;
 						}
 						
 						if ($item['label_name']) {
@@ -968,6 +968,33 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						}
 					}
 				}
+				
+				//If there are images, make sure their size complies with the site settings.
+				//Check their sizes and make sure they are not exceeding whichever the lower limit is
+				//(max upload for Zenario or max upload for location images).
+				//Only check freshly uploaded images.
+				//This should prevent spoofing the box.
+				if (!empty($values['images/images'])) {
+					if (ze::setting('max_location_image_filesize_override') && (ze::setting('apply_file_size_limit_to') == 'always_apply')) {
+						$locationManagerMaxFilesizeValue = ze::setting('max_location_image_filesize');
+						$locationManagerMaxFilesizeUnit = ze::setting('max_location_image_filesize_unit');
+						$locationManagerMaxFilesize = ze\file::fileSizeBasedOnUnit($locationManagerMaxFilesizeValue, $locationManagerMaxFilesizeUnit);
+						
+						foreach (explode(',', $values['images/images']) as $image) {
+							if (!is_numeric($image) && $filepath = ze\file::getPathOfUploadInCacheDir($image)) {
+								if (filesize($filepath) > $locationManagerMaxFilesize) {
+									$fields['images/images']['error'] = ze\admin::phrase(
+										'Image size may not exceed [[size_with_units]].',
+										['size_with_units' => $locationManagerMaxFilesizeValue . " " . $locationManagerMaxFilesizeUnit]
+									);
+									
+									break;
+								}
+							}
+						}
+					}
+				}
+				
 				break;
 			case "zenario_location_manager__locations_multiple_edit":
 				foreach ($changes as $fieldName => $fieldValue) {

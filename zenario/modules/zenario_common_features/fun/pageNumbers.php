@@ -47,52 +47,58 @@ if ($count > 1) {
 	if (($currentPos > 0) && (isset($pagesPos[$currentPos-1]))) {
 		$prevPage = $pagesPos[$currentPos-1];
 	}
+	
 	if (($currentPos < $count - 1) && (isset($pagesPos[$currentPos+1]))) {
 		$nextPage = $pagesPos[$currentPos+1];
 	}
 	
-	if ($showFirstLast && $currentPos > ($showNextPrev? 1 : 0)) {
-		$html .= $this->drawPageLink($this->phrase('First'), $pages[$pagesPos[0]], $pagesPos[0], $currentPage, $prevPage, $nextPage, 'pag_first', $links, $extraAttributes);
-	}
-	
-	if ($showNextPrev && $prevPage !== false) {
+	if ($prevPage !== false) {
 		$html .= $this->drawPageLink($this->phrase('Prev'), $pages[$prevPage], $prevPage, $currentPage, $prevPage, $nextPage, 'pag_prev', $links, $extraAttributes);
-	} elseif ($showNextPrev && $alwaysShowNextPrev) {
+	} else {
 		$html .= $this->drawPageLink($this->phrase('Prev'), '', '', $currentPage, $prevPage, $nextPage, 'pag_prev', $links, $extraAttributes);
 	}
 	
 	
-	if ($pageNumbers == 'Current') {
-		$page = $pagesPos[$currentPos];
-		$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links, $extraAttributes);
-		
-	} elseif ($pageNumbers == 'All') {
-		foreach($pages as $page => &$request) {
-			$html .= $this->drawPageLink($page, $request, $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links, $extraAttributes);
-		}
-		
-	} elseif ($pageNumbers == 'Close') {
-		//Check if each is there, and include it if so
-		for ($pos = $currentPos - 4; $pos <= $currentPos + 4; ++$pos) {
-			if (isset($pagesPos[$pos])) {
-				$page = $pagesPos[$pos];
-				$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links, $extraAttributes);
+	//Check if each is there, and include it if so
+	$first = array_key_first($pagesPos);
+	$last = array_key_last($pagesPos);
+	
+	$page = $pagesPos[$first];
+	$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links, $extraAttributes);
+	
+	//Is is possible to display "..." to indicate there are pages that are not being displayed
+	//before or after the current item and its nearest neighbours.
+	//Example: page 5 is current
+	//Prev 1 ... 3 4 [5] 6 7 ... 15 Next
+	$dotsBeforeAdded = false;
+	for ($pos = $currentPos - 2; $pos <= $currentPos + 2; ++$pos) {
+		if (isset($pagesPos[$pos])) {
+			if ($pos == $first || $pos == $last) {
+				continue;
 			}
+			
+			if (($pos > $currentPos - 3) && ($currentPos - 3 >= 1) && !$dotsBeforeAdded) {
+				$html .= '<span>...</span>';
+				$dotsBeforeAdded = true;
+			}
+			
+			$page = $pagesPos[$pos];
+			$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links, $extraAttributes);
 		}
-		
-	} elseif ($pageNumbers == 'Smart') {
-		$this->smartPageNumbers($currentPos, $count, $showFirstLast, $pagesPos, $pages, $html, $currentPage, $prevPage, $nextPage, $links, $extraAttributes);
 	}
 	
+	if (isset($pagesPos[$currentPos + 3]) && ($currentPos + 3 != $last)) {
+		$html .= '<span>...</span>';
+	}
 	
-	if ($showNextPrev && $nextPage !== false) {
+	$page = $pagesPos[$last];
+	$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links, $extraAttributes);
+	
+	
+	if ($nextPage !== false) {
 		$html .= $this->drawPageLink($this->phrase('Next'), $pages[$nextPage], $nextPage, $currentPage, $prevPage, $nextPage, 'pag_next', $links, $extraAttributes);
-	} elseif ($showNextPrev && $alwaysShowNextPrev) {
+	} else {
 		$html .= $this->drawPageLink($this->phrase('Next'), '', '', $currentPage, $prevPage, $nextPage, 'pag_next', $links, $extraAttributes);
-	}
-	
-	if ($showFirstLast && $currentPos < $count - ($showNextPrev? 2 : 1)) {
-		$html .= $this->drawPageLink($this->phrase('Last'), $pages[$pagesPos[$count-1]], $pagesPos[$count-1], $currentPage, $prevPage, $nextPage, 'pag_last', $links, $extraAttributes);
 	}
 }
 

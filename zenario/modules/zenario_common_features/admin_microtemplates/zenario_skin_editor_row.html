@@ -2,11 +2,11 @@
 	<% var f; %>
 	<% var firstField = m.fields[0]; %>
 
-	<div id="{{m.lib.idPrefix()|escape}}row__{{firstField._id|escape}}" class="
-		zenario_ab_row__{{firstField._id|escape}}
+	<div id="{{m.lib.idPrefix()|escape}}row__{{firstField._cms_fieldID|escape}}" class="
+		zenario_ab_row__{{firstField._cms_fieldID|escape}}
 	">
 		<% for (f in m.fields) { %>
-			{{m.fields[f]._html}}
+			{{m.fields[f]._cms_fieldHTML}}
 		<% } %>
 	</div>
 <% } %>

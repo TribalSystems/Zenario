@@ -9,9 +9,9 @@ zenario__content:
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
-                        traits.not_locked: true
+                        not_locked: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     parent: action_dropdown
                     label: Google Translate
                     tooltip: >

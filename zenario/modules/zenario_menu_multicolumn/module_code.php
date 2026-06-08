@@ -133,9 +133,6 @@ class zenario_menu_multicolumn extends zenario_menu {
 		if (!empty($row['onclick'])) {
 			$menuItem .= ' onclick="'. htmlspecialchars($row['onclick']). '"';
 		}
-		if (!empty($row['accesskey'])) {
-			$menuItem .= ' accesskey="'. htmlspecialchars($row['accesskey']). '"';
-		}
 		if (!empty($row['rel_tag'])) {
 			$menuItem .= ' rel="'. htmlspecialchars($row['rel_tag']). '"';
 		}

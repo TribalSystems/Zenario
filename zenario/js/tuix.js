@@ -590,8 +590,8 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 	if (!link && object.link) {
 		link = object.link;
 	
-	} else if (!link && object.panel && object.panel._path_here) {
-		link = {path: object.panel._path_here};
+	} else if (!link && object.panel && object.panel._cms_pathToHere) {
+		link = {path: object.panel._cms_pathToHere};
 	}
 	
 	//In select mode, don't let an admin navigate past a certain point using double-click actions on items
@@ -624,23 +624,15 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		 && object.ajax
 		 && object.ajax.pass_matched_ids
 		 && zenarioCallingLibrary.globalName == 'zenarioO') {
-			url =
-				URLBasePath + 'zenario/admin/organizer.ajax.php?' +
-					'__pluginClassName__=' + thing.class_name +
-					'&path=' + zenarioO.path +
-					'&_get_matched_ids=1' +
-					'&method_call=' + ajaxMethodCall +
-					zenario.urlRequest(zenarioO.lastRequests);
+			url = zenario.ajaxURL(ajaxMethodCall, thing.class_name, zenarioO.path, 'zenario/admin/organizer.ajax.php') +
+				'&_cms_fetchMatchedIds=1' +
+				zenario.urlRequest(zenarioO.lastRequests);
 			requests = {};
 		
 		//If not then we don't need to use the whole the Organizer Panel logic, we can just use
 		//the normal ajax file.
 		} else {
-			url =
-				URLBasePath + 'zenario/ajax.php?' +
-					'__pluginClassName__=' + thing.class_name +
-					'&__path__=' + zenarioCallingLibrary.path +
-					'&method_call=' + ajaxMethodCall;
+			url = zenario.ajaxURL(ajaxMethodCall, thing.class_name, zenarioCallingLibrary.path);
 		
 			requests = zenarioCallingLibrary.getKey(itemLevel);
 		}
@@ -728,7 +720,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		} else {
 			//For backwards compatability for browsers without HTML 5, attempt to convert file upload tags into ajax->confirm->form tags
 			object = zenario.clone(object);
-			requests._html5_backwards_compatibility_hack = 1;
+			requests._cms_backwards_compatibility_mode = 1;
 			
 			object.ajax = {
 				class_name: object.upload.class_name,
@@ -856,7 +848,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		} else if (item && item.frontend_link && !defined(popout.href)) {
 			popout.href = zenarioO.parseReturnLink(item.frontend_link);
 			popout.href += popout.href.indexOf('?') === -1? '?' : '&';
-			popout.href += '_show_page_preview=1';
+			popout.href += '_cms_showPagePreview=1';
 		
 		} else if (item && popout.href) {
 			popout.href += popout.href.indexOf('?') === -1? '?' : '&';
@@ -954,11 +946,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		}
 		
 		//Use Organizer in select mode to combine two items
-		zenarioCallingLibrary.actionTarget =
-			URLBasePath + 'zenario/ajax.php?' +
-				'__pluginClassName__=' + object.pick_items.class_name +
-				'&__path__=' + zenarioCallingLibrary.path +
-				'&method_call=' + ajaxMethodCall;
+		zenarioCallingLibrary.actionTarget = zenario.ajaxURL(ajaxMethodCall, object.pick_items.class_name, zenarioCallingLibrary.path);
 		zenarioCallingLibrary.actionRequests = zenarioCallingLibrary.getKey(itemLevel);
 		
 		if (object.pick_items.request) {
@@ -990,11 +978,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		}
 		
 		//Use Organizer in select mode to combine two items
-		zenarioCallingLibrary.actionTarget =
-			URLBasePath + 'zenario/ajax.php?' +
-				'__pluginClassName__=' + object.combine_items.class_name +
-				'&__path__=' + zenarioCallingLibrary.path +
-				'&method_call=' + ajaxMethodCall;
+		zenarioCallingLibrary.actionTarget = zenario.ajaxURL(ajaxMethodCall, object.combine_items.class_name, zenarioCallingLibrary.path);
 		zenarioCallingLibrary.actionRequests = zenarioCallingLibrary.getKey(itemLevel);
 		
 		if (object.combine_items.request) {
@@ -1062,17 +1046,17 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			//If this is a download, add the current search/sorting information in,
 			//just in case the download should differ depending on the current view
 			if (isDownload) {
-				zenarioCallingLibrary.actionRequests._download = 1;
+				zenarioCallingLibrary.actionRequests._cms_isDownload = 1;
 				
 				if (defined(zenarioCallingLibrary.searchTerm)) {
-					zenarioCallingLibrary.actionRequests._search = zenarioCallingLibrary.searchTerm;
+					zenarioCallingLibrary.actionRequests._cms_searchTerm = zenarioCallingLibrary.searchTerm;
 				}
 				
 				if (zenarioCallingLibrary.prefs[zenarioCallingLibrary.path] && zenarioCallingLibrary.prefs[zenarioCallingLibrary.path].sortBy) {
-					zenarioCallingLibrary.actionRequests._sort_col = zenarioCallingLibrary.prefs[zenarioCallingLibrary.path].sortBy;
-					zenarioCallingLibrary.actionRequests._sort_desc = zenarioCallingLibrary.prefs[zenarioCallingLibrary.path].sortDesc? 1 : 0;
+					zenarioCallingLibrary.actionRequests._cms_sortCol = zenarioCallingLibrary.prefs[zenarioCallingLibrary.path].sortBy;
+					zenarioCallingLibrary.actionRequests._cms_sortDesc = zenarioCallingLibrary.prefs[zenarioCallingLibrary.path].sortDesc? 1 : 0;
 				} else {
-					zenarioCallingLibrary.actionRequests._sort_col = zenarioCallingLibrary.labelTag;
+					zenarioCallingLibrary.actionRequests._cms_sortCol = zenarioCallingLibrary.labelTag;
 				}
 			}
 			
@@ -1085,7 +1069,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			
 			if (isDownload || object.upload) {
 				html += 
-					_$html('form', 'id', formId, 'action', zenarioCallingLibrary.actionTarget + '&_sk_form_submission=1',
+					_$html('form', 'id', formId, 'action', zenarioCallingLibrary.actionTarget + '&_cms_isBackwardsCompatibilityMode=1',
 						'onsubmit', "get('preloader_circle').style.visibility = 'visible';",
 						'target', 'zenario_iframe', 'method', 'post', 'enctype', object.upload && 'multipart/form-data',
 					'>');
@@ -1271,9 +1255,13 @@ zenarioT.newSimpleForm = function(containerId, globalName) {
 
 
 
-zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix, slotName) {
+zenarioT.run = function(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix, slotName) {
+	zenarioT.eval(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix, slotName, true);
+}
+
+zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix, slotName, runAllCode) {
 	
-	var functionDetails, libName, methodName, ev, andLogicIsBeingUsed = true;
+	var functionDetails, libName, thisLib, methodName, ev, andLogicIsBeingUsed = true;
 	
 	tuix = tuix || (lib && lib.tuix) || undefined;
 	tuixObject = tuixObject || button || column || field || item || section || tab;
@@ -1289,7 +1277,9 @@ zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, f
 				andLogicIsBeingUsed = false;
 				
 				if (zenarioT.eval(ev, lib, tuixObject, item, id, button, column, field, section, tab, tuix, slotName)) {
-					return true;
+					if (!runAllCode) {
+						return true;
+					}
 				}
 			
 			} else {
@@ -1303,18 +1293,22 @@ zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, f
 		
 				if (!methodName) {
 					methodName = libName;
-					lib = window;
+					thisLib = window;
 		
 				} else if (libName != 'lib') {
-					if (!(lib = window[libName])) {
-						return false;
-					}
+					thisLib = window[libName];
+				
+				} else {
+					thisLib = lib;
 				}
 		
 				//Call each function requested, and return false if any call fails.
-				if (!lib[methodName]
-				 || !lib[methodName].apply(lib, zenarioT.tuixToArray(ev))) {
-					return false;
+				if (!thisLib
+				 || !thisLib[methodName]
+				 || !thisLib[methodName].apply(thisLib, zenarioT.tuixToArray(ev))) {
+					if (!runAllCode) {
+						return false;
+					}
 				}
 			}
 		}
@@ -1755,7 +1749,7 @@ zenarioT.flattenKin = function(buttons) {
 		originalTUIX = button.tuix || button;
 		
 		//Remove any buttons that we found had children earlier.
-		//Also remove anything with the hide_when_children_are_not_visible propery set.
+		//Also remove anything with the hide_when_children_are_not_visible property set.
 		if (button.children || originalTUIX.hide_when_children_are_not_visible) {
 			buttons.splice(bi, 1);
 		}
@@ -1966,9 +1960,9 @@ zenarioT.numberFormat = function(number, decimals) {
 };
 
 zenarioT.checkDumps = function(data) {
-	if (data && data.__dumps) {
-		zenario.dumps(data.__dumps);
-		delete data.__dumps;
+	if (data && data._cms_dumps) {
+		zenario.dumps(data._cms_dumps);
+		delete data._cms_dumps;
 	}
 };
 

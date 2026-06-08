@@ -1,7 +1,6 @@
 {
 	"name": "Zenario",
 	"description": "Zenario is a web-based content management system for sites with one or many languages.",
-	"type": "project",
 	"author": "Tribal Systems",
 	"keywords": [
 		"cms",
@@ -38,5 +37,5 @@
 		"wow.js": "1.*",
 		"zxcvbn": "4.*"
 	},
-	"version": "10.3.67240"
+	"version": "10.4.67250"
 }

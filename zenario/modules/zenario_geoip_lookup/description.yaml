@@ -1,0 +1,45 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: GeoIP Lookup
+description: |
+            <p>This module provides GeoIP lookup functionality using the Maxmind GeoLite2 database.</p>
+            <p>You will need to acquire a license key from <a href="http://www.maxmind.com" target="_blank">Maxmind</a> in order to use this. (Tribal Systems are not affiliated with Maxmind.)</p>
+            <p>Once you have a license key, there are some things you must do to make things work:
+            <ol>
+                <li>Go to Site settings-><a href="organizer.php#zenario__administration/panels/site_settings//api_keys" target="_blank">API keys</a>, go to the GeoIP tab, and enter the key there.</li>
+                <li>Create a subdirectory inside the <code>zenario_custom</code> directory called <code>GeoIP</code>.</li>
+                <li>Give the <code>GeoIP</code> subdirectory permissions for the web server to write to it, e.g. <code>chmod 777 GeoIP</code>.</li>
+                <li>Start the <a href="organizer.php#zenario__library/panels/modules_running_and_suspended/collection_buttons/view_all_modules////~-Scheduled Task Manager" target="_blank">Scheduled Task Manager</a> module if it is not running already.</li>
+                <li>Go to the <a href="organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks" target="_blank">scheduled tasks</a> panel and find the jobUpdateGeoIPDatabase task. Select it and click "Rerun within next minute". This will fetch the data into the directory.</li>
+                <li>Leave it enabled to update the database regularly.</li>
+            </ol>
+            </p>
+            <p>There is a settings panel for GeoIP <a href="organizer.php#zenario__administration/panels/site_settings//ip_services" target="_blank">here</a>.
+category: management
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+is_pluggable: false
+for_use_in_twig: false
+
+dependencies:
+    zenario_scheduled_task_manager: true
+
+jobs:
+    -
+        name: jobUpdateGeoIPDatabase
+        static: true
+        months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+        days: wed
+        hours: >
+            3h
+        minutes: 0m
+        log_on_action: true
+        email_on_action: false
+        log_on_no_action: true
+        enabled_by_default: true

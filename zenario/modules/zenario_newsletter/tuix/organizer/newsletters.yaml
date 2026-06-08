@@ -162,10 +162,7 @@ zenario__email_template_manager:
                     db_column: n.scheduled_send_datetime
                     hidden: true
             item:
-                name: Newsletter
-                names: Newsletters
                 css_class: zenario_newsletter_draft
-            enable_close_up_view: true
             no_items_message: No draft newsletters found
             collection_buttons:
                 create:
@@ -186,14 +183,12 @@ zenario__email_template_manager:
                     link:
                         path: zenario__email_template_manager/panels/newsletters
                         refiner: archive
-                        branch: false
                 process:
                     css_class: process
                     label: Outbox
                     link:
                         path: zenario__email_template_manager/panels/newsletters
                         refiner: outbox
-                        branch: false
                 help:
                     label: Help
                     hide_in_select_mode: true
@@ -218,7 +213,6 @@ zenario__email_template_manager:
                     label: Recipients
                     link:
                         path: zenario__users/panels/users
-                        branch: true
                         refiner: zenario_newsletter__recipients
                     hide_in_select_mode: true
                 recipients1:
@@ -229,7 +223,6 @@ zenario__email_template_manager:
                     only_show_on_refiner: outbox
                     link:
                         path: zenario__email_template_manager/panels/newsletter_log
-                        branch: true
                         refiner: newsletter
                     hide_in_select_mode: true
                 recipients2:
@@ -240,7 +233,6 @@ zenario__email_template_manager:
                     only_show_on_refiner: archive
                     link:
                         path: zenario__email_template_manager/panels/newsletter_log
-                        branch: true
                         refiner: newsletter
                     hide_in_select_mode: true
                 images:
@@ -249,7 +241,6 @@ zenario__email_template_manager:
                     label: Images
                     link:
                         path: zenario__library/panels/image_library
-                        branch: true
                         refiner: images_for_newsletter
                     hide_in_select_mode: true
                     hide_on_refiner: archive
@@ -261,7 +252,6 @@ zenario__email_template_manager:
                     label: Click-throughs
                     link: 
                         path: zenario__email_template_manager/panels/newsletter_click_throughs
-                        branch: true
                         refiner: click_through_id
                 
                 actions_dropdown:

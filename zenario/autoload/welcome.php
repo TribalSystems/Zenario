@@ -2462,7 +2462,7 @@ class welcome {
 	//Log the current admin out
 	public static function logoutAdminAJAX(&$tags, $getRequest) {
 		\ze\admin::unsetSession();
-		$tags['_clear_local_storage'] = true;
+		$tags['_cms_clearLocalStorage'] = true;
 		$tags['go_to_url'] = \ze\welcome::redirectAdmin($getRequest, true);
 	}
 
@@ -2889,28 +2889,71 @@ class welcome {
 			}		
 			
 			if ($adminhtml && $row['last_login_ip']) {	
+				$currentIp = \ze\user::ip();
+				
 				if (!empty($_SESSION['admin_last_login']) && !empty($_SESSION['admin_last_login_ip'])) {
 					$lastLoginIp = $_SESSION['admin_last_login_ip'];
 				} else {
 					$lastLoginIp = $row['last_login_ip'];
 				}
 
-				$adminhtml .= ' from the same IP address ('. htmlspecialchars($lastLoginIp) .')';
+				if ($currentIp == $lastLoginIp) {
+					$adminhtml .= ' from the same IP address as now, '. htmlspecialchars($lastLoginIp);
+				}
 				
 				if (\ze\module::inc("zenario_geoip_lookup")) {
-					if ($userCountry = \zenario_geoip_lookup::getCountryISOCodeForIp($row['last_login_ip'])) {
-						if (\ze\module::inc("zenario_country_manager")
-							&& ($userCountryName = \zenario_country_manager::getCountryName($userCountry))
-						) {
-							$adminhtml .= ' ('. htmlspecialchars($userCountryName). ')';
+					// Try enhanced location lookup with city information
+					$locationInfo = \zenario_geoip_lookup::getLocationInfoForIp($row['last_login_ip']);
+					$locationString = \zenario_geoip_lookup::formatLocationString($row['last_login_ip'], true, true, true);
+					
+					if ($currentIp == $lastLoginIp) {
+						if (!empty($locationString)) {
+							$adminhtml .= ' ('. htmlspecialchars($locationString). ')';
+						} elseif (!empty($locationInfo['country_code'])) {
+							// Fall back to just country code if formatting failed
+							$adminhtml .= ' ('. htmlspecialchars($locationInfo['country_code']). ')';
 						} else {
-							$adminhtml .= ' ('. htmlspecialchars($userCountry). ')';
+							// Add diagnostic information when GeoIP lookup fails
+							$geoipDiagnostic = '';
+							$dir = CMS_ROOT . "zenario_custom/GeoIP/";
+							$countryFile = $dir . '/GeoLite2-Country.mmdb';
+							$cityFile = $dir . '/GeoLite2-City.mmdb';
+							
+							if (!file_exists($dir) || !is_dir($dir) || !is_readable($dir)) {
+								$geoipDiagnostic = 'GeoIP directory missing or not readable';
+							} elseif (!file_exists($cityFile) && !file_exists($countryFile)) {
+								$geoipDiagnostic = 'No GeoIP database files found (City or Country)';
+							} elseif (!filter_var($lastLoginIp, FILTER_VALIDATE_IP)) {
+								$geoipDiagnostic = 'Invalid IP address format';
+							} elseif (filter_var($lastLoginIp, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+								$geoipDiagnostic = 'Private/local IP address cannot be geolocated';
+							} else {
+								// Check if force_visitor_country is set
+								$forceCountry = \ze::setting('force_visitor_country');
+								if (!empty($forceCountry)) {
+									$geoipDiagnostic = 'Force country setting overrides GeoIP: ' . $forceCountry;
+								} else {
+									// Test the lookup directly for more specific error info
+									try {
+										$testResult = \zenario_geoip_lookup::getCountryISOCodeForIp($row['last_login_ip'], true);
+										if (empty($testResult)) {
+											$geoipDiagnostic = 'GeoIP lookup returned empty result for IP: ' . $lastLoginIp;
+										} else {
+											$geoipDiagnostic = 'GeoIP found: ' . $testResult . ' but display formatting failed';
+										}
+									} catch (Exception $e) {
+										$geoipDiagnostic = 'GeoIP exception: ' . $e->getMessage();
+									}
+								}
+							}
+							
+							$adminhtml .= ' <span style="color: #888;">['. htmlspecialchars($geoipDiagnostic). ']</span>';
 						}
 					}
 				}
+				
 				$adminhtml .= '.';
 
-				$currentIp = \ze\user::ip();
 				if ($currentIp != $lastLoginIp && \ze::setting('warn_when_admin_ip_changed_since_last_login')) {
 					$adminhtml .= '</p>';
 
@@ -2918,25 +2961,62 @@ class welcome {
 					$currentIpString = $currentIp;
 
 					if (\ze\module::inc("zenario_geoip_lookup")) {
-						if ($lastLoginCountry = \zenario_geoip_lookup::getCountryISOCodeForIp($lastLoginIp)) {
-							if (\ze\module::inc("zenario_country_manager")
-								&& ($lastLoginUserCountryName = \zenario_country_manager::getCountryName($lastLoginCountry))
-							) {
-								$lastIpString .= ' ('. htmlspecialchars($lastLoginUserCountryName). ')';
-							} else {
-								$lastIpString .= ' ('. htmlspecialchars($lastLoginCountry). ')';
+						$lastIpStringLookup = '';
+						$currentIpStringLookup = '';
+						
+						// Enhanced location strings for IP change warning
+						$lastLocationString = \zenario_geoip_lookup::formatLocationString($lastLoginIp, true, true, true);
+						$currentLocationString = \zenario_geoip_lookup::formatLocationString($currentIp, true, true, true);
+						
+						$lastLocationLookupReturnedAnError = false;
+						$currentLocationLookupReturnedAnError = false;
+						
+						if (!empty($lastLocationString)) {
+							$lastIpStringLookup .= ' ('. htmlspecialchars($lastLocationString). ')';
+						} else {
+							// Add diagnostic for last login IP
+							$lastLocationLookupReturnedAnError = true;
+							try {
+								$testResult = \zenario_geoip_lookup::getCountryISOCodeForIp($lastLoginIp, true);
+								if (!empty($testResult)) {
+									$lastIpStringLookup .= ' [GeoIP: ' . $testResult . ', but location formatting failed]';
+								} else {
+									$lastIpStringLookup .= ' [GeoIP returned empty for IP]';
+								}
+							} catch (Exception $e) {
+								$lastIpStringLookup .= ' [GeoIP error: ' . $e->getMessage() . ']';
 							}
 						}
 
-						if ($currentLoginCountry = \zenario_geoip_lookup::getCountryISOCodeForIp($currentIp)) {
-							if (\ze\module::inc("zenario_country_manager")
-								&& ($currentLoginUserCountryName = \zenario_country_manager::getCountryName($currentLoginCountry))
-							) {
-								$currentIpString .= ' ('. htmlspecialchars($currentLoginUserCountryName). ')';
-							} else {
-								$currentIpString .= ' ('. htmlspecialchars($currentLoginCountry). ')';
+						if (!empty($currentLocationString)) {
+							$currentIpStringLookup .= ' ('. htmlspecialchars($currentLocationString). ')';
+						} else {
+							// Add diagnostic for current IP
+							$currentLocationLookupReturnedAnError = true;
+							try {
+								$testResult = \zenario_geoip_lookup::getCountryISOCodeForIp($currentIp, true);
+								if (!empty($testResult)) {
+									$currentIpStringLookup .= ' [GeoIP: ' . $testResult . ', but location formatting failed]';
+								} else {
+									$currentIpStringLookup .= ' [GeoIP returned empty for IP]';
+								}
+							} catch (Exception $e) {
+								$currentIpStringLookup .= ' [GeoIP error: ' . $e->getMessage() . ']';
 							}
 						}
+						
+						if (!$lastLocationLookupReturnedAnError && !$currentLocationLookupReturnedAnError) {
+							$currentIpString .= $currentIpStringLookup;
+							$lastIpString .= $lastIpStringLookup;
+						} else {
+							if (($lastLocationLookupReturnedAnError && $currentLocationLookupReturnedAnError) || $currentLocationLookupReturnedAnError) {
+								$currentIpString .= $currentIpStringLookup;
+							} elseif ($lastLocationLookupReturnedAnError) {
+								$lastIpString .= $lastIpStringLookup;
+							}
+						}
+					} else {
+						$currentIpString .= ' [GeoIP module not available]';
 					}
 
 					$adminhtml .= '<p class="warning">' .
@@ -4428,6 +4508,8 @@ class welcome {
 			
 			//Admin must have this permission to view administrator activity warnings
 			if (\ze\priv::check('_PRIV_VIEW_ADMIN')) {
+				
+				$currentAdminIsClient = \ze\admin::isClient();
 			
 				$show_warning = false;
 				$show_error = false;
@@ -4466,7 +4548,11 @@ class welcome {
 					$fields['0/administrator_no_warnings_to_report']['hidden'] = true;
 					
 					$days = \ze\admin::getDaysBeforeAdminsAreInactive();
-					$fields['0/administrators_active']['snippet']['html'] = \ze\admin::phrase('No administrator has been inactive for over [[count]] days.', ['count' => $days]);
+					if ($currentAdminIsClient) {
+						$fields['0/administrators_active']['snippet']['html'] = \ze\admin::phrase('No client administrator has been inactive for over [[count]] days.', ['count' => $days]);
+					} else {
+						$fields['0/administrators_active']['snippet']['html'] = \ze\admin::phrase('No administrator has been inactive for over [[count]] days.', ['count' => $days]);
+					}
 					
 					//Inactive admin count logic
 					$inactiveAdminCount = 0;
@@ -4474,7 +4560,15 @@ class welcome {
 						SELECT id, username, first_name, last_name, last_login, created_date, authtype
 						FROM ' . DB_PREFIX . 'admins
 						WHERE authtype = \'local\'
-						  AND `status` = \'active\'
+						  AND `status` = \'active\'';
+					
+					//Clients should only see warnings about other clients
+					if ($currentAdminIsClient) {
+						$sql .= '
+						  AND is_client_account = 1';
+					}
+					
+					$sql .= '
 						ORDER BY last_login';
 					$result = \ze\sql::select($sql);
 					
@@ -4533,7 +4627,15 @@ class welcome {
 						SELECT id, username, first_name, last_name, authtype, failed_login_count_since_last_successful_login
 						FROM ' . DB_PREFIX . 'admins
 						WHERE `status` = \'active\'
-						AND `id` != ' . \ze\admin::id() . '
+						AND `id` != '. (int) \ze\admin::id();
+					
+					//Clients should only see warnings about other clients
+					if ($currentAdminIsClient) {
+						$sql .= '
+						  AND is_client_account = 1';
+					}
+					
+					$sql .= '
 						ORDER BY last_login';
 					$result = \ze\sql::select($sql);
 					
@@ -4595,6 +4697,7 @@ class welcome {
 				$fields['0/administrator_inactive_5']['hidden'] = 
 				$fields['0/administrator_more_inactive']['hidden'] =
 				$fields['0/administrators_active']['hidden'] =
+				$fields['0/administrator_no_warnings_to_report']['hidden'] =
 				$fields['0/administrator_with_3_or_more_failed_logins_1']['hidden'] = 
 				$fields['0/administrator_with_3_or_more_failed_logins_2']['hidden'] = 
 				$fields['0/administrator_with_3_or_more_failed_logins_3']['hidden'] = 

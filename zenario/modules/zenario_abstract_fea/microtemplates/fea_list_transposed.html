@@ -10,6 +10,8 @@
 
 
 <div class="{{m.lib.wrapperClassName()|e}} fea_transposed_list">
+	<% m._position = 'zfea_at_top'; %>
+	
 	{{m.tuix.header_html}}
 	
 	{{m.lib.pMicroTemplate('title', m)}}
@@ -25,13 +27,13 @@
 		<% } %>
 	</div>
 	
-	<% var ci, col, chi, child, bi, button, oi, log, logName, gi, lg, lgName, ii, item, tag, showParent, headerId = false, firstItem = true; %>
+	<% var ci, col, bi, button, oi, log, logName, gi, lg, lgName, ii, item, tag, showParent, headerId = false, firstItem = true; %>
 	
 	{{m.lib.pMicroTemplate("list_search_and_sort", m)}}
 	
-	<% if (m.tuix.item_count_message && m.tuix.__item_count__ > 1) { %>
+	<% if (m.tuix.item_count_message && m.tuix._cms_itemCount > 1) { %>
 		<div class="item_count">
-			<p>{{m.tuix.item_count_message.replace("[[count]]", m.tuix.__item_count__)|e}}</p> 
+			<p>{{m.tuix.item_count_message.replace("[[count]]", m.tuix._cms_itemCount)|e}}</p> 
 		</div>
 	<% } %>
 	
@@ -123,52 +125,7 @@
 								<% } %>
 							"
 						>
-							<div
-								class="
-									col_value col_value_for__{{col.id|e}}
-									
-									<% if (col.show_value_in_tooltip) { %>
-										col_value_in_tooltip
-									<% } %>
-									
-									<% if (item.cell_css_classes && item.cell_css_classes[col.id]) { %>
-										{{item.cell_css_classes[col.id]|e}}
-									<% } %>
-								" 
-								<% if (item.cell_tooltip && item.cell_tooltip[col.id]) { %>
-									title="{{item.cell_tooltip[col.id]|e}}"
-								<% } else if (col.show_value_in_tooltip) { %>
-									title="{{m.lib.pMicroTemplate('list_cell', {col: col, item: item})|e}}"
-								<% } %>
-							>
-								{{m.lib.pMicroTemplate('list_cell', {col: col, item: item})}}
-								
-								<% if (col.children) { %>
-									<% foreach (col.children as chi => child) { %>
-										<% if (m.lib.columnVisibleForItem(child.id, item.id)) { %>
-											</div>
-											<div
-												class="
-													col_child_value  col_value_for__{{child.id|e}}
-													
-													<% if (child.show_value_in_tooltip) { %>
-														col_value_in_tooltip
-													<% } %>
-												"
-												
-												<% if (child.show_value_in_tooltip) { %>
-													title="{{m.lib.pMicroTemplate('list_cell', {col: child, item: item})|e}}"
-												<% } %>
-											>
-												<% if (child.title) { %>
-													<label>{{child.title|e}}</label>
-												<% } %>
-			
-												{{m.lib.pMicroTemplate('list_cell', {col: child, item: item})}}
-										<% } %>
-									<% } %>
-								<% } %>
-							</div>
+							{{m.lib.pMicroTemplate('list_parent_cell', {col: col, item: item})}}
 						</td>
 					<% } %>
 				</tr>
@@ -177,8 +134,7 @@
 		</table>
 		</div>
 	<% } %>
-	
-	{{m.lib.pMicroTemplate("list_pagination", m)}}
+	<% m._position = 'zfea_at_bottom'; %>
 	
 	<% if (zenarioT.find(m.thus.sortedCollectionButtons, "bottom")) { %>
 		<div class="zfea_buttons zfea_bottom_buttons">

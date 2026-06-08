@@ -107,6 +107,19 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
                 $panel['no_items_in_search_message'] = \ze\admin::phrase('No plugins match your search');
 		}
 		
+		//Remove the export/import buttons in situations where we don't handle them
+		if ($refinerName) {
+			switch ($refinerName) {
+				case 'plugin':
+				case 'nests':
+				case 'slideshows':
+					break;
+				
+				default:
+					unset($panel['collection_buttons']['import'], $panel['item_buttons']['export'], $panel['item_buttons']['import_overwrite']);
+			}
+		}
+		
 		//Set specific titles for some refiners
 		$mrg = [];
 		switch ($refinerName) {
@@ -205,7 +218,6 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			$key = [
 				'status' => 'module_running',
 				'is_pluggable' => 1,
-				'nestable' => ['!' => 2],
 				'class_name' => $classNames
 			];
 			
@@ -213,16 +225,22 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$key['id'] = explode(',', $panel['key']['moduleIds']);
 			}
 			
-			$modules = ze\row::getValues('modules', 'display_name', $key, $orderBy);
+			$modules = ze\row::getValues('modules', ['into_content_items', 'into_layouts', 'display_name'], $key, $orderBy);
 			
 			//Automatically create drop-down menus for quickly adding plugins
 			$ord = 222;
-			foreach ($modules as $moduleId => $name) {
+			foreach ($modules as $moduleId => $module) {
+				
+				if (!$module['into_content_items']
+				 && !$module['into_layouts']) {
+					continue;
+				}
+				
 				$panel['collection_buttons']['create_plugin_'. $moduleId] =
 					[
 						'ord' => ++$ord,
 						'parent' => 'create_dropdown',
-						'label' => $name,
+						'label' => $module['display_name'],
 						'admin_box' => [
 							//'class_name' => $c,
 							'path' => 'plugin_settings',
@@ -244,7 +262,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		#	//If this is the first load, and something was selected,
 		#	//work out which module that was and start the filter set to that!
 		#	if ($moduleIdFilter === null
-		#	 && ($instanceId = (int) ze::request('_item'))
+		#	 && ($instanceId = (int) ze::request('_cms_selectedID'))
 		#	 && ($moduleId = ze\row::get('plugin_instances', 'module_id', $instanceId))) {
 		#		zenario_organizer::setFilterValue('module_id', $moduleIdFilter = $moduleId);
 		#	}
@@ -336,7 +354,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			}
 			
 			
-			if ($moduleNotRunning || $moduleMissing || $module['nestable_only']) {
+			if ($moduleNotRunning || $moduleMissing || !($module['into_content_items'] || $module['into_layouts'])) {
 				
 				if ($moduleNotRunning) {
 					$panel['notice'] = [
@@ -352,7 +370,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 						'type' => 'error'
 					];
 			
-				} elseif ($module['nestable_only']) {
+				} elseif (!($module['into_content_items'] || $module['into_layouts'])) {
 					$panel['notice'] = [
 						'show' => true,
 						'message' => ze\admin::phrase('The module [[display_name]] can only make plugins directly in a nest or slideshow.', $module),
@@ -394,7 +412,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				ze\admin::phrase('Nests or slideshows containing plugins of module "[[name]]"', $mrg);
 			$panel['no_items_message'] = \ze\admin::phrase('There are no nests or slideshows containing plugins of module "[[name]]"', $mrg);
 			
-			if ($module['nestable_only']) {
+			if (!($module['into_content_items'] || $module['into_layouts'])) {
 				$panel['notice'] = [
 					'show' => true,
 					'message' => ze\admin::phrase('The [[display_name]] module can only make plugins directly in a nest or slideshow.', $module),
@@ -548,6 +566,29 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		}
 	}
 	
+	
+	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
+		
+		//Offer a .yaml.gz file for download, containing all of the plugin settings and
+		//rows from other plugin-related tables.
+		if (ze::post('export')
+		 && ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')
+		 && ($filepath = \ze\data::exportPlugin($ids))) {
+				
+			//Offer file as download
+			header('Content-Type: application/x-gzip');
+			header('Content-Disposition: attachment; filename="'. ze\file::validName(ze\plugin::name($ids)). '.yaml.gz"');
+			header('Content-Length: '. filesize($filepath));
+			readfile($filepath);
+			
+			//Remove file from temp directory
+			@unlink($filepath);
+			exit;
+		}
+		
+	}
+	
+	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__library/panels/plugins') return;
 		
@@ -555,10 +596,42 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\pluginAdm::delete($id);
 			}
-		}
-	}
-	
-	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		
+		
+		//Given a .yaml.gz file creating using the export in the organizerPanelDownload() method above,
+		//import it in as a new plugin to the library.
+		} elseif (ze::post('import') && ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+			
+			ze\fileAdm::exitIfUploadError(true, false, false, 'Filedata');
+			
+			if (!$refinerName) {
+				return ze\data::importPlugin($_FILES['Filedata']['tmp_name'], ze\module::className($refinerId));
+			
+			} else {
+				switch ($refinerName) {
+					case 'plugin':
+						return ze\data::importPlugin($_FILES['Filedata']['tmp_name'], 'plugin');
+					
+					case 'nests':
+						return ze\data::importPlugin($_FILES['Filedata']['tmp_name'], 'nest');
+					
+					case 'slideshows':
+						return ze\data::importPlugin($_FILES['Filedata']['tmp_name'], 'slideshow');
+				}
+			}
+		
+		
+		//Given a .yaml.gz file creating using the export in the organizerPanelDownload() method above,
+		//use it to overwrite the settings of an existing plugin.
+		} elseif (ze::post('import_overwrite') && ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN') && $ids) {
+			
+			ze\fileAdm::exitIfUploadError(true, false, false, 'Filedata');
+			
+			if (!$plugin = ze\row::get('plugin_instances', ['module_id'], $ids)) {
+				exit;
+			}
+			
+			ze\data::importPlugin($_FILES['Filedata']['tmp_name'], ze\module::className($plugin['module_id']), $ids);
+		}
 	}
 }

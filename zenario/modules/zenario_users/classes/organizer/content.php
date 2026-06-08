@@ -34,7 +34,7 @@ class zenario_users__organizer__content extends zenario_users {
 		
 		foreach ($panel['items'] as $id => &$item) {
 			if ($periodToDeleteTheUserContentAccessLog != 0 && !ze::in($item['privacy'], 'public', 'logged_out')) {
-				$item['traits']['log_access'] = true;
+				$item['log_access'] = true;
 			}
 		}
 		

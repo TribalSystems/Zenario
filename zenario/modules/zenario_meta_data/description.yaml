@@ -8,11 +8,9 @@ license_info: 'Modified BSD License'
 display_name: Metadata
 description: |
             <p>
-                Displays the Zenario metadata of the current content riItem to a visitor.
-            </p>
-            <p>You can use this module to display any or all of the following fields on a page:
+            Displays the metadata of the current content item, such as:
                 <ul>
-                    <li>Title</li>
+                    <li>Browser title</li>
                     <li>Release date</li>
                     <li>Categories</li>
                     <li>Description</li>
@@ -20,7 +18,7 @@ description: |
                     <li>Keywords</li>
                     <li>Language</li>
                     <li>Language code</li>
-                    <li>Feature image</li>
+                    <li>Featured image</li>
                     <li>Writer name</li>
                     <li>Writer image</li>
                     </ul>
@@ -43,6 +41,12 @@ vlp_class_name: zenario_meta_data
 css_class_name: zenario_meta_data
 is_pluggable: true
 can_be_version_controlled: false
-nestable: true
+can_be_plugged_into:
+    content_items: false
+    layouts: true
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 default_framework: standard
-default_instance_name: Metadata for content item
+default_instance_name: Content Item Metadata

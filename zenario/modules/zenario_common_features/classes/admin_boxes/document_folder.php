@@ -35,11 +35,17 @@ class zenario_common_features__admin_boxes__document_folder extends ze\moduleBas
 			$parentFolderDetails = 
 				ze\row::get(
 					'documents',
-					['folder_name'], $box['key']['id']);
+					['folder_name', 'created', 'created_admin_id', 'created_user_id', 'created_username', 'last_edited', 'last_edited_admin_id', 'last_edited_user_id', 'last_edited_username'],
+					$box['key']['id']
+				);
 			$box['title'] = ze\admin::phrase('Create a subfolder inside "[[folder_name]]".', $parentFolderDetails);
-		} elseif ($folderDetails = ze\row::get('documents', ['folder_name'], $box['key']['id'])) {
+		} elseif ($folderDetails = ze\row::get('documents', ['folder_name', 'created', 'created_admin_id', 'created_user_id', 'created_username', 'last_edited', 'last_edited_admin_id', 'last_edited_user_id', 'last_edited_username'], $box['key']['id'])) {
+			//This whole "else" statement looks obsolete. It may need to be removed.
+			
 			$values['details/folder_name'] = $folderDetails['folder_name'];
 			$box['title'] = ze\admin::phrase('Editing folder "[[folder_name]]".', $folderDetails);
+			
+			$box['last_updated'] = ze\admin::formatLastUpdated($folderDetails);
 		}
 	}
 
@@ -60,7 +66,7 @@ class zenario_common_features__admin_boxes__document_folder extends ze\moduleBas
 			if ($folderNameSaved){
 				$box['tabs']['details']['errors'][] = ze\admin::phrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', ['folder_name' => $values['details/folder_name']]);
 			}
-		}else{
+		} else {
 			//create a subfolder
 			$subFolderNameSaved=ze\row::get('documents', 'folder_name', ['folder_name' => $values['details/folder_name'], 'type' => 'folder','folder_id' => $folderId]);
 			//$folderParentName=ze\row::get('documents', 'folder_name', ['type' => 'folder','id' => $folderId]);
@@ -73,25 +79,38 @@ class zenario_common_features__admin_boxes__document_folder extends ze\moduleBas
 	
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		$row = [];
+		
 		if (isset($box['key']['add_folder']) && $box['key']['add_folder']) {
-			$box['key']['id'] = ze\document::createFolder($values['details/folder_name'], $box['key']['id']);
+			$box['key']['id'] = ze\document::createFolder($values['details/folder_name'], $adminFacing = true, $box['key']['id']);
 		} else {
-			if($box['key']['id']) {
+			$lastUpdated = [];
+			ze\admin::setLastUpdated($lastUpdated, !$box['key']['id']);
+			
+			if ($box['key']['id']) {
+				$row['last_edited'] = $lastUpdated['last_edited'];
+				$row['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
+				$row['last_edited_user_id'] = $lastUpdated['last_edited_user_id'];
+				$row['last_edited_username'] = $lastUpdated['last_edited_username'];
+				
 				ze\row::update(
 					'documents',
 					[
 						'type' => 'folder',
-						'folder_name' => $values['details/folder_name']],
+						'folder_name' => $values['details/folder_name']
+					],
 					$box['key']['id']);
 			} else {
-				$box['key']['id'] = ze\document::createFolder($values['details/folder_name']);
+				$box['key']['id'] = ze\document::createFolder($values['details/folder_name'], $adminFacing = true);
 			}
 		}
+		
+		ze\row::update('documents', $row, ['id' => $box['key']['id']]);
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		// Handle "Save and Create Another" functionality
-		if (!empty($_POST['_save_and_continue'])) {
+		if (!empty($_POST['_cms_isSaveAndContinue'])) {
 			// Clear the folder name field for creating another folder
 			$values['details/folder_name'] = '';
 			

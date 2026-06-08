@@ -381,7 +381,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				
 				//Get record count for fields on first tab. Other tab fields are loaded as their tab is clicked
 				if (($tabCount == 1) && $field['db_column']) {
-					$fieldProperties['record_count'] = (int)ze\dataset::countDatasetFieldRecords($field['id']);
+					$fieldProperties['record_count'] = ze\dataset::countDatasetFieldRecords($field['id']) ?: 0;
 				}
 				
 				//Add LOV for multi value field types
@@ -572,7 +572,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 						$values['ord'] = $pageIndex + 1;
 					}
 					//Update page data
-					if (isset($page['_changed']) || isset($page['_new'])) {
+					if (isset($page['_cms_changed']) || isset($page['_new'])) {
 						$values = array_merge($values, $this->getDatasetPageOptions($page, $existingPage, $fields, $tempFieldIdLink));
 					}
 					if ($values) {
@@ -664,11 +664,19 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				foreach ($deletedValues as $valueId) {
 					ze\row::delete('custom_dataset_field_values', $valueId);
 				}
+				
 				//Delete fields
 				foreach ($deletedFields as $fieldId) {
 					if (isset($existingFields[$fieldId])) {
+						//If the deleted field is a group, delete it from group links table (perms for content items and slides)
+						$type = ze\row::get('custom_dataset_fields', 'type', ['dataset_id' => $dataset['id'], 'id' => $fieldId]);
 						ze\row::update('custom_dataset_fields', ['protected' => false], $fieldId);
 						ze\datasetAdm::deleteField($fieldId);
+						
+						if ($type == 'group') {
+							//If this group was part of any content item or slide permissions, delete the association.
+							ze\row::delete('group_link', ['link_to' => 'group', 'link_to_id' => $fieldId]);
+						}
 					}
 				}
 				//Delete tabs
@@ -723,7 +731,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					$fieldsResult = ze\row::query('custom_dataset_fields', ['id', 'db_column'], ['dataset_id' => $datasetId, 'tab_name' => $tabId]);
 					while ($field = ze\sql::fetchAssoc($fieldsResult)) {
 						if ($field['db_column']) {
-							$recordCounts[$field['id']] = (int)ze\dataset::countDatasetFieldRecords($field['id']);
+							$recordCounts[$field['id']] = ze\dataset::countDatasetFieldRecords($field['id']) ?: 0;
 						}
 					}
 				}
@@ -810,7 +818,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		$values = [];
 	
 		//Do not allow other_system_fields to be edited other than ordinal
-		if ((isset($field['_changed']) || isset($field['_new'])) && (!$existingField || $existingField['type'] != 'other_system_field')) {
+		if ((isset($field['_cms_changed']) || isset($field['_new'])) && (!$existingField || $existingField['type'] != 'other_system_field')) {
 			if (empty($existingField['is_system_field'])) {
 				// Check permission required to change protected status
 				if (ze\priv::check('_PRIV_PROTECT_UNPROTECT_DATASET_FIELD')) {

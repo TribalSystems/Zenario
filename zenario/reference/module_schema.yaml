@@ -31,9 +31,9 @@ properties:
             The display name of the module, which will be shown to administrators.
     required_cms_version:
         type: string
-        default: "(The current version of the CMS)"
+        default: "(The current version of Zenario)"
         description: >
-            The version number of the CMS that your module requires to run, e.g. 7.0.0
+            The version number of Zenario that your module requires to run, e.g. 7.0.0
     author_name:
         type: string
         description: >
@@ -54,6 +54,7 @@ properties:
         description: >
             A comma-separated list of keywords that an administrator can search for in the modules
             panel in organizer.
+    
     is_pluggable:
         type: boolean
         description: >
@@ -67,6 +68,57 @@ properties:
         type: boolean
         description: >
             If your module is pluggable, and your plugins need to be on a private page, then set this property.
+    can_be_plugged_into:
+        type: object
+        description: >
+            If your module is pluggable, this lets you set specifically where it can be used.
+        properties:
+            content_items:
+                type: boolean
+                description: >
+                    Set this to allow plugins from your module to be placed in slots on the item level.
+            layouts:
+                type: boolean
+                description: >
+                    Set this to allow plugins from your module to be placed in slots on the layout or site-wide level.
+            regular_nests:
+                type: boolean
+                description: >
+                    Set this to allow plugins from your module to be placed in regular nests.
+                    Plugins such as forms that use form submissions should not have this property set.
+            slideshows:
+                type: boolean
+                description: >
+                    Set this to allow plugins from your module to be placed in regular sideshows.
+                    Plugins such as forms that use form submissions should not have this property set.
+            ajax_nests_without_conductor:
+                type: boolean
+                description: >
+                    Set this to allow plugins from your module to be placed in AJAX nests that do not use conductors.
+            ajax_nests_with_conductor:
+                type: boolean
+                description: >
+                    Set this to allow plugins from your module to be placed in a conductor-driven Ajax nest.
+    rarely_used:
+        type: boolean
+        description: >
+            Set this property to flag that plugins from your module will be rarely used.
+            (This has no functional change, it just affects the UI in admin mode.)
+    nestable:
+        type: boolean
+        description: >
+            Deprecated option for setting where plugins from your module can be placed.
+            Still supported for backwards compatibility reasons.
+            Setting this is the same as setting all of the "can_be_plugged_into" options
+            to true.
+    nestable_only:
+        type: boolean
+        description: >
+            Deprecated option for setting where plugins from your module can be placed.
+            Still supported for backwards compatibility reasons.
+            Setting this is the same as setting all of the "can_be_plugged_into" options
+            except for "slots" to true.
+    
     is_abstract:
         type: boolean
         description: >
@@ -108,10 +160,17 @@ properties:
             in PHP, you should set this to false for a faster load time.
         
             If you don't specify this property, or don't write a <code>description.yaml</code> file for your
-            module, then the CMS will take an intelligent guess based on whether you have
+            module, then Zenario will take an intelligent guess based on whether you have
             the <code>fillOrganizerNav()</code> function in your module_code.php.
             
             You can use this from version 7.2 onwards.
+    adds_sitewide_html:
+        type: boolean
+        description: >
+            If you set this property, Organizer will call your module's addToSitewidePageHead(),
+            addToSitewidePageBody() and addToSitewidePageFoot() methods on every page view.
+            
+            You can use this from version 10.4 onwards.
     default_instance_name:
         type: string
         default: "(Your module's class name)"
@@ -125,22 +184,6 @@ properties:
             version-controlled  plugins.
             (If you don't set this property, it will only be able to generate library
             plugins.)
-    nestable:
-        type: boolean
-        description: >
-            If your module is pluggable, setting this property will allow its plugins to be
-            inserted in a nest.
-        
-            (Most modules can, but if you find that your module is unstable when nested,
-             or if your module uses the <code>showInFloatingBox()</code> init function,
-             or nesting is just counterintuitive to what your module does,
-             then you should not set this property.)
-    nestable_only:
-        type: boolean
-        description: >
-            Set this property if the plugins from your module should ONLY work when in a nest.
-            
-            You can use this from version 7.3 onwards.
     vlp_class_name:
         type: string
         default: "(Your module's class name)"
@@ -281,7 +324,7 @@ properties:
                     description: >
                         The path to the background script you wish to run.
                         
-                        The CMS root directory will automatically be added to the start, and anything you
+                        Zenario root directory will automatically be added to the start, and anything you
                         type will be automatically shell-escaped.
     
     jobs:
@@ -406,7 +449,7 @@ properties:
                 default_template_name:
                     type: string
                     description: >
-                        The CMS will automatically create a new layout for your content type when
+                        Zenario will automatically create a new layout for your content type when
                         it is installed on a site, with this name.
                         
                         If your module has the <code>is_pluggable</code> property set, a library plugin
@@ -664,7 +707,7 @@ properties:
                         
                         When creating a path, this list is the name of the modes that the path can go FROM.
                         
-                        If not specified, the CMS will assume that it can be used from mode,
+                        If not specified, Zenario will assume that it can be used from mode,
                         or that your plugin does not use different modes.
                 
                 request_vars:

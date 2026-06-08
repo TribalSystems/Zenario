@@ -11,9 +11,9 @@ description: >
 keywords: ""
 is_pluggable: false
 fill_organizer_nav: '[[HAS_FILLORGANIZERNAV_FUNCTION]]'
+adds_sitewide_html: false
 can_be_version_controlled: false
 for_use_in_twig: false
-nestable: false
 vlp_class_name: '[[MODULE_DIRECTORY_NAME]]'
 css_class_name: '[[MODULE_DIRECTORY_NAME]]'
 default_framework: ""

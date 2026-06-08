@@ -160,14 +160,24 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 			$values['settings/detect_lang_codes'] = $box['key']['id'];
 		}
 		
-		$fields['settings/show_untranslated_content_items']['label'] =
-			ze\admin::phrase('When showing menus and banners plugins on pages in [[settings/english_name]]:', $values);
-		$fields['settings/show_untranslated_content_items']['values'][0]['label'] =
-			ze\admin::phrase('Hide the link when the [[settings/english_name]] page does not exist (not recommended)', $values);
-		$fields['settings/show_untranslated_content_items']['values'][1]['label'] =
-			ze\admin::phrase('Show the link, but link to the [[dummy/default_name]] page when no [[settings/english_name]] page exists (recommended)', $values);
-		$fields['settings/show_untranslated_content_items']['values'][1]['note_below'] =
-			ze\admin::phrase('Whenever a visitor clicks a link to page that doesn\'t exist in [[settings/english_name]], Zenario adds a <code>visLang=[[settings/flag_filename]]</code> parameter to the URL to remember the visitor\'s preference for [[settings/english_name]].', $values);
+		
+		//The "show_untranslated_content_items" option should not be shown:
+			//If you're editing the default language.
+			//If no languages have been created yet and you're running the first one (which will then become the default language).
+		if (!ze::$defaultLang || ze::$defaultLang == $box['key']['id']) {
+			$values['settings/show_untranslated_content_items'] = 0;
+			$fields['settings/show_untranslated_content_items']['hidden'] = true;
+		
+		} else {
+			$fields['settings/show_untranslated_content_items']['label'] =
+				ze\admin::phrase('When showing menus and banners plugins on pages in [[settings/english_name]]:', $values);
+			$fields['settings/show_untranslated_content_items']['values'][0]['label'] =
+				ze\admin::phrase('Hide the link when the [[settings/english_name]] page does not exist (not recommended)', $values);
+			$fields['settings/show_untranslated_content_items']['values'][1]['label'] =
+				ze\admin::phrase('Show the link, but link to the [[dummy/default_name]] page when no [[settings/english_name]] page exists (recommended)', $values);
+			$fields['settings/show_untranslated_content_items']['values'][1]['note_below'] =
+				ze\admin::phrase('Whenever a visitor clicks a link to page that doesn\'t exist in [[settings/english_name]], Zenario adds a <code>visLang=[[settings/flag_filename]]</code> parameter to the URL to remember the visitor\'s preference for [[settings/english_name]].', $values);
+		}
 	}
 	
 	protected function lookupLangPhrase($code, $langId) {

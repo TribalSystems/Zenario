@@ -150,12 +150,6 @@ plugin_settings:
                         30:
                             label: 30
                     value: 12
-                pagination_style_threads:
-                    plugin_setting:
-                        name: pagination_style_threads
-                    label: 'Pagination style for threads:'
-                    type: select
-                    value: zenario_common_features::pagCloseWithNPIfNeeded
                 page_size_posts:
                     plugin_setting:
                         name: page_size_posts
@@ -175,12 +169,6 @@ plugin_settings:
                         50:
                             label: 50
                     value: 12
-                pagination_style_posts:
-                    plugin_setting:
-                        name: pagination_style_posts
-                    label: 'Pagination style for posts:'
-                    type: select
-                    value: zenario_common_features::pagCloseWithNPIfNeeded
         posting:
             label: Editing
             fields:

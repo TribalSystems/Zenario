@@ -8,11 +8,19 @@
 	<% if (m.separator_after_this) { %>
 		zenario_separator_after_this
 	<% } %>
+	<% if (m.new_window) { %>
+		zenario_nav_link_new_window
+	<% } %>
 ">
 	<div class="organizer_legend {{m.selected? 'legend_on' : ''|escape}}">
 		<a title="{{m.tooltip|escape}}"
 			href="{{m.href|escape}}"
-			onclick="{{m.onclick|escape}}">
+			onclick="{{m.onclick|escape}}"
+			
+			<% if (m.new_window) { %>
+				target="_blank"
+			<% } %>
+		>
 				<span>{{m.label|escape}}</span>
 		</a>
 	</div>

@@ -23,8 +23,7 @@ echo
 <head>
 	<title>',  ze\admin::phrase('Gridmaker'), '</title>';
 
-$prefix = '../../';
-ze\content::pageHead($prefix);
+ze\content::pageHead($scriptPrefix = '../../', $scriptMode = 'other');
 
 
 ze\skinAdm::checkForChangesInFiles($runInProductionMode = true);
@@ -35,7 +34,7 @@ echo '
 
 
 echo '</head>';
-ze\content::pageBody();
+ze\content::pageBody($scriptPrefix, $scriptMode);
 
 
 ?>
@@ -43,7 +42,7 @@ ze\content::pageBody();
 
  
 <?php
-ze\content::pageFoot($prefix, false, false, false);
+ze\content::pageFoot($scriptPrefix, $scriptMode, false, false);
 
 echo '
 <script type="text/javascript" src="../../js/admin_grid_maker.min.js?v=', $v, '"></script>';

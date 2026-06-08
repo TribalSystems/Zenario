@@ -13,5 +13,12 @@ keywords: 'project'
 dependencies:
     zenario_project_locations: 'Yes'
 can_be_version_controlled: false
-nestable: true
+is_pluggable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: false
+    regular_nests: true
+    slideshows: false
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: false
 default_framework: standard

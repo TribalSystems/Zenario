@@ -11,6 +11,7 @@ zenario_content_privacy:
         id_is_menu_node_id: false
         privacy_settings_on_load: {}
         menu_node_id: ''
+        groups_exist: true
     identifier:
         css_class: content_draft
         label: Content item ID
@@ -88,9 +89,12 @@ zenario_content_privacy:
                         zenarioAB.valueIs: privacy, group_members
                     type: checkboxes
                     no_values_message: No groups found
-                    validation:
-                        required_if_not_hidden: Please select a group.
                     format_onchange: true
+                    notices_below:
+                        no_group_selected:
+                            type: warning
+                            message: 'Item is shared to no groups; this disallows all user access'
+                            visible_if: zenarioAB.value('privacy') == 'group_members' && (!zenarioAB.value('group_ids') || !zenarioAB.tuix.key.groups_exist)
                 smart_group_id:
                     grouping: privacy_grouping_right
                     #If no smart groups are defined, this field will not be displayed.

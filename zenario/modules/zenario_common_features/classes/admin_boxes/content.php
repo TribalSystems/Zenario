@@ -563,7 +563,13 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					
 				}
 				
-				$box['identifier']['css_class'] = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
+				$box['identifier']['css_class'] =
+					ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
+				$box['identifier']['frontend_link'] =
+					ze\link::toItemWithAlias(
+						$content['id'], $content['type'], false, '', $content['alias'],
+						$content['equiv_id'], $content['language_id']
+					);
 				
 				self::unsetOriginalContentItemFields($box);
 			}
@@ -631,14 +637,25 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					
 					if (ze::setting('sitemap_enabled')) {
 						$phrase = '';
+						$replace = [];
 						
 						$contentEquivId = ze\content::equivId($content['id'], $content['type']);
 						$privacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $contentEquivId, 'type' => $content['type']]);
 						$excludedFromSitemap = $values['meta_data/exclude_from_sitemap'];
 						$noindexMetaTagApplied = $values['meta_data/apply_noindex_meta_tag'];
 						
-						if (ze::in(ze\content::isSpecialPage($box['key']['source_cID'], $box['key']['cType']), 'zenario_not_found', 'zenario_no_access')) {
-							$phrase = 'Automatically excluded (is the not-found or no-access special page)';
+						if (ze::in(
+							($specialPageType = ze\content::isSpecialPage($box['key']['source_cID'], $box['key']['cType'])),
+							'zenario_not_found', 'zenario_no_access', 'zenario_logout', 'zenario_change_email', 'zenario_change_password', 'zenario_password_reset', 'zenario_profile'
+							)
+						) {
+							$specialPageType = str_replace('zenario_', '', $specialPageType);
+							$specialPageType = str_replace('_', '-', $specialPageType);
+							
+							$phrase = 'Automatically excluded (is the [[special_page_type]] special page)';
+							$replace['special_page_type'] = $specialPageType;
+						} elseif (($status = ze\content::status($box['key']['source_cID'], $box['key']['cType'])) && $status != 'published' && $status != 'published_with_draft' && $status != 'first_draft') {
+							$phrase = 'Automatically excluded (content item is published unlisted, hidden or trashed)';
 						} elseif ($privacy == 'public') {
 							if ($excludedFromSitemap) {
 								$phrase = 'Excluded (manual override)';
@@ -653,7 +670,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 							$phrase = 'Automatically excluded (permission is not public)';
 						}
 						
-						$values['meta_data/sitemap_original'] = ze\admin::phrase($phrase);
+						$values['meta_data/sitemap_original'] = ze\admin::phrase($phrase, $replace);
 					} else {
 						$values['meta_data/sitemap_original'] = $values['meta_data/sitemap_disabled'];
 					}
@@ -1518,16 +1535,29 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 		if (
 			($box['key']['cID'] || ($box['key']['translate'] && $box['key']['source_cID']))
-		 	&& ze::in(ze\content::isSpecialPage($cIDToCheck, $box['key']['cType']), 'zenario_not_found', 'zenario_no_access')
+		 	&& ze::in(
+		 		($specialPageType = ze\content::isSpecialPage($cIDToCheck, $box['key']['cType'])),
+		 		'zenario_not_found', 'zenario_no_access', 'zenario_logout', 'zenario_change_email', 'zenario_change_password', 'zenario_password_reset', 'zenario_profile'
+		 	)
 		 ) {
 			
 			//Hide these options for the 403/404 pages
 			$fields['meta_data/excluded_from_sitemap']['hidden'] = false;
 			$fields['meta_data/included_in_sitemap']['hidden'] = true;
 			
-			$fields['meta_data/excluded_from_sitemap']['value'] = ze\admin::phrase('Automatically excluded (is the not-found or no-access special page)');
+			$specialPageType = str_replace('zenario_', '', $specialPageType);
+			$specialPageType = str_replace('_', '-', $specialPageType);
+			$fields['meta_data/excluded_from_sitemap']['value'] = ze\admin::phrase('Automatically excluded (is the [[special_page_type]] special page)', ['special_page_type' => $specialPageType]);
 		} else {
-			$fields['meta_data/excluded_from_sitemap']['value'] = ze\admin::phrase('Automatically excluded (permission is not public)');
+			$status = ze\content::status($cIDToCheck, $box['key']['cType']);
+			if ($box['key']['cID'] && $status != 'published' && $status != 'published_with_draft' && $status != 'first_draft') {
+				$fields['meta_data/excluded_from_sitemap']['hidden'] = false;
+				$fields['meta_data/included_in_sitemap']['hidden'] = true;
+				
+				$fields['meta_data/excluded_from_sitemap']['value'] = ze\admin::phrase('Automatically excluded (content item is published unlisted, hidden or trashed)');
+			} else {
+				$fields['meta_data/excluded_from_sitemap']['value'] = ze\admin::phrase('Automatically excluded (permission is not public)');
+			}
 		}
 		
 		$fields['meta_data/apply_noindex_meta_tag']['note_below'] = ze\admin::phrase(

@@ -1,0 +1,38 @@
+<% var chi, child, col = m.col, item = m.item; %>
+
+<% if (col.children) { %>
+	<% foreach (col.children as chi => child) { %>
+		<% if (child.ord < col.ord) { %>
+			{{m.lib.pMicroTemplate('list_child_cell', {col: child, item: item})}}
+		<% } %>
+	<% } %>
+<% } %>
+
+<div
+	class="
+		col_value col_value_for__{{col.id|e}}
+		
+		<% if (col.show_value_in_tooltip) { %>
+			col_value_in_tooltip
+		<% } %>
+
+		<% if (item.cell_css_classes && item.cell_css_classes[col.id]) { %>
+			{{item.cell_css_classes[col.id]|e}}
+		<% } %>
+	"
+	<% if (item.cell_tooltip && item.cell_tooltip[col.id]) { %>
+		title="{{item.cell_tooltip[col.id]|e}}"
+	<% } else if (col.show_value_in_tooltip) { %>
+		title="{{m.lib.pMicroTemplate('list_cell', m)|e}}"
+	<% } %>
+>
+	{{m.lib.pMicroTemplate('list_cell', m)}}
+</div>
+
+<% if (col.children) { %>
+	<% foreach (col.children as chi => child) { %>
+		<% if (child.ord >= col.ord) { %>
+			{{m.lib.pMicroTemplate('list_child_cell', {col: child, item: item})}}
+		<% } %>
+	<% } %>
+<% } %>

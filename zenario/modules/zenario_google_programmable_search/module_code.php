@@ -125,7 +125,7 @@ class zenario_google_programmable_search extends ze\moduleBaseClass {
 					
 					$paginationLinks = [];
 					if (count($pages) > 1) {
-						$this->pagination('pagination_style', $page, $pages, $pagination, $paginationLinks);
+						$this->pagination($page, $pages, $pagination, $paginationLinks);
 					} else {
 						$pagination = false;
 					}

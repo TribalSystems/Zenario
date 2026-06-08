@@ -58,12 +58,13 @@ zenario_videos_manager__video:
                 image:
                     label: 'Image (public):'
                     upload:
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: true
                     row_class: zenario_row_full_width_field

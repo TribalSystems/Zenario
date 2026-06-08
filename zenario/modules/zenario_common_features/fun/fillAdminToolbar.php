@@ -118,13 +118,13 @@ if (!$content || !$version) {
 		unset($adminToolbar['sections']['icons']['buttons']['staging_mode']['admin_box']);
 		$adminToolbar['sections']['icons']['buttons']['staging_mode']['css_class'] .= ' zenario_at_icon_staging_mode_not_available';
 		$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
-			ze\admin::phrase('Staging mode cannot be used for private content items.');
+			ze\admin::phrase('Staging mode can\'t be used for private content items');
 	
 	} elseif (!ze::$isDraft) {
 		unset($adminToolbar['sections']['icons']['buttons']['staging_mode']['admin_box']);
 		$adminToolbar['sections']['icons']['buttons']['staging_mode']['css_class'] .= ' zenario_at_icon_staging_mode_not_available';
 		$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
-			ze\admin::phrase('To use staging mode, start editing to create a draft.');
+			ze\admin::phrase('To use staging mode, create a draft');
 	
 	} else {
 		if ($stagingVersion = ze\row::get('content_item_versions',
@@ -134,7 +134,7 @@ if (!$content || !$version) {
 			$link = ze\contentAdm::stagingModeLink($cID, $cType, $stagingVersion['access_code']);
 		
 			$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
-				ze\admin::phrase('Staging enabled for version [[version]] with code [[access_code]].', $stagingVersion);
+				ze\admin::phrase('Staging mode enabled for this version [[version]], using access code [[access_code]], click for options', $stagingVersion);
 		
 			#$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
 			#	ze\admin::phrase('Staging enabled for version [[version]] with code [[access_code]]. Click to copy URL.', $stagingVersion);
@@ -146,7 +146,7 @@ if (!$content || !$version) {
 		} else {
 			$adminToolbar['sections']['icons']['buttons']['staging_mode']['css_class'] .= ' zenario_at_icon_staging_mode_disabled';
 			$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
-				ze\admin::phrase('Click to enable staging mode for this content item.');
+				ze\admin::phrase('Click to enable staging mode for this draft');
 		}
 	}
 	
@@ -659,9 +659,19 @@ if (isset($adminToolbar['sections']['edit']['buttons']['item_template'])) {
 }
 
 
+	
+//Only allow the admin to open Organizer to manage the images if the latest version of this content item is being viewed.
+//If this is a previous version, still show the button, but make it disabled.
 if (isset($adminToolbar['sections'][$editToolbar]['buttons']['view_items_images'])) {
-	$adminToolbar['sections'][$editToolbar]['buttons']['view_items_images']['organizer_quick']['path'] =
-		'zenario__content/panels/content/item_buttons/images//'. $tagId. '//';
+	if ($cVersion == ze::$adminVersion) {
+		$adminToolbar['sections'][$editToolbar]['buttons']['view_items_images']['organizer_quick']['path'] =
+			'zenario__content/panels/content/item_buttons/images//'. $tagId. '//';
+	} else {
+		unset($adminToolbar['sections'][$editToolbar]['buttons']['view_items_images']['organizer_quick']);
+		$adminToolbar['sections'][$editToolbar]['buttons']['view_items_images']['disabled'] = true;
+		$adminToolbar['sections'][$editToolbar]['buttons']['view_items_images']['disabled_tooltip'] =
+			ze\admin::phrase('Please view the latest version to manage images.');
+	}
 }
 
 if (isset($adminToolbar['sections']['edit']['buttons']['view_slots'])) {
@@ -1318,7 +1328,7 @@ if ($layoutDetails['status'] == 'active') {
 	}
 }
 
-$isDefaultForAContentType = $layoutDetails['default_layout_for_ctype'] ? 'Default layout for content type ' . $layoutDetails['default_layout_for_ctype'] : '';
+$isDefaultForAContentType = $layoutDetails['default_layout_for_ctype'] ? 'Default layout for ' . $layoutDetails['default_layout_for_ctype'] . '<br />' : '';
 
 if ($layoutItemCount) {
 	if ($layoutItemCount == 1) {
@@ -1344,6 +1354,8 @@ if ($layoutItemCount) {
 		}
 	}	
 }
+
+$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] .= 'Click to change layout';
 	
 $adminToolbar['sections']['icons']['buttons']['layout_id']['css_class'] .= ' layout_status_' . $layoutDetails['status'];
 
@@ -1374,6 +1386,17 @@ if (isset($adminToolbar['sections']['icons']['buttons']['go_to_alias'])) {
 } else {
 	$adminToolbar['sections']['icons']['buttons']['alias']['label'] = ze\admin::phrase('Set an alias');
 	$adminToolbar['sections']['icons']['buttons']['copy_url']['label'] = ze\admin::phrase('Copy URL to clipboard');
+}
+
+if (
+	$isMultilingual
+	&& $content['id'] != $content['equiv_id']
+	&& !ze::setting('translations_different_aliases')
+) {
+	if ($defaultLangContentItemId = ze\row::get('content_items', 'id', ['equiv_id' => ze::$equivId, 'type' => ze::$cType, 'language_id' => ze::$defaultLang])) {
+		$adminToolbar['sections']['icons']['buttons']['alias']['label'] = ze\admin::phrase('View alias "[[alias]]"', ['alias' => (ze::$alias)]);
+		$adminToolbar['sections']['edit']['buttons']['alias']['label'] = ze\admin::phrase('View alias');
+	}
 }
 
 if (!ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {

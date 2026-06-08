@@ -14,7 +14,7 @@ zenario__library:
             
             notice:
                 show: false
-                type: ''
+                type: warning
                 html: true
                 message: ''
             
@@ -432,8 +432,6 @@ zenario__library:
             
             
             item:
-                name: Image
-                names: Images
                 css_class: media_image
             collection_buttons:
                 upload:
@@ -483,8 +481,18 @@ zenario__library:
                             item.privacy == 'public'
                         request:
                             add: 1
-            
-            
+                help:
+                    label: Help
+                    help:
+                        message: |
+                            This panel shows images in the main image library.
+
+                            Its images can be used for in-line content in WYSIWYG editors, and are then "attached" to relevant content items.
+
+                            Of the images attached to a given content item, one of them can be the "featured image", to appear on content summary lists and search results that include the content item.
+
+                            Images in the library can also be used by plugins such as the Banner plugin.
+
             
             item_buttons:
                 edit:
@@ -505,7 +513,6 @@ zenario__library:
                     label: View image
                     popout:
                         href: zenario/file.php?popout=1
-                        type: image
                 download:
                     parent: actions_dropdown
                     hide_in_select_mode: true

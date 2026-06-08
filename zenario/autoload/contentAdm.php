@@ -377,7 +377,16 @@ class contentAdm {
 			\ze\contentAdm::reviewDocumentsInPublicDir($cID, $cType, $cVersion);
 		}
 
-		\ze\module::sendSignal("eventContentPublished",["cID" => $cID,"cType" => $cType, "cVersion" => $cVersion]);
+		\ze\module::sendSignal(
+			"eventContentPublished",
+			[
+				"cID" => $cID,
+				"cType" => $cType,
+				"cVersion" => $cVersion,
+				'wasListedBefore' => (!\ze\content::isUnlisted($oldStatus)),
+				'publishUnlisted' => (bool) $publishUnlisted
+			]
+		);
 	}
 
 	//Set the "archived" flag in the inline_images table,
@@ -2062,7 +2071,7 @@ class contentAdm {
 						$names = $groupNames;
 						return \ze\admin::phrase('Private, only show to extranet users in the group:');
 					} else {
-						return \ze\admin::phrase('Private, only show to extranet users in the group: (error: selected group not found)');
+						return \ze\admin::phrase('Private, disallowing all user access');
 					}
 					break;
 			
@@ -2189,7 +2198,7 @@ class contentAdm {
 				//Ensure any values are in translation chain ID format
 				$equivId = $cType = false;
 				if (\ze\content::getEquivIdAndCTypeFromTagId($equivId, $cType, $id)) {
-					$id = $cType. '_'. $equivId. '_t';
+					$id = $cType. '_'. $equivId. '_chain';
 				}
 			} else {
 				//Ensure any values are in normal tag ID format

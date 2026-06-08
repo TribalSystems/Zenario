@@ -208,8 +208,6 @@ zenario__users:
 
             item:
                 css_class: user
-                name: User
-                names: Users
             collection_buttons:
                 add:
                     label: Create a user or contact
@@ -238,7 +236,7 @@ zenario__users:
                 import_dropdown:
                     label: Import
                     hide_when_children_are_not_visible: true
-                    ord: 999990
+                    ord: 48
                 import:
                     label: Start import wizard
                     parent: import_dropdown
@@ -265,11 +263,11 @@ zenario__users:
                         pass_matched_ids: true
                         key:
                             dataset:
-                    ord: 999991
+                    ord: 49
                 
                 settings_dropdown:
                     css_class: organizer_settings_dropdown
-                    ord: 999992
+                    ord: 50
                     hide_when_children_are_not_visible: true
                     label: ⚙
                 
@@ -305,6 +303,7 @@ zenario__users:
                             id: data_protection
                     
                 help:
+                    ord: 99
                     label: Help
                     hide_in_select_mode: true
                     help:
@@ -346,7 +345,7 @@ zenario__users:
                     multiple_select_label: Send activation emails
                     multiple_select: true
                     with_columns_set:
-                        traits.active: true
+                        active: true
                     admin_box:
                         path: zenario_user__welcome_email
                     visible_if_for_all_selected_items: item.email != ''
@@ -358,7 +357,7 @@ zenario__users:
                     multiple_select_label: Send verification emails
                     multiple_select: true
                     with_columns_set:
-                        traits.active: true
+                        active: true
                     admin_box:
                         path: zenario_user__verification_email
                     visible_if_for_all_selected_items: item.email != '' && item.email_verified == 'not_verified'
@@ -368,7 +367,7 @@ zenario__users:
                     priv: _PRIV_EDIT_USER
                     label: Change password
                     with_columns_set:
-                        traits.active: true
+                        active: true
                     admin_box:
                         path: zenario_user__change_password
                 
@@ -429,7 +428,7 @@ zenario__users:
                             button_message: Remove
                             cancel_button_message: Cancel
                             message_type: warning
-                            multiple_select_message: 'Are you sure you wish to remove the [[item_count]] selected users/contacts from the group "[[label]]"?'
+                            multiple_select_message: 'Remove the [[item_count]] selected users/contacts from the group [[label]]?'
                             #The merge field "label" is overridden fillOrganizerPanel.
                         request:
                             remove_users_from_this_group: "1"
@@ -445,7 +444,7 @@ zenario__users:
                     popout:
                         href: zenario/file.php?popout=1&usage=user
                     with_columns_set:
-                        traits.has_image: true
+                        has_image: true
                 upload_image:
                     label: Upload an image
                     hide_in_select_mode: true
@@ -470,7 +469,7 @@ zenario__users:
                         request:
                             upload_image: true
                     without_columns_set:
-                        traits.has_image: true
+                        has_image: true
                 replace_image:
                     label: Upload a new image
                     hide_in_select_mode: true
@@ -497,7 +496,7 @@ zenario__users:
                         request:
                             upload_image: true
                     with_columns_set:
-                        traits.has_image: true
+                        has_image: true
                 delete_image:
                     label: Remove image
                     hide_in_select_mode: true
@@ -508,16 +507,16 @@ zenario__users:
                     multiple_select_tooltip: Remove image
                     ajax:
                         confirm:
-                            message: 'Are you sure you want to remove the image from user "[[identifier]]"?'
+                            message: 'Remove the image from user [[identifier]]?'
                             multiple_select_message: >
-                                Are you sure you want to remove the images from the selected users?
+                                Remove the images from the selected users?
                             button_message: Remove
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
                             delete_image: "1"
                     with_columns_set:
-                        traits.has_image: true
+                        has_image: true
                 convert_to_user:
                     label: Convert to extranet user...
                     hide_in_select_mode: true
@@ -526,14 +525,14 @@ zenario__users:
                     admin_box:
                         path: zenario_user__convert_to_user
                     with_columns_set:
-                        traits.is_contact: true
+                        is_contact: true
                 convert_to_contact:
                     label: Convert to contact...
                     hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_EDIT_USER
                     without_columns_set:
-                        traits.is_contact: true
+                        is_contact: true
                     ajax:
                         confirm:
                             message: ""
@@ -548,7 +547,7 @@ zenario__users:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_USER
                     with_columns_set:
-                        traits.suspended: true
+                        suspended: true
                     admin_box:
                         path: zenario_user__activate
                 
@@ -559,7 +558,7 @@ zenario__users:
                     label: Suspend account
                     multiple_select: true
                     with_columns_set:
-                        traits.active: true
+                        active: true
                     ajax:
                         confirm:
                             message: |
@@ -605,4 +604,3 @@ zenario__users:
                     tooltip: "Extranet user (suspended)"
                     visible_if: >
                         (item.status == "suspended")
-

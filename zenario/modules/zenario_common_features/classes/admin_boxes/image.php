@@ -599,7 +599,18 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				unset($box['tabs']['details']['fields']['add_a_gallery_caption']);
 				unset($box['tabs']['details']['fields']['floating_box_title']);
 			}
-		
+			
+			if (!ze::setting('show_default_floating_box_caption')) {
+				$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//files_and_images~.site_settings~timage_privacy~k{\"id\"%3A\"files_and_images\"}' target='_blank'>";
+				$linkEnd = "</a>";
+				
+				$siteSettingsInfoNote = ze\admin::phrase(
+					'Zenario can set a gallery caption for an image. See [[link_start]]site settings[[link_end]] to enable the feature.',
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
+				ze\lang::applyMergeFields($fields['details/enable_site_setting']['snippet']['html'], ['Enable_site_setting_to_use_captions' => $siteSettingsInfoNote]);
+				$fields['details/enable_site_setting']['hidden'] = false;
+			}
 		} else {
 			unset($box['tabs']['details']['fields']['tags']);
 			unset($box['tabs']['details']['fields']['add_a_gallery_caption']);
@@ -718,7 +729,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			}
 			$box['tabs']['details']['errors'][] = ze\admin::phrase($errorMessage);
 		
-		} elseif ($values['details/filename'] !== ze\file::safeName($values['details/filename'])) {
+		} elseif ($values['details/filename'] !== ze\file::validName($values['details/filename'])) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('The filename must not contain any of the following characters: % \\ / : ; * ? " < > |');
 		}
 		
@@ -861,20 +872,58 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				 && !empty($crop[4])
 				 && !empty($crop[5])) {
 				 	
+				 	//Prevent an out-of-bounds bug: make sure the dimensions cannot be negative.
+				 	for ($i = 0; $i <= 5; $i++) {
+				 		$crop[$i] = max(0, (int) round($crop[$i]));
+				 	}
+				 	
+				 	$uiCropX = $crop[0];
+					$uiCropY = $crop[1];
+					$uiCropWidth = $crop[2];
+					$uiCropHeight = $crop[3];
+					$uiImageWidth = $crop[4];
+					$uiImageHeight = $crop[5];
+					
+					$imageCropX = (int) ($uiCropX * $image['width'] / $uiImageWidth);
+					$imageCropY = (int) ($uiCropY * $image['height'] / $uiImageHeight);
+					$imageCropWidth = (int) ($uiCropWidth * $image['width'] / $uiImageWidth);
+					$imageCropHeight = (int) ($uiCropHeight * $image['height'] / $uiImageHeight);
+					
+					/* Safety checks:
+						$imageCropX and $imageCropY MUST NOT be < 0
+						$imageCropWidth and $imageCropHeight MUST be > 0
+						
+						$imageCropX + $imageCropWidth MUST be <= $image['width']
+						$imageCropY + $imageCropHeight MUST be <= $image['height']
+					*/
+					
+					$imageCropX = max(0, $imageCropX);
+					$imageCropX = min($imageCropX, ($image['width'] - 2));
+					
+					$imageCropY = max(0, $imageCropY);
+					$imageCropY = min($imageCropY, ($image['height'] - 2));
+					
+					$imageCropWidth = max(1, $imageCropWidth);
+					$imageCropWidth = min($imageCropWidth, ($image['width'] - $imageCropX));
+					
+					$imageCropHeight = max(1, $imageCropHeight);
+					$imageCropHeight = min($imageCropHeight, ($image['height'] - $imageCropY));
+				 	
 					//If all looks good, save into the database
 				 	$row = [
-						'ui_crop_x' => $crop[0],
-						'ui_crop_y' => $crop[1],
-						'ui_crop_width' => $crop[2],
-						'ui_crop_height' => $crop[3],
-						'ui_image_width' => $crop[4],
-						'ui_image_height' => $crop[5],
-						'crop_x' => (int) ($crop[0] * $image['width'] / $crop[4]),
-						'crop_y' => (int) ($crop[1] * $image['height'] / $crop[5]),
-						'crop_width' => (int) ($crop[2] * $image['width'] / $crop[4]),
-						'crop_height' => (int) ($crop[3] * $image['height'] / $crop[5]),
-						'aspect_ratio_angle' => \ze\file::aspectRatioToDegrees($crop[2], $crop[3])
+						'ui_crop_x' => $uiCropX,
+						'ui_crop_y' => $uiCropY,
+						'ui_crop_width' => $uiCropWidth,
+						'ui_crop_height' => $uiCropHeight,
+						'ui_image_width' => $uiImageWidth,
+						'ui_image_height' => $uiImageHeight,
+						'crop_x' => $imageCropX,
+						'crop_y' => $imageCropY,
+						'crop_width' => $imageCropWidth,
+						'crop_height' => $imageCropHeight,
+						'aspect_ratio_angle' => \ze\file::aspectRatioToDegrees($uiCropWidth, $uiCropHeight)
 					];
+					
 					$id = [
 						'aspect_ratio_width' => $width,
 						'aspect_ratio_height' => $height,

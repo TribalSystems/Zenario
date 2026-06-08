@@ -248,11 +248,11 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$fields['meta_data/from_details']['note_below'] = ze\admin::phrase('Go to [[link_start]]site settings for email[[link_end]].', ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 		
 		//CSS rules
-		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tcss_rules~k{\"id\"%3A\"email\"}' target='_blank'>";
+		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tnewsletter_css_rules~k{\"id\"%3A\"email\"}' target='_blank'>";
 		$linkEnd = "</a>";
 		ze\lang::applyMergeFields($fields['meta_data/apply_css_rules']['post_field_html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 		
-		if (!ze::setting('email_css_rules')) {
+		if (!ze::setting('newsletter_css_rules')) {
 			$fields['meta_data/apply_css_rules']['disabled'] = true;
 			$fields['meta_data/apply_css_rules']['note_below'] = ze\admin::phrase('Disabled as no CSS rules have been defined in settings.');
 		}
@@ -329,7 +329,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			} else {
 				$adminDetails = ze\admin::details($_SESSION['admin_userid'] ?? false);
 				if ($values['meta_data/apply_css_rules']) {
-					$cssRules = ze::setting('email_css_rules');
+					$cssRules = ze::setting('newsletter_css_rules');
 				} else {
 					$cssRules = '';
 				}
@@ -412,7 +412,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		}
 		
 		if ($values['meta_data/apply_css_rules']) {
-			$fields['meta_data/body']['editor_options']['content_style'] = ze::setting('email_css_rules');
+			$fields['meta_data/body']['editor_options']['content_style'] = ze::setting('newsletter_css_rules');
 		} else {
 			unset($fields['meta_data/body']['editor_options']['content_style']);
 		}

@@ -250,9 +250,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 			}
 	
 			$pagination = ''; 
-			$this->pagination(
-					'zenario_common_features::pagAllWithNPIfNeeded',
-					$this->page, $pages, $pagination);
+			$this->pagination($this->page, $pages, $pagination);
                         
                         $pagination = str_replace('zenario_project_locations.refreshPluginSlot', 
                                    'zenario_project_locations.refreshListSection', $pagination);

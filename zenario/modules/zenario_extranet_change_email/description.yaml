@@ -30,7 +30,13 @@ vlp_class_name: zenario_extranet_change_email
 css_class_name: zenario_extranet_change_email
 is_pluggable: true
 plugin_must_be_on_private_page: true
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: false
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 default_framework: standard
 special_pages:
     special_page:

@@ -184,12 +184,6 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
-                pagination:
-                    plugin_setting:
-                        name: pagination
-                    label: 'Pagination style:'
-                    type: select
-                    value: zenario_common_features::pagCloseWithNPIfNeeded
                 page_size:
                     plugin_setting:
                         name: page_size

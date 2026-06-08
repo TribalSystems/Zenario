@@ -36,20 +36,53 @@ class zenario_common_features__organizer__modules_base extends ze\moduleBaseClas
 		ze\moduleAdm::addNew();
 
 		switch ($refinerName) {
-			case 'nestable_only':
-			case 'nestable_wireframes_only':
-				//Don't show the "all_instances" options for Plugin Nests
+			case 'can_be_plugged_into_parent':
+				//Don't show the "all plugins" button when selecting a plugin to copy into a nest
 				$panel['collection_buttons']['all_instances']['hidden'] =
 				$panel['collection_buttons']['all_instances']['hidden'] = true;
 
 			case 'phrases_only':
-			case 'slotable_only':
+			case 'plugins_slotable_into_content_items':
+			case 'plugins_slotable_into_layouts':
 				//Don't show the filters if picking a plugin
 				$panel['quick_filter_buttons']['all']['hidden'] =
 				$panel['quick_filter_buttons']['module_not_initialized']['hidden'] =
 				$panel['quick_filter_buttons']['module_running']['hidden'] =
 				$panel['quick_filter_buttons']['module_suspended']['hidden'] =
 				$panel['quick_filter_buttons']['module_is_abstract']['hidden'] = true;
+		}
+		
+		switch ($refinerName) {
+			case 'can_be_plugged_into_parent':
+				
+				//If selecting a plugin to copy into a nest, try to check the key variables from
+				//the parent to see which type of nest we're slotting things into.
+				if (!empty($_REQUEST['parent__usesConductor'])) {
+					$panel['title'] = ze\admin::phrase('Modules which make plugins that can be placed in a Conductor');
+					$sql = "  AND m.into_ajax_nests_with_conductor = 1";
+				
+				} elseif ($_REQUEST['parent__isSlideshow']) {
+					$panel['title'] = ze\admin::phrase('Modules which make plugins that can be placed in a Slideshow');
+					$sql = "  AND m.into_slideshows = 1";
+				
+				} elseif ('zenario_ajax_nest' == ($_REQUEST['parent__nest_module_class_name'] ?? '')) {
+					$panel['title'] = ze\admin::phrase('Modules which make plugins that can be placed in an AJAX Nest');
+					$sql = "  AND m.into_ajax_nests_without_conductor = 1";
+				
+				} else {
+					$panel['title'] = ze\admin::phrase('Modules which make plugins that can be placed in a Nest');
+					$sql = "  AND m.into_regular_nests = 1";
+				}
+				$panel['refiners']['can_be_plugged_into_parent']['sql'] .= $sql;
+				
+				break;
+			case 'phrases_only':
+				$panel['title'] = ze\admin::phrase('Modules with phrases');
+				break;
+			case 'plugins_slotable_into_content_items':
+			case 'plugins_slotable_into_layouts':
+				$panel['title'] = ze\admin::phrase('Modules which make plugins (choose a module and then a plugin to insert into a slot)');
+				break;
 		}
 		
 		//Add a column to say which modules in the current edition
@@ -102,23 +135,6 @@ class zenario_common_features__organizer__modules_base extends ze\moduleBaseClas
 		//Remove close-up view form select mode, and make it so that double-clicking goes straight into Plugin Instances
 		if ($mode == 'select' && $panel['item_buttons']['view_instances']['link']) {
 			$panel['item']['link'] = $panel['item_buttons']['view_instances']['link'];
-		}
-
-		if ($path == 'zenario__library/panels/modules') {
-			switch ($refinerName) {
-				case 'nestable_only':
-					$panel['title'] = ze\admin::phrase('Modules which make plugins that can be nested');
-					break;
-				case 'nestable_wireframes_only':
-					$panel['title'] = ze\admin::phrase('Plugins that can be nested');
-					break;
-				case 'phrases_only':
-					$panel['title'] = ze\admin::phrase('Modules with phrases');
-					break;
-				case 'slotable_only':
-					$panel['title'] = ze\admin::phrase('Modules which make plugins (choose a module and then a plugin to insert into a slot)');
-					break;
-			}
 		}
 
 		$emptyListView = [];
@@ -285,7 +301,10 @@ class zenario_common_features__organizer__modules_base extends ze\moduleBaseClas
 			
 					$module['close_up_view'] = $desc['description'];
 			
-					if ($module['nestable'] == 2 && $module['status'] == 'module_running') {
+					if ($module['is_pluggable']
+					 && !$module['into_content_items']
+					 && !$module['into_layouts']
+					 && $module['status'] == 'module_running') {
 						if ($mode == 'full') {
 							$module['link'] = [
 								'path' => 'zenario__library/panels/plugins',
@@ -371,6 +390,8 @@ class zenario_common_features__organizer__modules_base extends ze\moduleBaseClas
 				}
 		
 				$module['status'] = ze\admin::phrase($module['status']);
+				
+				$module['pluggable'] = ze\moduleAdm::pluggableDesc($module);
 		
 			} else {
 		
@@ -402,9 +423,9 @@ class zenario_common_features__organizer__modules_base extends ze\moduleBaseClas
 			$module = ze\module::details($ids);
 	
 			if (ze::get('remove')) {
-				echo ze\admin::phrase('Are you sure that you wish to remove the module "[[class_name]]" ([[display_name]])?', $module);
+				echo ze\admin::phrase('Are you sure that you wish to remove the module "[[display_name]]" ([[class_name]])?', $module);
 			} else {
-				echo ze\admin::phrase('Are you sure that you wish to uninitialise the module "[[class_name]]" ([[display_name]])?', $module);
+				echo ze\admin::phrase('Are you sure that you wish to uninitialise the module "[[display_name]]" ([[class_name]])?', $module);
 			}
 	
 			echo "\n\n";

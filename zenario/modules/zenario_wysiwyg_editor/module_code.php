@@ -159,12 +159,12 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 			if (ze::$isDraft) {
 				echo
 					'<div class="zenario_editor_placeholder_text only_show_in_edit_mode">',
-						ze\admin::phrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>Double-click in this panel to edit.</p>', ['slotName' => $this->slotName]),
+						ze\admin::phrase('<h2>This page is a draft</h2><p>This is an editable area, but it\'s empty.</p><p>To enter some content, ensure the <strong>Tools/Content item</strong> tab is selected, then double-click this area.</p>', ['slotName' => $this->slotName]),
 					'</div>';
 			} else {
 				echo
 					'<div class="zenario_editor_placeholder_text only_show_in_edit_mode">',
-						ze\admin::phrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>Select the &quot;Content item&quot; view, then double-click enter some content.</p>', ['slotName' => $this->slotName]),
+						ze\admin::phrase('<h2>Write some content here</h2><p>This is an editable area, but it\'s empty.</p><p>In the <strong>Actions</strong> drop-down, select <strong>Start editing</strong>, and make a draft. Then double-click this area to enter some content.</p>', ['slotName' => $this->slotName]),
 					'</div>';
 			}
 		}
@@ -217,6 +217,11 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		//If double-clicking the slot will do something, add a CSS class so we can style a different icon for the drop-down menu
 		if ($this->canEdit) {
 			$controls['css_class'] .= ' zenario_showDoubleClickInEditMode';
+			
+			//Add a class name to show a warning if the content is empty
+			if (empty(trim(strip_tags($this->setting('html') ?: '')))) {
+				$controls['css_class'] .= ' zenario_emptyWYSIWYG';
+			}
 		}
 		
 	 	//Add an "Edit Inline" option for Wireframe HTML areas

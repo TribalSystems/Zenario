@@ -128,6 +128,8 @@ class zenario_abstract_nest__admin_boxes__path extends zenario_abstract_nest {
 		$ord = 2;
 		$commands = [];
 		$modulesAddingCommands = [];
+		$commandAndModuleLink = [];
+		$parentMovuleVisibleChildren = [];
 		foreach ($modulesAndModes as $moduleAndMode) {
 			$moduleClassName = $moduleAndMode[0];
 			$mode = $moduleAndMode[1];
@@ -148,25 +150,40 @@ class zenario_abstract_nest__admin_boxes__path extends zenario_abstract_nest {
 						}
 						$modulesAddingCommands[$command][] = $desc['display_name'] ?? $moduleClassName;
 					}
+					
+					if (!isset($fields['path/command']['values'][$moduleClassName])) {
+						$fields['path/command']['values'][$moduleClassName] = [
+							'label' => ze\admin::phrase('Commands from module [[module_display_name]]', ['module_display_name' => $moduleDescs[$moduleClassName]['display_name']]),
+							'ord' => ++$ord,
+							'disabled' => true,
+							'class' => 'zenario_radio_label_only zenario_radio_with_module_icon',
+							'hide_when_children_are_not_visible' => true
+						];
+						
+						$parentMovuleVisibleChildren[$moduleClassName] = false;
+					}
+					
+					$commandAndModuleLink[$command] = $moduleClassName;
 				}
 			}
 		}
 		
-		ksort($commands);
 		foreach ($commands as $command => $details) {
 			$fields['path/command']['values'][$command] = [
 				'ord' => ++$ord,
 				'label' => empty($details['label'])? $command : $command. ' ('. $details['label']. ')',
 				'request_vars' => implode(',', $details['request_vars'] ?? []),
-				'split_values_if_selected' => true,
-				'tooltip' => ze\admin::nzPhrase(
-					'Added by the "[[0]]" module.',
-					'Added by the "[[0]]" module and 1 other module.',
-					'Added by the "[[0]]" module and [[count]] other modules.',
-					count($modulesAddingCommands[$command]) - 1,
-					$modulesAddingCommands[$command]
-				)
+				'parent' => $commandAndModuleLink[$command],
+				'split_values_if_selected' => true
 			];
+			
+			$parentMovuleVisibleChildren[$moduleClassName] = true;
+		}
+		
+		foreach ($parentMovuleVisibleChildren as $moduleClassName => $hasVisibleChildren) {
+			if (isset($fields['path/command']['values'][$moduleClassName]) && !$hasVisibleChildren) {
+				$fields['path/command']['values'][$moduleClassName]['hidden'] = true;
+			}
 		}
 		
 		

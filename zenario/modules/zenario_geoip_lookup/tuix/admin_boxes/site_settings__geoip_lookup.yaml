@@ -1,0 +1,89 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    title: Editing settings for GeoIP services
+    setting_group: ip_services
+    tabs:
+        orders:
+            label: GeoIP lookup
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_VIEW_USER
+                on: No
+            notices: 
+                data_loaded:
+                    type: success
+                    message: "" # Set in module code
+                    show: false
+                missing_dir: 
+                    type: error
+                    message: "" # Set in module code
+                    show: false
+                file_has_wrong_perms: 
+                    type: error
+                    message: "" # Set in module code
+                    show: false
+                fetch_now:
+                    type: error
+                    message: The GeoIP database has not been fetched from MaxMind to this server. Click "Fetch now" to fetch it.
+                    show: false
+                fetch_success:
+                    type: success
+                    message: GeoIP database successfully fetched, IP based location services are now active.
+                    show: false
+            fields:
+                fetch_now_button:
+                    value: Fetch now
+                    type: submit
+                    hidden: true
+                    format_onchange: true
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: ""
+                
+                database_files:
+                    label: 'Database files in use:'
+                    snippet:
+                        html: ""
+                current_ip:
+                    label: 'Your IP address:'
+                    snippet:
+                        html: ""
+                current_location:
+                    label: 'Your location (looked up from IP address):'
+                    snippet:
+                        html: ""
+                    side_note: Location displayed is based on your IP address
+                ip_to_check:
+                    label: 'Enter another IP address to check:'
+                    type: text
+                check_ip:
+                    value: Check
+                    type: submit
+                    same_row: Yes
+                country_checked:
+                    type: text
+                    readonly: Yes
+        debug:
+            label: Debug
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_VIEW_USER
+                on: No
+            fields:
+                force_visitor_country:
+                        label: 'Always set visitor country to:'
+                        site_setting:
+                            name: force_visitor_country
+                        pick_items:
+                            path: zenario__languages/panels/countries//
+                            target_path: zenario__languages/panels/countries
+                            min_path: zenario__languages/panels/countries
+                            max_path: zenario__languages/panels/countries
+                            select_phrase: Select Country...
+                            nothing_selected_phrase: No Country selected
+                        note_below: >
+                            Do NOT set a country when your site is in production. ONLY
+                            use for testing.
+    

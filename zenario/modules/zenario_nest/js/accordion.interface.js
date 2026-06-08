@@ -30,7 +30,7 @@
 
 
 
-zenario_accordion_interface.show = function(containerId, numTabs, opt1stOpen, optAllCanClose, optOpenMultiple) {
+zenario_accordion_interface.show = function(containerId, numTabs, opt1stOpen, optAllCanClose, optOpenMultiple, duration) {
 	
 	var i,
 		$tabs = [],
@@ -38,12 +38,12 @@ zenario_accordion_interface.show = function(containerId, numTabs, opt1stOpen, op
 		currentlyOpenSlides = {},
 		openSlide = function(slideNum) {
 			$tabs[slideNum - 1].removeClass('accordion_tab_closed').addClass('accordion_tab_open');
-			$slides[slideNum - 1].slideDown("slow"); 
+			$slides[slideNum - 1].slideDown(duration); 
 			currentlyOpenSlides[slideNum] = true;
 		},
 		closeSlide = function(slideNum) {
 			$tabs[slideNum - 1].removeClass('accordion_tab_open').addClass('accordion_tab_closed');
-			$slides[slideNum - 1].slideUp("slow"); 
+			$slides[slideNum - 1].slideUp(duration); 
 			delete currentlyOpenSlides[slideNum];
 		};
 	

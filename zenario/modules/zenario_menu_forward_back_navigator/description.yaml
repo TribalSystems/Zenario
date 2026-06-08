@@ -19,7 +19,13 @@ category: pluggable
 # latest_revision_no.inc.php file if you change any of the fields below:
 css_class_name: zenario_menu_forward_back_navigator
 is_pluggable: true
-nestable: true
+can_be_plugged_into:
+    content_items: false
+    layouts: true
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 default_framework: standard
 default_instance_name: Menu Forward Back Navigator
 

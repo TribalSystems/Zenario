@@ -2,7 +2,7 @@
 
 <div class="sidepanel_header">
 	<div class="sidepanel_desc">
-		Info for the object/property in the line highlighted.
+		Information on the highlighted line.
 	</div>
 </div>
 
@@ -10,7 +10,7 @@
 	<div class="sidepanel_header">
 		<table class="selected_path">
 			<tr>
-				<th>Selected&nbsp;path:&nbsp;</th>
+				<th>Path:&nbsp;</th>
 				
 				<% var selectedPath = (devTools.path? devTools.path + '/' : '') + m.displayedPath; %>
 				
@@ -43,7 +43,7 @@
 							<% } %>
 				
 							<% if (m.object.lastTag) { %>
-								for objects under <code>{{m.object.lastTag|escape}}/</code>
+								for elements under <code>{{m.object.lastTag|escape}}/</code>
 								<% aListOfObjectsIsBeingDocumented = true; %>
 				
 							<% } else if (m.object.tag) { %>
@@ -82,7 +82,7 @@
 					<% } %>
 				<% } else { %>
 					<% if (m.object.lastTag) { %>
-						Objects under <code>{{m.object.lastTag|escape}}/</code> can have the following properties:
+						Elements under <code>{{m.object.lastTag|escape}}/</code> can have the following properties:
 						<% aListOfObjectsIsBeingDocumented = true; %>
 					<% } else { %>
 						The <code>{{m.object.tag|escape}}</code> object can have the following properties:

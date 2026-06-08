@@ -1,3 +1,9 @@
+<% if (m.frontend_link) { %>
+	<div class="zenario_fabIdFrontendLink">
+		<a target="_blank" href="{{m.frontend_link|e}}"></a>
+	</div>
+<% } %>
+
 <% if (m.css_class) { %>
 	<div class="zenario_fabIdIcon organizer_item_image {{m.css_class|e}}"></div>
 <% } %>
@@ -5,6 +11,7 @@
 	<div class="zenario_fabIdLabel">{{m.label|e}}</div>
 <% } %>
 <div class="zenario_fabIdValue">{{m.value|e}}</div>
+
 
 <% if (m.where_used) { %>
 	<div class="zenario_fabIdWhereUsed">{{m.where_used}}</div>

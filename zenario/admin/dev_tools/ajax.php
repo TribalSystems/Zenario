@@ -6,16 +6,16 @@ if (!ze\admin::setting('show_dev_tools')) {
 }
 
 switch (ze::get('mode')) {
-	case 'zenarioAB';
+	case 'zenarioAB':
 		$type = 'admin_boxes';
 		break;
-	case 'zenarioAT';
+	case 'zenarioAT':
 		$type = 'admin_toolbar';
 		break;
-	case 'zenarioO';
+	case 'zenarioO':
 		$type = 'organizer';
 		break;
-	case 'zenarioSlot';
+	case 'zenarioSlot':
 		$type = 'slot_controls';
 		break;
 	default:

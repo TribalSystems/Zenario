@@ -35,16 +35,6 @@ category: core
 # to fix it automatically for every site.
 dependencies:
     zenario_common_features: true
-pagination_types:
-    pagSmart:
-        function_name: pagSmart
-        label: Smart page numbers
-    pagSmartWithNPIfNeeded:
-        function_name: pagSmartWithNPIfNeeded
-        label: Smart page numbers with Next/Previous if needed
-    pagSmartWithNP:
-        function_name: pagSmartWithNP
-        label: Smart page numbers with Next/Previous
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:

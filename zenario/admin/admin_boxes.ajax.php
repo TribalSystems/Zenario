@@ -44,7 +44,7 @@ if (!class_exists('ze')) {
 $mode = false;
 $tagPath = '';
 $modules = [];
-$debugMode = !empty($_GET['_debug']);
+$debugMode = !empty($_GET['_cms_debug']);
 $loadDefinition = true;
 $settingGroup = '';
 $compatibilityClassNames = [];
@@ -54,11 +54,11 @@ ze::$tuixType = $type = 'admin_boxes';
 
 
 
-$filling = (bool) ze::post('_fill');
-$saving = !$filling && (bool) ze::post('_save');
-$downloading = !$filling && (bool) ze::post('_download');
-$validating = !$filling && ($saving || $downloading || (bool) ze::post('_validate'));
-$confirmed = $saving && ze::post('_confirm');
+$filling = (bool) ze::post('_cms_fillAction');
+$saving = !$filling && (bool) ze::post('_cms_isSave');
+$downloading = !$filling && (bool) ze::post('_cms_isDownload');
+$validating = !$filling && ($saving || $downloading || (bool) ze::post('_cms_validateAction'));
+$confirmed = $saving && ze::post('_cms_confirm');
 
 if (!$debugMode && $filling && ze\admin::setting('show_dev_tools')) {
 	ze::$recordFiles = true;
@@ -69,12 +69,12 @@ if (!$debugMode && $filling && ze\admin::setting('show_dev_tools')) {
 //If this isn't the first load, attempt to load the defintion from the Storage
 if (!$filling && !$debugMode) {
 	//Load the information that we have from the client
-	if (empty($_POST['_box'])) {
+	if (empty($_POST['_cms_box'])) {
 		echo ze\admin::phrase('An error occurred when syncing this floating admin box with the server.');
 		exit;
 	}
 	$tags = [];
-	$clientTags = json_decode($_POST['_box'], true);
+	$clientTags = json_decode($_POST['_cms_box'], true);
 	
 	ze\tuix::loadCopyFromServer($tags, $clientTags);
 	$loadDefinition = false;
@@ -215,7 +215,7 @@ if ($debugMode) {
 	
 	//When opening an Admin Box, accept an array of arrays for initial values for fields
 	$valuesWithFieldsMissing = [];
-	if (!empty($_POST['_values']) && ($values = json_decode($_POST['_values'], true)) && (is_array($values))) {
+	if (!empty($_POST['_cms_formValues']) && ($values = json_decode($_POST['_cms_formValues'], true)) && (is_array($values))) {
 		//If it is a valid array, loop through the tabs/fields in the input
 		foreach ($values as $tabName => &$tab) {
 			if (is_array($tab)) {
@@ -590,7 +590,7 @@ if ($debugMode) {
 	$doFormat = true;
 	$errorsReset = false;
 	
-	if (ze::post('_read_values')) {
+	if (ze::post('_cms_readFormValues')) {
 		//Given the JSON object for an Admin Box, strip everything out and just return the tabs/values
 		$fields = [];
 		$values = [];
@@ -669,7 +669,7 @@ if ($debugMode) {
 			}
 			
 			if ($doSave) {
-				$tags['_sync']['flags'] = [
+				$tags['_cms_sync']['flags'] = [
 					'VALID' => false,
 					'CONFIRM' => false,
 					'DOWNLOAD' => false,
@@ -677,7 +677,7 @@ if ($debugMode) {
 				];
 				
 				if (!($downloading)) {
-					$tags['_sync']['flags']['VALID'] = true;
+					$tags['_cms_sync']['flags']['VALID'] = true;
 				}
 				
 				$download =
@@ -687,11 +687,11 @@ if ($debugMode) {
 				
 				//Check if a confirmation is needed
 				if (ze\ring::engToBoolean($tags['confirm']['show'] ?? false) && !($confirmed || $downloading)) {
-					$tags['_sync']['flags']['CONFIRM'] = true;
+					$tags['_cms_sync']['flags']['CONFIRM'] = true;
 					
 				} else if ($download && !$downloading) {
-					$tags['_sync']['flags']['DOWNLOAD'] = true;
-					$doFormat = $_POST['_save_and_continue'] ?? false;
+					$tags['_cms_sync']['flags']['DOWNLOAD'] = true;
+					$doFormat = $_POST['_cms_isSaveAndContinue'] ?? false;
 					
 				} else {
 					$fields = [];
@@ -792,8 +792,8 @@ if ($debugMode) {
 						exit;
 				
 					} else {
-						$tags['_sync']['flags']['SAVED'] = true;
-						$doFormat = $_POST['_save_and_continue'] ?? false;
+						$tags['_cms_sync']['flags']['SAVED'] = true;
+						$doFormat = $_POST['_cms_isSaveAndContinue'] ?? false;
 					}
 				}
 			}
@@ -824,8 +824,8 @@ if (!empty($originalTags)) {
 	ze\tuix::syncFromServerToClient($tags, $originalTags, $output);
 	
 	//Always send the flags as-is without skipping them
-	if (isset($tags['_sync']['flags'])) {
-		$output['_sync']['flags'] = $tags['_sync']['flags'];
+	if (isset($tags['_cms_sync']['flags'])) {
+		$output['_cms_sync']['flags'] = $tags['_cms_sync']['flags'];
 	}
 	
 	$tags = $output;
@@ -835,11 +835,11 @@ if (!empty($originalTags)) {
 
 
 if (ze::$recordFiles) {
-	$tags['__source_files'] = ze\tuix::recordedFiles();
+	$tags['_cms_sourceFileList'] = ze\tuix::recordedFiles();
 }
 
 if (!empty(ze::$dumps)) {
-	$tags['__dumps'] = ze::$dumps;
+	$tags['_cms_dumps'] = ze::$dumps;
 	ze::$dumps = [];
 }
 

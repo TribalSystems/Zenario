@@ -8,12 +8,20 @@ license_info: 'Modified BSD License'
 display_name: Raw HTML/JavaScript Snippet
 description: |
     <p>
-        Displays a block of static HTML and/or JavaScript in the given slot.
+        Displays a block of static HTML in a given slot, and may include in-line JavaScript.
     </p>
-    <p>Use this module to embed a video: make a plugin, and copy/paste in the embed code of a video stored on an external site such as YouTube.
+    <p>A common use of this module is to embed a video. To do this:
+      <ul>
+      <li>Create a plugin</li>
+      <li>Copy the "embed code" of a video stored on an external site such as YouTube</li>
+      <li>Paste that code into the Raw HTML tab of this plugin</li>
+      <li>Insert this plugin into a slot on the required content item.</li>
+      </ul>
     </p>
-    <p>
-        For security, PHP code will not be executed.
+    <p>For security, PHP code will not be executed.</p>
+    <p>Also please be aware that any code placed in this plugin could potentially be used for cross-site scripting attacks (XSS) on this site.</p>
+    <p>Therefore, if you copy and paste code from an external source, you should be sure that you understand what the code does, and do not copy-paste code from third party sources that you don't trust!</p>
+
     </p>
 category: pluggable
 keywords: raw, html, code, source, video, embed, youtube, vimeo
@@ -23,6 +31,12 @@ keywords: raw, html, code, source, video, embed, youtube, vimeo
 css_class_name: zenario_html_snippet
 is_pluggable: true
 can_be_version_controlled: true
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: true
+    regular_nests: true
+    slideshows: false
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: true
 default_framework: standard
 default_instance_name: Untitled HTML/Javascript Snippet

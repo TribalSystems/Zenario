@@ -1,0 +1,20 @@
+# This is the list of images to insert into the database when the Newsletter module is reset or installed.
+imagelist:
+    -
+        name: logo-zebra-designs.svg
+        alt_tag: Zebra Designs logo
+        mime_type: image/svg+xml
+        max_width: 220
+        max_height: 55
+    -
+        name: apples-green.jpg
+        alt_tag: Green apples
+        mime_type: image/jpeg
+        max_width: 220
+        max_height: 220
+    -
+        name: apples-red.jpg
+        alt_tag: Red apples
+        mime_type: image/jpeg
+        max_width: 80
+        max_height: 80

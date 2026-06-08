@@ -195,6 +195,14 @@ zenario_setup_language:
                         zenarioAB.tuix.key.id != zenarioA.siteSettings.default_language
                     label: ''
                     type: radios
+                    
+                    # As of version 10.5, we're making this option enabled by default for any newly added languages
+                    value: 1
+                    
+                    # N.b. we want to show the "off" or "0" option second and the "on" or "1" option first.
+                    # YAML won't let us create an associative array with "1" first and "0" second, so we need to
+                    # define them as "0" first and "1" second, then use the ord property to change the display order
+                    # to the order we want.
                     values:
                         0:
                             ord: 2

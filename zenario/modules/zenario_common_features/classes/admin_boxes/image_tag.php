@@ -80,7 +80,7 @@ class zenario_common_features__admin_boxes__image_tag extends ze\moduleBaseClass
 		);
 		
 		// Handle "Save and create another" functionality
-		if (!empty($_POST['_save_and_continue'])) {
+		if (!empty($_POST['_cms_isSaveAndContinue'])) {
 			// Reset the form for creating a new tag
 			$box['key']['id'] = '';
 			$values['details/name'] = '';

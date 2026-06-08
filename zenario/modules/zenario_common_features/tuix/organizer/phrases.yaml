@@ -4,7 +4,6 @@ zenario__languages:
     panels:
         phrases:
             title: Standard phrases
-            php: true
             db_items:
                 table: >
                     [[DB_PREFIX]]visitor_phrases AS vp
@@ -79,8 +78,6 @@ zenario__languages:
                         unknown: Unknown
             default_sort_column: code
             item:
-                name: Phrase
-                names: Phrases
                 css_class: phrases
             collection_buttons:
                 export_phrases_dropdown:

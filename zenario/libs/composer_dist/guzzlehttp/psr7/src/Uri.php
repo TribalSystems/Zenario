@@ -51,7 +51,7 @@ class Uri implements UriInterface, \JsonSerializable
      * @see https://datatracker.ietf.org/doc/html/rfc3986#section-2.2
      */
     private const CHAR_SUB_DELIMS = '!\$&\'\(\)\*\+,;=';
-    private const QUERY_SEPARATORS_REPLACEMENT = ['=' => '%3D', '&' => '%26'];
+    private const QUERY_SEPARATORS_REPLACEMENT = ['=' => '%3D', '&' => '%26', '+' => '%2B'];
 
     /** @var string Uri scheme. */
     private $scheme = '';
@@ -105,6 +105,10 @@ class Uri implements UriInterface, \JsonSerializable
      */
     private static function parse(string $url)
     {
+        if (self::isPathNoSchemeReference($url)) {
+            return self::parsePathNoSchemeReference($url);
+        }
+
         // If IPv6
         $prefix = '';
         if (preg_match('%^(.*://\[[0-9:a-fA-F]+\])(.*?)$%', $url, $matches)) {
@@ -129,6 +133,39 @@ class Uri implements UriInterface, \JsonSerializable
         }
 
         return array_map('urldecode', $result);
+    }
+
+    private static function isPathNoSchemeReference(string $url): bool
+    {
+        if ($url === '' || $url[0] === '/' || $url[0] === '?' || $url[0] === '#') {
+            return false;
+        }
+
+        $firstSegment = substr($url, 0, strcspn($url, '/?#'));
+
+        return strpos($firstSegment, ':') === false;
+    }
+
+    /**
+     * @return array{path: string, query?: string, fragment?: string}
+     */
+    private static function parsePathNoSchemeReference(string $url): array
+    {
+        $parts = [];
+
+        if (false !== ($fragmentPosition = strpos($url, '#'))) {
+            $parts['fragment'] = substr($url, $fragmentPosition + 1);
+            $url = substr($url, 0, $fragmentPosition);
+        }
+
+        if (false !== ($queryPosition = strpos($url, '?'))) {
+            $parts['query'] = substr($url, $queryPosition + 1);
+            $url = substr($url, 0, $queryPosition);
+        }
+
+        $parts['path'] = $url;
+
+        return $parts;
     }
 
     public function __toString(): string
@@ -661,7 +698,8 @@ class Uri implements UriInterface, \JsonSerializable
 
     private static function generateQueryString(string $key, ?string $value): string
     {
-        // Query string separators ("=", "&") within the key or value need to be encoded
+        // Query string separators ("=", "&") and literal plus signs ("+") within the
+        // key or value need to be encoded
         // (while preventing double-encoding) before setting the query string. All other
         // chars that need percent-encoding will be encoded by withQuery().
         $queryString = strtr($key, self::QUERY_SEPARATORS_REPLACEMENT);

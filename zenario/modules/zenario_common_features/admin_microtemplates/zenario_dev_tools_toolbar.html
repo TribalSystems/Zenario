@@ -5,7 +5,7 @@
 	<% switch (devTools.mode) { %>
 		<% case 'zenarioAB': %>
 			The TUIX shown below describes the <strong>Admin Box</strong> with the path
-			<strong>{{devTools.path|escape}}</strong>
+			<code>{{devTools.path|escape}}</code>
 			<% break; %>
 		
 		<% case 'zenarioAT': %>
@@ -18,18 +18,18 @@
 				basic information on all of the navigation and panels in Organizer
 			<% } else { %>
 				The TUIX shown below describes the <strong>Panel</strong> with the path
-				<strong>{{devTools.path|escape}}</strong>
+				<code>{{devTools.path|escape}}</code>
 			<% } %>
 			<% break; %>
 		
 		<% case 'zenarioSlot': %>
 			The TUIX shown below describes the <strong>Slot Controls</strong> for
-			<strong>{{window.opener.zenarioSlot.slotName|escape}}</strong>
+			<code>{{window.opener.zenarioSlot.slotName|escape}}</code>
 			<% break; %>
 		
 		<% default: %>
 			The TUIX shown below describes the <strong>Front-End Administration plugin</strong>
-			with the path <strong>{{devTools.path|escape}}</strong>
+			with the path <code>{{devTools.path|escape}}</code>
 			<% break; %>
 	
 	<% } %>

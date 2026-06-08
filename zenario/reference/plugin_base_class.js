@@ -54,7 +54,7 @@ zenario.lib(function(
 	"use strict";
 
 
-	zenario.__moduleBaseClass = function(
+	zenario._cms_baseClass = function(
 		moduleId, moduleClassName, moduleClassNameForPhrases,
 		zenario, undefined
 	) {

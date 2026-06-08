@@ -11,7 +11,6 @@ zenario__users:
                     label: This user's content item access log
                     link:
                         path: zenario__users/panels/access_log
-                        branch: true
                         refiner: user
 
         access_log:
@@ -110,8 +109,6 @@ zenario__users:
             default_sort_column: Time
             default_sort_desc: true
             item:
-                name: Log
-                names: Logs
                 css_class: log access_log
             no_items_message: No accesses have been logged.
             

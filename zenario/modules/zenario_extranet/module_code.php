@@ -514,10 +514,20 @@ class zenario_extranet extends ze\moduleBaseClass {
 		$this->objects['Welcome_Message'] = $this->getWelcomeUserString();
 		$this->objects['Is_Admin'] = ze\admin::id();
 		
-		echo $this->getLoginOpenForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
-			echo $this->remember('accept_terms_and_conditions', 1);
+		if ($this->setting('show_link_to_logout_if_user_doesnt_accept_terms') && ze\module::isRunning('zenario_extranet_logout') && ($link = ze\link::toSpecialPage('zenario_logout'))) {
+			$this->subSections['Logout_Link_Section_If_User_Doesnt_Accept_Terms'] = true;
+			$this->objects['Logout_Link_If_User_Doesnt_Accept_Terms'] = 'href="'. htmlspecialchars($link). '"';
+		}
+		
+		if ($this->objects['Is_Admin']) {
+			//A logged in admin may not accept T&Cs on behalf of a user. This will not be a form.
 			$this->framework('Terms_And_Conditions_Form',  $this->objects, $this->subSections);
-		echo $this->closeForm();
+		} else {
+			echo $this->getLoginOpenForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
+				echo $this->remember('accept_terms_and_conditions', 1);
+				$this->framework('Terms_And_Conditions_Form',  $this->objects, $this->subSections);
+			echo $this->closeForm();
+		}
 	}
 	
 	protected function setupLogin() {
@@ -1123,7 +1133,8 @@ class zenario_extranet extends ze\moduleBaseClass {
 					'first_tab/profile_page' => 'zenario_profile',
 					'first_tab/change_password_page' => 'zenario_change_password',
 					'first_tab/password_reset_page' => 'zenario_password_reset',
-					'first_tab/logout_page' => 'zenario_logout'
+					'first_tab/logout_page' => 'zenario_logout',
+					'first_tab/logout_page_if_user_doesnt_accept_terms' => 'zenario_logout'
 				];
 				
 				foreach ($loopThrough as $pluginSetting => $defaultSpecialPage) {
@@ -1135,14 +1146,15 @@ class zenario_extranet extends ze\moduleBaseClass {
 				//If a specific module is not running, display a warning that a link
 				//to the special page associated with it will not be displayed.
 				$loopThrough = [
-					'zenario_extranet_registration' => 'registration_page',
-					'zenario_extranet_profile_edit' => 'profile_page',
-					'zenario_extranet_change_password' => 'change_password_page',
-					'zenario_extranet_password_reset' => 'password_reset_page',
-					'zenario_extranet_logout' => 'logout_page'
+					'registration_page' => 'zenario_extranet_registration',
+					'profile_page' => 'zenario_extranet_profile_edit',
+					'change_password_page' => 'zenario_extranet_change_password',
+					'password_reset_page' => 'zenario_extranet_password_reset',
+					'logout_page' => 'zenario_extranet_logout',
+					'logout_page_if_user_doesnt_accept_terms' => 'zenario_extranet_logout'
 				];
 				
-				foreach ($loopThrough as $moduleClassName => $settingCodename) {
+				foreach ($loopThrough as $settingCodename => $moduleClassName) {
 					if (
 						isset($fields['first_tab/' . $settingCodename])
 						&& (!ze\module::isRunning($moduleClassName) || !$fields['first_tab/' . $settingCodename]['value'])

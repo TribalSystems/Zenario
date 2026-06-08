@@ -26,8 +26,8 @@
 			ff = m.fields[0],
 			fl = m.fields.length,
 			lf = m.fields[fl-1],
-			pgf = ff._lastVisibleGroupingField,
-			lgf = lf._lastVisibleGroupingField,
+			pgf = ff._cms_lastVisibleGroupingField,
+			lgf = lf._cms_lastVisibleGroupingField,
 			rowHasError = false;
 	%>
 	
@@ -38,7 +38,7 @@
 		<% } %>	
 	<% } %>	
 	
-	<% if (ff._lastVisibleGrouping !== ff.grouping) { %>
+	<% if (ff._cms_lastVisibleGrouping !== ff.grouping) { %>
 		<% if (pgf) { %>
 			</fieldset>
 			<% if (pgf.post_grouping_html) { %>
@@ -94,19 +94,19 @@
 		<% } %>
 	<% } %>
 	<% if (ff.legend) { %>
-		<legend class="zenario_legend zenario_legend_for__{{ff._id|escape}}"><span>{{ff.legend}}</span></legend>
+		<legend class="zenario_legend zenario_legend_for__{{ff._cms_fieldID|escape}}"><span>{{ff.legend}}</span></legend>
 	<% } %>
 	
-	<div id="{{m.lib.idPrefix()|escape}}row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
+	<div id="{{m.lib.idPrefix()|escape}}row__{{ff._cms_fieldID|escape}}" style="{{ff.row_style|escape}}" class="
 		zenario_ab_row
-		zenario_ab_row__{{ff._id|escape}}
+		zenario_ab_row__{{ff._cms_fieldID|escape}}
 		{{rowHasError? 'zenario_row_with_error' : ''}}
 		{{ff.error? 'zenario_row_with_error_on_first_field' : ''}}
 		{{ff.row_class|escape}}
 		{{ff.pressed? 'zenario_row_pressed' : ''}}
 		{{ff.type=='checkbox'? 'zenario_single_line' : ''}}
 		{{ff.onoff? 'zenario_onoffswitch zenario_onoffswitch_welcome' : ''}}
-		{{ff._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
+		{{ff._cms_hideOnOpen? 'zenario_hide_row_on_open' : ''}}
 		{{ff.indent? 'zenario_indent_level zenario_indent_level_' +  (1*ff.indent) : ''}}
 		zenario_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
 		
@@ -127,16 +127,16 @@
 		<% } else { %>
 			<div class="title" {{zenario.browserIsIE(8)? ' style="width: 25%"' : ''}}>
 				<% if (ff.label && !zenario.IN(ff.type, 'checkbox', 'radio')) { %>
-					<div class="{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}} {{ff._showOnOpen? 'zenario_show_on_open' : ''}}">
-						<label for="{{ff._id|escape}}">{{ff.label|escape}}</label>
+					<div class="{{ff._cms_hideOnOpen? 'zenario_hide_on_open' : ''}} {{ff._cms_showOnOpen? 'zenario_show_on_open' : ''}}">
+						<label for="{{ff._cms_fieldID|escape}}">{{ff.label|escape}}</label>
 					</div>
 				<% } %>
 			</div><div>
 		<% } %>
 				<div class="
 					zfab_row_fields
-					{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}}
-					{{ff._showOnOpen? 'zenario_show_on_open' : ''}}
+					{{ff._cms_hideOnOpen? 'zenario_hide_on_open' : ''}}
+					{{ff._cms_showOnOpen? 'zenario_show_on_open' : ''}}
 					{{ff.type=='checkbox'? 'zenario_input_checkbox' : ''}}
 				">
 					{{m.lib.microTemplate('zenario_welcome_field', m.fields)}}
@@ -144,7 +144,7 @@
 			</div>
 	</div>
 	
-	<% if (ff._isLastRow) { %>
+	<% if (ff._cms_fieldIsOnLastRow) { %>
 		<% if (ff.grouping) { %>
 			</fieldset>
 			<% if (lgf && lgf.post_grouping_html) { %>

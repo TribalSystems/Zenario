@@ -28,5 +28,11 @@ description: >
 
 is_abstract: true
 is_pluggable: true
-nestable: true
+can_be_plugged_into:
+    content_items: false
+    layouts: false
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 can_be_version_controlled: false

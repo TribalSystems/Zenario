@@ -494,9 +494,22 @@ class pageCache {
 		register_shutdown_function(['ze\\pageCache', 'clearOnShutdown'], $clearAll = true, $clearWebPages = true, $clearPlugins = false);
 	}
 	
+	public static function experimentalOption($opt) {
+		return defined($opt) && constant($opt);
+	}
+	
 	public static function clearOnShutdown($clearAll = false, $clearWebPages = true, $clearPlugins = true) {
 		
-		if ($clearAll) {
+		//Note: We're experimenting with new options to control how clearing the cache works.
+		//The EXPERIMENTAL_CACHE_OPTION_ALWAYS_CLEAR_ALL option disables selective clearing
+		//and makes any change clear the entire cache.
+		//The EXPERIMENTAL_CACHE_OPTION_FASTER_CLEAR_ALL option uses the "rm" console command to clear
+		//the cache directories, instead of manually itterating on them in PHP. (This requires
+		//a UN*X server with exec permissions enabled.)
+		//(See T13431, Cache: make cache clears simply do "rm -rf".)
+		
+		if ($clearAll
+		 || \ze\pageCache::experimentalOption('EXPERIMENTAL_CACHE_OPTION_ALWAYS_CLEAR_ALL')) {
 			self::$clearCacheBy['all'] = true;
 		}
 		
@@ -507,6 +520,23 @@ class pageCache {
 		if ($clearPlugins) {
 			$cacheDirs[] = CMS_ROOT. 'cache/plugins/';
 		}
+		
+		
+		if (!empty(self::$clearCacheBy['all'])
+		 && \ze\pageCache::experimentalOption('EXPERIMENTAL_CACHE_OPTION_FASTER_CLEAR_ALL')
+		 && !\ze\server::isWindows()
+		 && \ze\server::execEnabled()) {
+			
+			foreach ($cacheDirs as $cacheDir) {
+				if (is_dir($cacheDir)) {
+					exec('rm -rf '. escapeshellarg($cacheDir));
+				}
+			}
+			
+			return;
+		}
+		
+		
 		
 		//Loop through the page and plugin-cache directories
 		foreach ($cacheDirs as $cacheDir) {

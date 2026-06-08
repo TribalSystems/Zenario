@@ -1,7 +1,7 @@
 <img style="width: 200px; height: 200px;" src="https://raw.githubusercontent.com/cytoscape/cytoscape.js/unstable/documentation/img/cytoscape-logo.png" width="200" height="200">
 
 [![GitHub repo](https://img.shields.io/badge/Repo-GitHub-yellow.svg)](https://github.com/cytoscape/cytoscape.js)
-[![Ask a question with Phind](https://img.shields.io/badge/Get%20help-Phind-yellow.svg)](https://www.phind.com/search?c=I%27m%20using%20the%20Cytoscape.js%20graph%20theory%20JS%20library.&q=How%20do%20I%20create%20a%20graph%20in%20my%20HTML%20page)
+[![Ask a question with Phind](https://img.shields.io/badge/Get%20help-Phind-yellow.svg)](https://www.phind.com/search?q=I%27m%20using%20the%20Cytoscape.js%20graph%20theory%20JS%20library.%20How%20do%20I%20create%20a%20graph%20in%20my%20HTML%20page)
 [![News and tutorials](https://img.shields.io/badge/News%20%26%20tutorials-Blog-yellow.svg)](https://blog.js.cytoscape.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://raw.githubusercontent.com/cytoscape/cytoscape.js/master/LICENSE)
 [![npm](https://img.shields.io/npm/v/cytoscape.svg)](https://www.npmjs.com/package/cytoscape)
@@ -144,7 +144,7 @@ The default test scripts run directly against the source code.  Tests can altern
 
 ### Patch version
 
-1. Go to [Actions > Feature release](https://github.com/cytoscape/cytoscape.js/actions/workflows/patch-release.yml)
+1. Go to [Actions > Patch release](https://github.com/cytoscape/cytoscape.js/actions/workflows/patch-release.yml)
 1. Go to the 'Run workflow' dropdown
 1. [Optional] The 'master' branch should be preselected for you
 1. Press the green 'Run workflow' button

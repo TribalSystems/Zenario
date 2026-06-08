@@ -21,5 +21,11 @@ css_class_name: zenario_language_picker
 default_framework: select_list
 is_pluggable: true
 can_be_version_controlled: false
-nestable: true
+can_be_plugged_into:
+    content_items: false
+    layouts: true
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 default_instance_name: Language Picker

@@ -2680,9 +2680,30 @@ _sql
 _sql
 
 
+
+
+
+
+
+
+
+//
+//	Zenario 10.4
+//
+
+
+//Add a new "show exit" option for the buttons shown on slides
+);	ze\dbAdm::revision(64500
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins` 
+	ADD COLUMN `show_exit` tinyint(1) not null DEFAULT 0
+	AFTER `show_back`
+_sql
+
+
 //Add a setting to control whether the content areas of content items can be edited in their FAB.
-//Note: this is being backpatched from 10.4. 10.4 has a check to see if a site has already got this update, and won't re-apply it.
-);	ze\dbAdm::revision(64131
+//Note: this was backpatched to 10.3, so we need a check to see if the column already exists.
+);	if (ze\dbAdm::needRevision(64600) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_types LIKE "allow_editing_content_in_fab"')) ze\dbAdm::revision(64600
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]content_types`
 	ADD COLUMN `allow_editing_content_in_fab` tinyint(1) NOT NULL default 0
@@ -2699,4 +2720,210 @@ _sql
 _sql
 
 
+//Rework the flags for where plugins can be used.
+);	ze\dbAdm::revision(64650
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules` 
+	ADD COLUMN `into_slots` tinyint(1) NOT NULL default 0 AFTER `is_pluggable`,
+	ADD COLUMN `into_nests` tinyint(1) NOT NULL default 0 AFTER `into_slots`,
+	ADD COLUMN `into_ajax_nests` tinyint(1) NOT NULL default 0 AFTER `into_nests`,
+	ADD COLUMN `into_conductors` tinyint(1) NOT NULL default 0 AFTER `into_ajax_nests`,
+	ADD COLUMN `into_slideshows` tinyint(1) NOT NULL default 0 AFTER `into_conductors`,
+	ADD COLUMN `rarely_used` tinyint(1) NOT NULL default 0 AFTER `into_slideshows`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]modules` AS m SET
+		m.into_slots = 1,
+		m.into_nests = 1,
+		m.into_ajax_nests = 1,
+		m.into_conductors = 1,
+		m.into_slideshows = 1
+	WHERE m.nestable = 1
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]modules` AS m SET
+		m.into_slots = 0,
+		m.into_nests = 1,
+		m.into_ajax_nests = 1,
+		m.into_conductors = 1,
+		m.into_slideshows = 1
+	WHERE m.nestable = 2
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules` 
+	DROP COLUMN `nestable`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules` 
+	ADD KEY (`into_slots`),
+	ADD KEY (`into_nests`),
+	ADD KEY (`into_ajax_nests`),
+	ADD KEY (`into_conductors`),
+	ADD KEY (`into_slideshows`),
+	ADD KEY (`rarely_used`)
+_sql
+
+
+//I missed one migration rule above; just adding a query here to fix it!
+);	ze\dbAdm::revision(64660
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]modules` AS m SET
+		m.into_slots = 1
+	WHERE m.is_pluggable = 1
+	  AND m.into_slots = 0
+	  AND m.into_nests = 0
+_sql
+
+);	ze\dbAdm::revision(64710
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]documents`
+	ADD COLUMN `created` datetime DEFAULT NULL,
+	ADD COLUMN `created_admin_id` int(10) unsigned DEFAULT NULL,
+	ADD COLUMN `last_edited` datetime DEFAULT NULL,
+	ADD COLUMN `last_edited_admin_id` int(10) unsigned DEFAULT NULL
+_sql
+
+
+//Small change for where plugins can be used.
+//I'm tweaking what I've done above slightly to different options for content items vs. layouts.
+);	ze\dbAdm::revision(64790
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules` 
+	ADD COLUMN `into_content_items` tinyint(1) NOT NULL default 0 AFTER `is_pluggable`,
+	ADD COLUMN `into_layouts` tinyint(1) NOT NULL default 0 AFTER `into_content_items`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]modules` AS m SET
+		m.into_content_items = 1,
+		m.into_layouts = 1
+	WHERE m.into_slots = 1
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules` 
+	DROP COLUMN `into_slots`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules` 
+	ADD KEY (`into_content_items`),
+	ADD KEY (`into_layouts`)
+_sql
+
+//Small change: rename 2 columns to have clearer names
+);	ze\dbAdm::revision(64795
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules` 
+	CHANGE COLUMN `into_ajax_nests` `into_regular_ajax_nests` tinyint(1) NOT NULL default 0,
+	CHANGE COLUMN `into_conductors` `into_conductor_ajax_nests` tinyint(1) NOT NULL default 0
+_sql
+
+);	ze\dbAdm::revision(64800
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules` 
+	CHANGE COLUMN `into_nests` `into_regular_nests` tinyint(1) NOT NULL default 0,
+	CHANGE COLUMN `into_regular_ajax_nests` `into_ajax_nests_without_conductor` tinyint(1) NOT NULL default 0,
+	CHANGE COLUMN `into_conductor_ajax_nests` `into_ajax_nests_with_conductor` tinyint(1) NOT NULL default 0
+_sql
+
+//In 10.4, we introduced the created/last edited system for hierarchical documents.
+//Populate the data if possible. Also drop obsolete columns later.
+);	ze\dbAdm::revision(64815
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]documents`
+	SET
+		`created` = `file_datetime`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]documents`
+	DROP COLUMN `file_datetime`,
+	DROP COLUMN `document_datetime`
+_sql
+
+//In 10.4, we introduced the created/last edited system for hierarchical documents.
+//It only contained admin columns, but Documents FEA allows superusers to create/edit/delete documents.
+//Add the missing user columns.
+);	ze\dbAdm::revision(64820
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]documents`
+	ADD COLUMN `created_user_id` int(10) unsigned DEFAULT NULL AFTER `created_admin_id`,
+	ADD COLUMN `created_username` varchar(255) DEFAULT NULL AFTER `created_user_id`,
+	ADD COLUMN `last_edited_user_id` int(10) unsigned DEFAULT NULL AFTER `last_edited_admin_id`,
+	ADD COLUMN `last_edited_username` varchar(255) DEFAULT NULL AFTER `last_edited_user_id`
+_sql
+
+
+//Rename the previous "show exit" option to "show back to top", as that's what it actually does.
+);	ze\dbAdm::revision(64960
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins` 
+	CHANGE COLUMN `show_exit` `show_back_to_top` tinyint(1) NOT NULL default 0
+_sql
+
+);	ze\dbAdm::revision(64970
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins` 
+	CHANGE COLUMN `show_back_to_top` `show_back_to_1st` tinyint(1) NOT NULL default 0
+_sql
+
+
+);	ze\dbAdm::revision(64975
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_nodes` 
+	DROP COLUMN `accesskey`
+_sql
+
+
+//Add a new flag for modules that add HTML to pages sitewide
+);	ze\dbAdm::revision(65000
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules`
+	ADD COLUMN `adds_sitewide_html` tinyint(1) NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules`
+	ADD KEY (`adds_sitewide_html`)
+_sql
+
+
+
+);
+
+//In 10.5, we added keys on certain dataset-related columns.
+//Please note: this was backpatched to 10.4.
+//The 10.5 version of this update will check first
+//if each index already exists before attempting to add it.
+ze\dbAdm::revision(65010
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_dataset_tabs`
+	ADD INDEX idx_name (`name`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
+	ADD INDEX idx_dataset_type_system (dataset_id, type, is_system_field)
+_sql
+);
+
+
+
+
+//Remove some bad data caused by a missing delete statement when deleting a plugin.
+//PLEASE NOTE: This was originally done in 11.1 and backpatched.
+//However it is safe to run and rerun multiple times, so can be run again without a check.
+ze\dbAdm::revision(65011
+, <<<_sql
+	DELETE psl.*
+	FROM `[[DB_PREFIX]]plugin_sitewide_link` AS psl
+	LEFT JOIN `[[DB_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = psl.instance_id
+	WHERE pi.id IS NULL
+_sql
 );

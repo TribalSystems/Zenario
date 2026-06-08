@@ -42,6 +42,8 @@ zenario_content:
         
         local_file_id_on_load: 0
         menu_text_on_load: ''
+        
+        groups_exist: true
     
     identifier:
         css_class: content_draft
@@ -309,7 +311,7 @@ zenario_content:
                     label: 'Menu navigation text:'
                     type: text
                     maxlength: 125
-                    onchange: zenarioAB.tuix.___menu_text_changed = true;
+                    onchange: zenarioAB.tuix._cms_menuTextChanged = true;
                     validation:
                         required_if_not_hidden: Please enter some text for menu navigation.
                     tooltip: |
@@ -326,7 +328,7 @@ zenario_content:
                     label: 'Menu node text:'
                     type: text
                     maxlength: 125
-                    onchange: zenarioAB.tuix.___menu_text_changed = true;
+                    onchange: zenarioAB.tuix._cms_menuTextChanged = true;
                     validation:
                         required_if_not_hidden: Please enter some text for the menu node.
                     oninput: |
@@ -432,7 +434,7 @@ zenario_content:
 
                         $('#' + lib.idPrefix() + 'row__alias .zenario_note_below_plain .zenario_note_content').text(seo_message_title);
                     onchange: |
-                        zenarioAB.tuix.___alias_changed = true;
+                        zenarioAB.tuix._cms_aliasChanged = true;
                         $(lib.get('alias_changed')).val(1);
                     redraw_microtemplates_onkeyup: true
                 suggest_alias_from_title:
@@ -444,7 +446,7 @@ zenario_content:
                     style: display:none
                     onclick: |
                         $(lib.get('alias_changed')).val("");
-                        zenarioAB.tuix.___alias_changed = false; 
+                        zenarioAB.tuix._cms_aliasChanged = false; 
                         zenarioAB.contentTitleChange(); 
                         $(lib.get('suggest_alias_from_title')).hide();
                 alias_warning_display_wrapper:
@@ -943,8 +945,7 @@ zenario_content:
                     full_width: true
                     type: code_editor
                     dont_trim: true
-                    insert_link_button:
-                        exists: true
+                    insert_link_button: {}
                     language: html
                     tall_as_possible: true
         rawhtml2:
@@ -958,8 +959,7 @@ zenario_content:
                     full_width: true
                     type: code_editor
                     dont_trim: true
-                    insert_link_button:
-                        exists: true
+                    insert_link_button: {}
                     language: html
                     tall_as_possible: true
         rawhtml3:
@@ -973,8 +973,7 @@ zenario_content:
                     full_width: true
                     type: code_editor
                     dont_trim: true
-                    insert_link_button:
-                        exists: true
+                    insert_link_button: {}
                     language: html
                     tall_as_possible: true
         rawhtml4:
@@ -988,8 +987,7 @@ zenario_content:
                     full_width: true
                     type: code_editor
                     dont_trim: true
-                    insert_link_button:
-                        exists: true
+                    insert_link_button: {}
                     language: html
                     tall_as_possible: true
         

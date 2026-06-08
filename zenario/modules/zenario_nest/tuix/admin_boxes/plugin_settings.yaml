@@ -47,9 +47,9 @@ plugin_settings:
                     value: one_slide
                     values:
                         one_slide:
-                            label: 'Show just one slide, no animation'
+                            label: 'One slide, with no animation'
                         cycle2:
-                            label: 'Show as slides'
+                            label: 'One or more slides'
                         accordion:
                             label: 'Show as an accordion'
                     format_onchange: true

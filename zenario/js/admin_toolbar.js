@@ -73,6 +73,14 @@ zenarioAT.init = function(firstLoad) {
 	zenario.ajax(zenarioAT.setURL(), false, true, true, true, true, undefined, 7500).after(zenarioAT.init2);
 };
 
+//Run something when the admin toolbar has finished loading
+zenarioAT.ready = function(fun) {
+	if (zenarioAT.loaded) {
+		fun();
+	} else {
+		zenarioAT.runOnInit.push(fun);
+	}
+};
 
 zenarioAT.init2 = function(tuix) {
 	
@@ -332,6 +340,32 @@ zenarioAT.action = function(object) {
 	}
 };
 
+zenarioAT.flag = function(flagCodeName) {
+	var flags = zenarioAT.tuix.flags;
+	return flags[flagCodeName];
+};
+
+zenarioAT.flagSet = function(flagCodeName) {
+	return !!zenarioAT.flag(flagCodeName);
+};
+
+zenarioAT.flagNotSet = function(flagCodeName) {
+	return !zenarioAT.flag(flagCodeName);
+};
+
+zenarioAT.setFlag = function(flagCodeName, flagValue) {
+	zenarioAT.tuix.flags[flagCodeName] = flagValue;
+	zenarioL.set(flagValue, flagCodeName + '_on', flagCodeName + '_off');
+};
+
+zenarioAT.updateBodyClassNames = function() {
+	var flagCodeName, flagValue, flags = zenarioAT.tuix.flags;
+	
+	foreach (flags as flagCodeName => flagValue) {
+		zenarioL.set(flagValue, flagCodeName + '_on', flagCodeName + '_off');
+	}
+};
+
 
 zenarioAT.getKey = function(itemLevel) {
 	return {
@@ -394,7 +428,7 @@ zenarioAT.action2 = function() {
 		zenarioA.nowDoingSomething('saving');
 		
 		
-		zenario.ajax(zenarioAT.actionTarget, zenarioAT.actionRequests, false, false, true).after(function(message) {
+		zenario.ajaxWithFlags(zenarioAT.actionTarget, zenarioAT.actionRequests, false, false, true).after(function(message) {
 			//Check that this isn't an out-of-date request that has come in syncronously via AJAX
 			if (goNum != zenarioAT.goNum) {
 				return;
@@ -536,7 +570,11 @@ zenarioAT.draw = function(flashNewTabToHighlightChange) {
 						}
 					
 						if (button.onclick) {
-							buttons[bi].onclick = button.onclick;
+							buttons[bi].onclick =
+								"var buttonCodeName = '" + htmlspecialchars(buttonId) + "', " +
+									"sectionCodeName = '" + htmlspecialchars(sectionId) + "', " +
+									"button = zenarioAT.tuix.sections[sectionCodeName].buttons[buttonCodeName]; " + 
+								button.onclick;
 					
 						} else if (!buttons[bi].href) {
 							buttons[bi].onclick = "zenarioAT.clickButton('" + jsEscape(sectionId) + "', '" + jsEscape(buttonId) + "'); return false;";
@@ -557,6 +595,8 @@ zenarioAT.draw = function(flashNewTabToHighlightChange) {
 			mrg.sections[sectionId] = buttons;
 		}
 	}
+	
+	zenarioAT.updateBodyClassNames();
 	
 	get('zenario_at_wrap').innerHTML = zenarioT.microTemplate('zenario_toolbar', mrg);
 	zenarioA.tooltips('#zenario_at_wrap a[title]');
@@ -627,43 +667,6 @@ zenarioAT.sortButtons = function(sectionId) {
 	foreach (zenarioAT.sortedButtons[sectionId] as var i) {
 		zenarioAT.sortedButtons[sectionId][i] = zenarioAT.sortedButtons[sectionId][i][0];
 	}
-};
-
-//Customise some of the Organizer links, depending on where we just were
-zenarioAT.customiseOrganizerLink = function(path, secondLevel) {
-	
-	if (path) {
-		if (path.substr(0, 1) != '#') {
-			path = '#' + path;
-		}
-		
-		//This function used to customise the links into Organizer from drop-down on the admin toolbar, with respect
-		//to the content item/menu node you were currently looking at.
-		//Currently we've disabled this logic.
-		
-	
-		//var zenario__content_panels_content_refiners_content_type =
-		//	'#zenario__content/panels/content/refiners/content_type//';
-		//
-		//if (secondLevel) {
-		//	//If someone clicks on the second-level nav for a content type, and it's the current content type, try and pre-selected the current content item in Organizer
-		//	if (path == zenario__content_panels_content_refiners_content_type + zenario.cType + '//') {
-		//		return zenario__content_panels_content_refiners_content_type + zenario.cType + '//' + zenario.cType + '_' + zenario.cID;
-		//	}
-		//} else {
-		//	//If someone clicks on the top-level nav for content items, try and pre-selected the current content item in Organizer
-		//	if (path == zenario__content_panels_content_refiners_content_type + 'html//') {
-		//		return zenario__content_panels_content_refiners_content_type + zenario.cType + '//' + zenario.cType + '_' + zenario.cID;
-		//	}
-		//	//If someone clicks on the top-level nav for menu nodes, try and pre-selected the current menu node in Organizer
-		//	if (path == '#zenario__menu/panels/by_language/item//' + zenarioA.siteSettings.default_language + '//item//1//'
-		//	 && zenarioAT.tuix.meta_info.menu_organizer_path) {
-		//		return '#' + zenarioAT.tuix.meta_info.menu_organizer_path;
-		//	}
-		//}
-	}
-	
-	return path;
 };
 
 

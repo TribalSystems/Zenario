@@ -314,37 +314,6 @@ plugin_settings:
         advanced:
             label: Advanced
             fields:
-                show_details_and_link:
-                    label: 'Target content item:'
-                    type: radios
-                    plugin_setting:
-                        name: show_details_and_link
-                    values:
-                        current_content_item:
-                            ord: 1
-                            label: Automatic (recommended)
-                            side_note: This plugin should be in a slot on the layout for the Document content type. Creates a web page with summary details, from which the file can be downloaded.
-                        another_content_item:
-                            ord: 2
-                            label: Specific document content item...
-                            side_note: Use this to show a specific document content item to the visitor. The plugin can be placed on any content item or layout.
-                    value: current_content_item
-                    format_onchange: true
-                another_document:
-                    indent: 1
-                    label: 'Select document content item:'
-                    plugin_setting:
-                        name: another_document
-                        foreign_key_to: content
-                    pick_items:
-                        path: zenario__content/panels/content/refiners/content_type//document//
-                        min_path: zenario__content/panels/content
-                        max_path: zenario__content/panels/content
-                        target_path: zenario__content/panels/content
-                        select_phrase: Select...
-                    validation:
-                        required_if_not_hidden: Please select content item.
-                
                 show_published_date:
                     label: "Show item's published date"
                     plugin_setting:

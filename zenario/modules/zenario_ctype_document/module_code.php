@@ -44,36 +44,19 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			
 		
 		
-		if ($this->setting('show_details_and_link') == 'another_content_item') {
-			$this->clearCacheBy(
-				$clearByContent = true, $clearByMenu = false, $clearByFile = true, $clearByModuleData = false);
-		} else {
-			$this->clearCacheBy(
-				$clearByContent = false, $clearByMenu = false, $clearByFile = true, $clearByModuleData = false);
-		}
+		$this->clearCacheBy(
+			$clearByContent = false, $clearByMenu = false, $clearByFile = true, $clearByModuleData = false);
 		
 		if ($this->cType == 'document' && ze\priv::check()) {
 			$this->callScript('zenario_wysiwyg_editor', 'hideAnimationsInEditors');
 		}
 		
-		if ($this->setting('show_details_and_link') == 'another_content_item'){
-			$item = $this->setting('another_document');
-			if (count($arr = explode("_",$item)) == 2) {
-				$this->targetID = $arr[1];
-				$this->targetType = $arr[0];
-				if (!$this->targetVersion = ze\content::showableVersion($this->targetID,$this->targetType)){
-					return false;
-				}
-			}
-		}
-		if (!($this->targetID && $this->targetVersion && $this->targetType)) {
-			$this->targetID = $this->cID;
-			$this->targetVersion = $this->cVersion;
-			$this->targetType = $this->cType;
-		}
+		$this->targetID = $this->cID;
+		$this->targetVersion = $this->cVersion;
+		$this->targetType = $this->cType;
 		
 		if ($this->targetType != 'document') {
-			return false;
+			return true;
 		}
 		
 		if (!$version = ze\row::get(
@@ -385,8 +368,8 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 
 	function showSlot() {
 		if ($this->targetType != 'document') {
-			if ((int)($_SESSION['admin_userid'] ?? false)){
-				echo "This plugin must be placed on a Document-type content item, or configured to point to another Document-type content item. Please check your plugin settings.";
+			if (ze\admin::id()) {
+				echo ze\admin::phrase("This plugin must be placed on a layout used by Document content items.");
 			}
 			return;
 		}
@@ -458,9 +441,6 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes){
 		switch ($path) {
 		    case 'plugin_settings':
-		        $fields['advanced/another_document']['hidden'] = 
-		        	!(($values['advanced/show_details_and_link'] ?? false) == 'another_content_item');
-		        
 		        $fields['advanced/published_date_format']['hidden'] = !(($values['advanced/show_published_date'] ?? false));
 		        
 		        $fields['first_tab/release_date_format']['hidden'] = 
@@ -858,7 +838,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	
 	public static function uploadS3File($usage, $s3CachePath, $s3Filename, $s3MimeType, $fileInsert = true) {
 		if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
-			$s3Filename = ze\file::safeName($s3Filename);
+			$s3Filename = ze\file::validName($s3Filename);
 			$checksum = ze::base16To64(md5_file($s3CachePath));
 			$presignedUrl = '';
 			$bucketArn = ze::setting('aws_s3_bucket');

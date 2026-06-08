@@ -4,14 +4,18 @@
 
 <br>
 &nbsp; &nbsp;
-<% if (m.internalCMSProperty.isGlobal) { %>
-	global property (works anywhere in TUIX)
+<% if (m.internalCMSProperty) { %>
+	<% if (m.internalCMSProperty.isGlobal) { %>
+		global property (works anywhere in TUIX)
+	<% } else { %>
+		set by Zenario but can be used by developers
+	<% } %>
+	
+	<% if (m.internalCMSProperty.description) { %>
+		<span class="tooltip_desc">
+			{{marked(m.internalCMSProperty.description, {breaks: true})}}
+		</span>
+	<% } %>
 <% } else { %>
 	internal CMS property (meta-information added by Zenario)
-<% } %>
-
-<% if (m.internalCMSProperty.description) { %>
-	<span class="tooltip_desc">
-		{{marked(m.internalCMSProperty.description, {breaks: true})}}
-	</span>
 <% } %>

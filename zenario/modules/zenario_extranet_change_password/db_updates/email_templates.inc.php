@@ -61,7 +61,7 @@ ze\dbAdm::revision(43, "
 	UPDATE [[DB_PREFIX]]email_templates
 	SET `body` = 
 		'<p>Dear [[first_name]] [[last_name]],</p>
-		<p>You have successfully changed your password.</p>
+		<p>You have successfully changed your password at [[cms_url]].</p>
 		<p>&nbsp;</p>
 		'
 	WHERE `code` = 'zenario_extranet_change_password_notification_en'

@@ -351,7 +351,7 @@ class server {
 	
 	//Wrapper function for the phpMQTT library.
 	public static function mqttConnect($host, $port, $username, $password, $clientId = null) {
-		require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/phpmqtt/phpMQTT.php';
+		require_once CMS_ROOT. 'zenario/libs/not_to_redistribute/phpmqtt/phpMQTT.php';
 		
 		$mqtt = new \Bluerhinos\phpMQTT($host, $port, $clientId ?? $username);
 		if ($mqtt->connect(true, NULL, $username, $password)) {

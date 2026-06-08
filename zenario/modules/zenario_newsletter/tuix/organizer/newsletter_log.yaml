@@ -103,6 +103,4 @@ zenario__email_template_manager:
             #        do_csv_export: true
             default_sort_column: identifier
             item:
-                name: Recipient
-                names: Recipients
                 css_class: user

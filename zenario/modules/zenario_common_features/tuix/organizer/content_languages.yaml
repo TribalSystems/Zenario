@@ -6,33 +6,28 @@ zenario__content:
             key:
                 cType: ""
             title: Content items by language
-            allow_bypass: Yes
+            allow_bypass: true
             db_items:
                 table: '[[DB_PREFIX]]languages AS l'
                 id_column: l.id
-                client_side: Yes
+                client_side: true
             refiners:
-                content_type:
-                    exists: Yes
-                template:
-                    exists: Yes
+                content_type: {}
+                template: {}
             columns:
                 name:
                     title: Language name
-                    searchable: Yes
+                    searchable: true
                     db_column: l.id
                     format: language_english_name_with_id
-                    show_by_default: Yes
+                    show_by_default: true
                 item_count:
                     title: Content items
-                    show_by_default: Yes
+                    show_by_default: true
             default_sort_column: name
             item:
-                name: Language
-                names: Languages
                 css_class: language
                 tooltip_when_link_is_active: 'View content in language [[name]]'
                 link:
                     path: zenario__content/panels/content
-                    branch: Yes
                     refiner: language

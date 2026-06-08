@@ -14,11 +14,11 @@ plugin_settings:
                     value: true
                     redraw_onchange: true
                 title_tags:
+                    same_row: true
                     hide_with_previous_field: true
                     visible_if: zenarioAB.value('show_title')
                     plugin_setting:
                         name: title_tags
-                    label: 'Title heading tag:'
                     type: select
                     values:
                         h1: <h1>
@@ -29,39 +29,76 @@ plugin_settings:
                         h6: <h6>
                         p: <p>
                     value: h1
-                    side_note: |
-                        Choose which HTML tags the title will be displayed in
                     indent: 1
-                show_details_and_link:
-                    label: 'Show Event details from:'
-                    type: radios
+                pinned_events_icon:
                     plugin_setting:
-                        name: show_details_and_link
+                        name: pinned_events_icon
+                    label: "For pinned events, show an icon:"
+                    type: select
                     values:
-                        current_content_item:
+                        show_to_all:
                             ord: 1
-                            label: Current Event content item
-                        another_content_item:
+                            label: 'Show a "pinned" icon'
+                        show_to_admins_only:
                             ord: 2
-                            label: A specifc Event content item
-                    side_note: |
-                        This plugin may be on the layout for Event content items; alternatively it may be on another type of content item (e.g. HTML, News) and then link to an Event content item.
-                    value: current_content_item
-                    format_onchange: Yes
-                another_event:
-                    indent: 1
-                    label: 'Select Event content item:'
+                            label: 'Show a "pinned" icon to administrators only'
+                        do_not_show:
+                            ord: 3
+                            label: "Don't show an icon"
+                    value: show_to_all
+                pinned_events_text:
                     plugin_setting:
-                        name: another_event
-                        foreign_key_to: content
-                    pick_items:
-                        path: zenario__content/panels/content/refiners/content_type//event//
-                        min_path: zenario__content/panels/content
-                        max_path: zenario__content/panels/content
-                        target_path: zenario__content/panels/content
-                        select_phrase: Select Event content item...
+                        name: pinned_events_text
+                    label: "For pinned events, show text:"
+                    type: select
+                    values:
+                        show_to_all:
+                            ord: 1
+                            label: 'Show text'
+                        show_to_admins_only:
+                            ord: 2
+                            label: 'Show text to administrators only'
+                        do_not_show:
+                            ord: 3
+                            label: "Don't show text"
+                    value: do_not_show
+                    redraw_onchange: true
+                pinned_events_text_wording:
+                    indent: 1
+                    plugin_setting:
+                        name: pinned_events_text_wording
+                    type: text
+                    show_phrase_icon: true
+                    label: '"Pinned" text:'
+                    value: "Pinned"
+                    visible_if: lib.value('pinned_events_text') != 'do_not_show'
                     validation:
-                        required_if_not_hidden: Please select a content item.
+                        required_if_not_hidden: 'Please enter the "pinned" text'
+                    maxlength: 20
+                    style: 'width: 10em;'
+                pinned_events_text_html_tag:
+                    indent: 2
+                    plugin_setting:
+                        name: pinned_events_text_html_tag
+                    value: p
+                    visible_if: lib.value('pinned_events_text') != 'do_not_show'
+                    type: select
+                    values:
+                        h1:
+                            label: <h1>
+                        h2:
+                            label: <h2>
+                        h3:
+                            label: <h3>
+                        h4:
+                            label: <h4>
+                        h5:
+                            label: <h5>
+                        h6:
+                            label: <h6>
+                        p:
+                            label: <p>
+                    same_row: true
                 show_online_when_event_is_online:
                     label: 'Show "Online" when event is online'
                     type: checkbox

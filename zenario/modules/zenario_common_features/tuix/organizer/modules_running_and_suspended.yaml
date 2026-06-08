@@ -6,7 +6,6 @@ zenario__library:
             priv: _PRIV_VIEW_SLOT
             title: Modules (running and suspended)
             disable_periodic_refresh: true
-            enable_close_up_view: true
             
             db_items:
                 table: >
@@ -84,21 +83,31 @@ zenario__library:
                     title: Linked special page
                     show_by_default: true
                     item_link: content_item
+                
                 is_pluggable:
                     db_column: m.is_pluggable
-                    title: Pluggable
-                    format: yes_or_no
-                    width: xxsmall
-                    hidden: true
-                nestable:
-                    db_column: m.nestable
-                    title: Nestable
-                    format: yes_or_no
-                    width: xxsmall
+                into_content_items:
+                    db_column: m.into_content_items
+                into_layouts:
+                    db_column: m.into_layouts
+                into_slots:
+                    db_column: "m.into_content_items OR m.into_layouts"
+                into_regular_nests:
+                    db_column: m.into_regular_nests
+                into_ajax_nests_without_conductor:
+                    db_column: m.into_ajax_nests_without_conductor
+                into_ajax_nests_with_conductor:
+                    db_column: m.into_ajax_nests_with_conductor
+                into_slideshows:
+                    db_column: m.into_slideshows
                 can_be_version_controlled:
                     db_column: m.can_be_version_controlled
-                comment:
-                    exists: true
+                pluggable:
+                    title: Pluggable
+                    width: xlarge
+                    show_by_default: true
+                
+                comment: {}
                 editions: {}
                 edition:
                     db_column: m.edition
@@ -118,12 +127,9 @@ zenario__library:
                 [[display_name]]
                 [[comment]]
             item:
-                name: Module
-                names: Modules
                 css_class: module
                 link:
                     path: zenario__library/panels/plugins
-                    branch: true
                     refiner: plugin
                 tooltip_when_link_is_active: |
                         View this module's plugins
@@ -143,11 +149,7 @@ zenario__library:
                                 title: Path
                                 show_by_default: true
                         refiners:
-                            module:
-                                exists: true
-                        item:
-                            name: Framework
-                            names: Frameworks
+                            module: {}
                         item_buttons:
                             view_dropdown:
                                 label: View
@@ -178,7 +180,8 @@ zenario__library:
                     priv: _PRIV_RUN_MODULE
                     label: Start module
                     visible_if: |
-                        item.status != 'module_running' && item.code_present
+                        item.code_present &&
+                        (item.status == 'module_not_initialized' || item.status == 'module_suspended')
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_setup_module
@@ -209,7 +212,7 @@ zenario__library:
                             html: true
                             message: |
                                 <p>
-                                    Are you sure that you wish to suspend the module &ldquo;[[display_name]]&rdquo;?
+                                    Suspend the module &ldquo;[[display_name]]&rdquo; ([[class_name]])?
                                 </p><p>
                                     Suspending a module will disable any functionality it provides in Organizer, and
                                     stop any of its plugins from outputting content.
@@ -229,7 +232,7 @@ zenario__library:
                     priv: _PRIV_RESET_MODULE
                     label: Uninitialise and delete data
                     visible_if: |
-                        item.status != 'module_running' && item.status != 'module_not_initialized'
+                        item.status == 'module_suspended'
                     hide_in_select_mode: true
                     ajax:
                         confirm:
@@ -267,7 +270,7 @@ zenario__library:
                     record_count: plugin_count
                     visible_if: |
                         item.is_pluggable &&
-                        item.nestable !== 2 &&
+                        item.into_slots &&
                         item.status == 'module_running'
                     link:
                         path: zenario__library/panels/plugins
@@ -277,7 +280,7 @@ zenario__library:
                     label: "Layouts with module's plugins"
                     visible_if: |
                         item.is_pluggable &&
-                        item.nestable !== 2 &&
+                        item.into_layouts &&
                         item.status == 'module_running'
                     hide_in_select_mode: true
                     link:
@@ -288,7 +291,7 @@ zenario__library:
                     label: "Content items using this module's plugins"
                     visible_if: |
                         item.is_pluggable &&
-                        item.nestable !== 2 &&
+                        item.into_content_items &&
                         item.status == 'module_running'
                     hide_in_select_mode: true
                     link:
@@ -308,7 +311,7 @@ zenario__library:
                     label: "Effective usage"
                     visible_if: |
                         item.is_pluggable &&
-                        item.nestable !== 2 &&
+                        item.into_slots &&
                         item.status == 'module_running'
                     hide_in_select_mode: true
                     link:

@@ -13,27 +13,24 @@ zenario__menu:
             db_items:
                 table: '[[DB_PREFIX]]menu_sections AS ms'
                 id_column: ms.id
-                client_side: Yes
+                client_side: true
             columns:
                 name:
                     title: Section name
-                    searchable: Yes
+                    searchable: true
                     db_column: ms.section_name
-                    show_by_default: Yes
+                    show_by_default: true
             item:
-                name: Section
-                names: Sections
                 css_class: menu_section
                 tooltip_when_link_is_active: 'View menu nodes in the section &quot;[[name]]&quot;.'
                 link:
                     path: zenario__menu/panels/menu_nodes
-                    branch: Yes
                     refiner: section
             collection_buttons:
                 advanced_dropdown:
                     label: Advanced
                     ord: 20
-                    hide_when_children_are_not_visible: Yes
+                    hide_when_children_are_not_visible: true
                 help:
                     label: Help
                     ord: 30
@@ -51,10 +48,10 @@ zenario__menu:
                 view_dropdown:
                     label: View
                     ord: 10
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 advanced_dropdown:
                     label: Advanced
                     ord: 20
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true

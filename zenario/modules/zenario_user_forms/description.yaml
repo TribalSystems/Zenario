@@ -29,7 +29,13 @@ vlp_class_name: zenario_user_forms
 css_class_name: zenario_user_forms
 is_pluggable: true
 can_be_version_controlled: false
-nestable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: true
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: false
 default_framework: standard
 
 # Warning: adding a new dependency to an existing module will break any existing sites

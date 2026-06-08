@@ -26,6 +26,13 @@ keywords: >
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:
 is_pluggable: true
+can_be_plugged_into:
+    content_items: true
+    layouts: true
+    regular_nests: true
+    slideshows: false
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: false
 plugin_must_be_on_private_page: true
 can_be_version_controlled: false
 default_framework: standard

@@ -13,4 +13,3 @@ zenario__users:
                         priv: _PRIV_VIEW_FORM_RESPONSES
                         path: zenario__user_forms/panels/user_form_responses
                         refiner: user_id
-                        branch: Yes

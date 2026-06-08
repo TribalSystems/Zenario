@@ -89,6 +89,31 @@ plugin_settings:
                     visible_if: lib.value('show_pinned_text') != 'do_not_show'
                     validation:
                         required_if_not_hidden: 'Please enter the "pinned" text'
+                    maxlength: 20
+                    style: 'width: 10em;'
+                pinned_text_html_tag:
+                    indent: 2
+                    plugin_setting:
+                        name: pinned_text_html_tag
+                    value: p
+                    type: select
+                    values:
+                        h1:
+                            label: <h1>
+                        h2:
+                            label: <h2>
+                        h3:
+                            label: <h3>
+                        h4:
+                            label: <h4>
+                        h5:
+                            label: <h5>
+                        h6:
+                            label: <h6>
+                        p:
+                            label: <p>
+                    same_row: true
+                    visible_if: lib.value('show_pinned_text') != 'do_not_show'
         each_item:
             label: Each Forum
             fields:

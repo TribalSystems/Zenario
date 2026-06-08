@@ -45,7 +45,6 @@ zenario__library:
             refiner_required: true
             panel_type: multi_line_list
             use_tall_rows: true
-            #two_line_list: true
             
             columns:
                 ordinal:
@@ -188,8 +187,6 @@ zenario__library:
                         send_signal:
                             label: 'Send a signal to decide visibility'
             item:
-                name: Image
-                names: Images
                 tooltip: >
                     To reorder items, simply drag and drop.
                     Changes will take effect immediately.
@@ -251,8 +248,6 @@ zenario__library:
                     label: View image
                     popout:
                         href: zenario/file.php?popout=1
-                        options:
-                            type: image
                     with_columns_set:
                         image: true
                 duplicate:

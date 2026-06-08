@@ -51,7 +51,6 @@ zenario__locations:
                                 message_type: warning
                             request:
                                 action: delete_area
-                disable_close_up_view: Yes
                 item:
                     css_class: zenario_location_manager_areas
     panel:

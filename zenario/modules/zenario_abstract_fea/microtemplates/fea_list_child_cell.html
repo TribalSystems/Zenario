@@ -1,0 +1,25 @@
+<% var col = m.col, item = m.item; %>
+
+<% if (m.lib.columnVisibleForItem(col.id, item.id)) { %>
+	<div
+		class="
+			col_child_value  col_value_for__{{col.id|e}}
+			
+			{{col.css_class|e}}
+			
+			<% if (col.show_value_in_tooltip) { %>
+				col_value_in_tooltip
+			<% } %>
+		"
+		
+		<% if (col.show_value_in_tooltip) { %>
+			title="{{m.lib.pMicroTemplate('list_cell', m)|e}}"
+		<% } %>
+	>
+		<% if (col.title) { %>
+			<label>{{col.title|e}}</label>
+		<% } %>
+
+		{{m.lib.pMicroTemplate('list_cell', m)}}
+	</div>
+<% } %>

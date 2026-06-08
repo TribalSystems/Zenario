@@ -92,7 +92,7 @@ methods.start = function(path, key, tab, values) {
 	
 	thus.retryAJAX(
 		thus.url,
-		{_fill: true, _values: values? JSON.stringify(values) : ''},
+		{_cms_fillAction: true, _cms_formValues: values? JSON.stringify(values) : ''},
 		true,
 		function(data) {
 			if (thus.load(data)) {
@@ -170,7 +170,7 @@ methods.insertHTML = function(html, cb, isNewTab) {
 	thus.fieldThatTriggeredRedraw = false;
 	
 	if (zenarioT.showDevTools()) {
-		thus.__lastFormHTML = html;
+		thus._cms_formHTML = html;
 	}
 };
 

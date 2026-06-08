@@ -72,12 +72,6 @@ plugin_settings:
                         50:
                             label: 50
                     value: 12
-                pagination_style_posts:
-                    plugin_setting:
-                        name: pagination_style_posts
-                    label: 'Pagination style for comments:'
-                    type: select
-                    value: zenario_common_features::pagCloseWithNPIfNeeded
         posting:
             label: Editing
             notices:

@@ -205,22 +205,22 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 						<p>', ze\admin::phrase('Delete the image "[[filename]]"?', $mrg), '</p><p>It is not in use.</p>';
 				}
 			} elseif ($count > 0) {
-				$usedImages = $unusedImaged = 0;
+				$usedImages = $unusedImages = 0;
 				foreach ($idsArray as $id) {
 					if (ze\fileAdm::getMICImageUsage($id)) {
 						$usedImages++;
 					} else {
-						$unusedImaged++;
+						$unusedImages++;
 					}
 				}
 
 				if ($usedImages > 0) {
-					if ($unusedImaged > 0) {
+					if ($unusedImages > 0) {
 						$phrase = ze\admin::nPhrase(
-							'You have selected [[total_images]] images for deletion, but one of them is in use in Multiple Image Container(s). Are you sure you wish to delete them?',
-							'You have selected [[total_images]] images for deletion, but [[unused_images]] of them are in use in Multiple Image Container(s). Are you sure you wish to delete them?',
-							$unusedImaged,
-							['unused_images' => $unusedImaged, 'total_images' => $count]
+							'You have selected [[total_images]] images for deletion, but 1 of them is in use in Multiple Image Container(s). Are you sure you wish to delete them?',
+							'You have selected [[total_images]] images for deletion, but [[used_images]] of them are in use in Multiple Image Container(s). Are you sure you wish to delete them?',
+							$usedImages,
+							['used_images' => $usedImages, 'total_images' => $count]
 						);
 					} else {
 						$phrase = ze\admin::phrase(
@@ -228,6 +228,11 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 							['used_images' => $usedImages]
 						);
 					}
+				} else {
+					$phrase = ze\admin::phrase(
+						'You have selected [[total_images]] images for deletion. They are all not in use. Are you sure you wish to delete them?',
+						['total_images' => $count]
+					);
 				}
 
 				echo '

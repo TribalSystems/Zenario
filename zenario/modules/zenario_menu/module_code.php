@@ -380,10 +380,6 @@ class zenario_menu extends ze\moduleBaseClass {
 		if (isset($objects['privacy']) && $objects['privacy'] != 'public') {
 			$objects['Class'] .= ' private';
 		}
-
-		if (!empty($row['accesskey'])) {
-			$objects['Access_Key'] = htmlspecialchars($row['accesskey']);
-		}
 	
 		if (!empty($row['children'])) {
 			$objects['Class'] .= ' has_child';
@@ -412,9 +408,6 @@ class zenario_menu extends ze\moduleBaseClass {
 				$menuItemImageLink .= ' href="'. htmlspecialchars($row['url']). '"';
 				if (!empty($row['onclick'])) {
 					$menuItemImageLink .= ' onclick="'. htmlspecialchars($row['onclick']). '"';
-				}
-				if (!empty($row['accesskey'])) {
-					$menuItemImageLink .= ' accesskey="'. htmlspecialchars($row['accesskey']). '"';
 				}
 				if (!empty($row['rel_tag'])) {
 					$menuItemImageLink .= ' rel="'. htmlspecialchars($row['rel_tag']). '"';
@@ -485,10 +478,6 @@ class zenario_menu extends ze\moduleBaseClass {
 
 		if (!empty($row['onclick'])) {
 			$menuItem .= ' onclick="'. htmlspecialchars($row['onclick']). '"';
-		}
-
-		if (!empty($row['accesskey'])) {
-			$menuItem .= ' accesskey="'. htmlspecialchars($row['accesskey']). '"';
 		}
 
 		if (!empty($row['rel_tag'])) {
@@ -699,21 +688,13 @@ class zenario_menu extends ze\moduleBaseClass {
 	public function fillAdminSlotControls(&$controls) {
 		if ($this->sectionId && isset($controls['info']['menu_section'])) {
 			
-			$text = ze\admin::phrase('"[[section]]" menu section', [
-				'section' => ze\menu::sectionName($this->sectionId)
-			]);
-			$orgLink = ze\link::absolute() . 'organizer.php#'. ze\menuAdm::organizerLink(false, true, $this->sectionId);
+			$mrg = [
+				'section_name' => htmlspecialchars(ze\menu::sectionName($this->sectionId)),
+				'section_link' => htmlspecialchars(ze\link::absolute() . 'organizer.php#'. ze\menuAdm::organizerLink(false, true, $this->sectionId))
+			];
 			
 			$controls['info']['menu_section']['hidden'] = false;
-			$controls['info']['menu_section']['label'] = '
-				<span
-					class="zenario_slotControl_MsInfo"
-				>'. htmlspecialchars($text). '</span><a
-					href="'. htmlspecialchars($orgLink). '"
-					target="_blank"
-					onclick="zenarioA.closeSlotControls(); zenario.stop(event);"
-					class="zenario_linkToNewTab"
-				></a>';
+			$controls['info']['menu_section']['label'] = \ze\admin::phrase('Menu section <a class="plugins_link_new_window" target="_blank" href="[[section_link]]">[[section_name]]</a>', $mrg);
 		}
 	}
 }

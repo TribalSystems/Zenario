@@ -265,12 +265,13 @@ zenario_menu:
                         select_phrase: Select image...
                     upload:
                         multi: false
-                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                             - .webp
                         drag_and_drop: false
                         reorder_items: false
@@ -424,12 +425,14 @@ zenario_menu:
                     indent: 1
                     upload:
                         multi: false
-                        accept: 'image/png, image/jpeg, image/gif'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
+                            - .webp
                         drag_and_drop: false
                         reorder_items: false
                     pick_items:
@@ -488,14 +491,14 @@ zenario_menu:
                 description_css_grouping:
                     type: grouping
                     snippet:
-                        label: CSS, SEO and access key
+                        label: CSS and SEO
                         label_class: subheading
                         
                 description_css:
                     grouping: description_css_grouping
                     snippet:
                         html: |
-                            You can add custom CSS rel-tags and access keys here for this menu node.
+                            You can add custom CSS rel-tags here for this menu node.
 
                 css_class:
                     grouping: description_css_grouping
@@ -515,14 +518,6 @@ zenario_menu:
                     type: text
                     maxlength: 100
 
-                accesskey:
-                    grouping: description_css_grouping
-                    label: 'Access key:'
-                    size: 1
-                    maxlength: 1
-                    type: text
-                    style: "width: 1em;"
-                
                 description_other_advanced_grouping:
                     type: grouping
                     snippet:

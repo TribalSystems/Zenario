@@ -15,10 +15,11 @@
 	<% } %>
 ">
 	<a
-		<% if (m.href) { %>
-			href="{{URLBasePath + (zenarioATLinks.organizer || 'organizer.php') + zenarioAT.customiseOrganizerLink(m.href, false)|escape}}"
-		<% } else if (m.onclick) { %>
-			onclick="{{m.onclick|escape}}"
+		href="{{m.href|escape}}"
+		onclick="{{m.onclick|escape}}"
+		
+		<% if (m.new_window) { %>
+			target="_blank"
 		<% } %>
 	>
 		<span>

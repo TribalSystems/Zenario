@@ -324,6 +324,18 @@ zenario_user__details:
             label: Dates/History
             ord: 999999
             fields:
+                created_date:
+                    type: DateTime
+                    label: 'Created date:'
+                    change_month_and_year: true
+                    readonly: true
+                    show_as_a_span: true
+                modified_date:
+                    type: DateTime
+                    label: 'Modified date:'
+                    change_month_and_year: true
+                    readonly: true
+                    show_as_a_span: true
                 last_login: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'

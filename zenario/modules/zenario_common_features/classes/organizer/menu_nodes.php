@@ -57,7 +57,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		//will need things sorted by the ordinal in each level.
 		//However when we are doing a search, hierarchy view will be switched off and items will be shown in flat view.
 		//We need to write some SQL to make sure they are sorted in the correct hierarchical order.
-		if (isset($_GET['_search'])) {
+		if (isset($_GET['_cms_searchTerm'])) {
 			
 			//Work out what the largest possible depth is in the menu.
 			//(N.b. this field has an index so this query should be fast.)
@@ -438,7 +438,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			
 			if ($checkSpecificPerms) {
 				if (ze\priv::onMenuText('_PRIV_EDIT_MENU_TEXT', $id, $panel['key']['languageId'], $item['section_id'])) {
-					$item['_specific_perms'] = true;
+					$item['_cms_hasSpecificPerms'] = true;
 				}
 			}
 

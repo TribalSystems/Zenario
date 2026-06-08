@@ -9,13 +9,11 @@ display_name: Menu Breadcrumb Trail
 description: |
     <p>This module makes a plugin that displays a menu navigation breadcrumb trail for the currently viewed content item.</p>
     
-    <p>The menu node name of your home page ("Home" by default) is displayed at the start of the breadcrumb trail. For example, visitors on some page "Zenario" may see a breadcrumb trail of the form:</p>
+    <p>The home menu node (with text "Home" by default) is displayed first, followed by the level 1 menu node, level 2 and so on, down to the currently-viewed page. For example, visitors on some page "Zenario" may see a breadcrumb trail of the form:</p>
     
     <pre>Home > Products > Zenario </pre>
     
-    <p>Each word or part of the breadcrumb trail is a hyperlink to the relevant page, which will be a parent of the current page. You may customize the character separator (> in the above example) via the plugin's settings, or using CSS.</p>
-    
-    <p>If a menu node is flagged as "invisible", it will appear in the breadcrumb trail when a visitor is on the relevant content item, but it will be invisible in other menus.</p>
+    <p>If a menu node is flagged as "invisible", it will be invisible in menus, but will still appear in the breadcrumb trail when a visitor is on the its content item.</p>
 category: pluggable
 keywords: >
     nav, navigation, breadcrumb, crumb, trail, path, location
@@ -25,7 +23,13 @@ keywords: >
 css_class_name: zenario_breadcrumbs
 is_pluggable: true
 can_be_version_controlled: false
-nestable: true
+can_be_plugged_into:
+    content_items: false
+    layouts: true
+    regular_nests: false
+    slideshows: false
+    ajax_nests_without_conductor: false
+    ajax_nests_with_conductor: false
 default_framework: standard
 default_instance_name: Menu Breadcrumb Trail
 

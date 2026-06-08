@@ -1,0 +1,22 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    indicators:
+        buttons:
+            show_link_status_off:
+                css_class: zenario_toolbar_toggle zenario_toolbar_toggle_off
+                tooltip: Show link status warnings
+                appears_in_toolbars:
+                    preview: true
+                visible_if: '!zenarioA.showLinkStatusOn'
+                onclick: |
+                    zenarioA.toggleShowLinkStatus(true);
+                    zenarioT.notification(zenarioA.phrase.showingLinkStatus);
+            show_link_status_on:
+                css_class: zenario_toolbar_toggle zenario_toolbar_toggle_on
+                tooltip: Hide link status warnings
+                appears_in_toolbars:
+                    preview: true
+                visible_if: zenarioA.showLinkStatusOn
+                onclick: |
+                    zenarioA.toggleShowLinkStatus(false);

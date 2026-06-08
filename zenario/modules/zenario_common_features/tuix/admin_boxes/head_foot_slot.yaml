@@ -1,6 +1,8 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_head_foot_slot:
+    save_and_continue_button_message: Save & continue
+    save_button_message: Save & close
     key:
         id: ""
         id_is_menu_node_id: ''

@@ -130,7 +130,7 @@ zenarioSE.insertHTML = function(html, cb, isNewTab) {
 	zenarioSE.size(true);
 	
 	if (zenarioT.showDevTools()) {
-		this.__lastFormHTML = html;
+		this._cms_formHTML = html;
 	}
 };
 

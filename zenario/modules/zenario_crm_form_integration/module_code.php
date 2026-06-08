@@ -313,7 +313,6 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 
 		$resultJSON = curl_exec($curl);
 		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
 
 		//Log result
 		$logId = ze\row::set(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_response_log', ['salesforce_status' => $status, 'salesforce_response' => $resultJSON], $logId);
@@ -348,11 +347,10 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_POST, true);
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
-		
+
 		$resultJSON = curl_exec($curl);
 		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-		
+
 		if ($status != 201 && $status != 200) {
 			return false;
 		}
@@ -378,12 +376,11 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 
 		$resultJSON = curl_exec($curl);
 		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-		
+
 		if ($status != 201 && $status != 200) {
 			return false;
 		}
-		
+
 		$result = json_decode($resultJSON, true);
 		foreach ($result['fields'] as $field) {
 			if ($field['name'] == $name) {
@@ -403,8 +400,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 					
 					$resultJSON = curl_exec($curl);
 					$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-					curl_close($curl);
-					
+
 					if ($status != 201 && $status != 200) {
 						return false;
 					}
@@ -520,8 +516,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $dataJSON);
 
 		$resultJSON = curl_exec($curl);
-		curl_close($curl);
-		
+
 		if ($responseId) {
 			ze\row::update('user_response', ['crm_response' => mb_substr($resultJSON, 0, 65535, 'UTF-8')], $responseId);
 		}
@@ -546,10 +541,9 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 			curl_setopt($curl, CURLOPT_POSTFIELDS, $dataJSON);
 
 			$resultJSON = curl_exec($curl);
-			curl_close($curl);
 		}
 	}
-	
+
 	protected static function sendDataTo360LifeCycle($linkId, $data, $responseId) {
 		require_once 'includes/360lifecycle.inc.php';
 		

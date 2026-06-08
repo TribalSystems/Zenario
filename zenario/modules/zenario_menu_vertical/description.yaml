@@ -3,23 +3,15 @@
 author_name: Tribal Systems
 copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
-start_running_on_install: true  # N.b. changing this property won't do anything as this module is hard-coded in the installer to run on install.
+start_running_on_install: true  # N.B. changing this property won't do anything as this module is hard-coded in the installer to run on install.
 license_info: 'Modified BSD License'
 display_name: Menu (Vertical)
 description: |
-                    <p>Displays a portion of the hierarchical menu of your Zenario website, using a vertical list. This is designed to be used as a side menu.</p>
-    
-                    <p>This Module can generate different types of menu, including "popout" menus (which appear upon mouseover).</p>
-    
-                    <p>The navigation bar is vertically arranged; for a horizontal navigation bar, use the Menu (Horizontal) Plugin.</p>
-    
-                    <p>It supports a change of style (e.g. colour) of a Menu Node when a user's mouse is hovering over that Menu Node. It also supports the display of an indication of the visitor's current location.</p>
-    
-                    <p>In Administration Mode the generated menu contains "Add a Menu Node here" icons, which help an Author rapidly expand and develop a web site.</p>
-    
-                    <p>It also supports displaying the menu hierarchy from any of 7 different levels - from Levels 1 to 5, and two levels that are relative to the current Content Item.</p>
-    
-                    <p>It supports multiple Menu Sections if you have Zenario Pro, providing support for different menu trees.</p>
+  <p>Displays a portion of the hierarchical menu of a Zenario website, using a vertical list.</p>
+  <p>This menu is often used as a side menu of a site, but when the related menu section doesn't contain many items it can be placed in the header or footer.</p>
+  <p>It can generate different types of menu, including "popout" menus (which appear upon mouseover).</p>
+  <p>It has a handy feature on extranet sites where it can display, "Welcome!" and the name of the logged in user.</p>
+  <p>For a horizontal navigation bar, use a plugin of the Menu (Horizontal) module.</p>
 category: pluggable
 keywords: menu, navigation
 
@@ -27,9 +19,15 @@ keywords: menu, navigation
 # latest_revision_no.inc.php file if you change any of the fields below:
 css_class_name: zenario_menu_vertical
 is_pluggable: true
-nestable: true
+can_be_plugged_into:
+    content_items: false
+    layouts: true
+    regular_nests: true
+    slideshows: false
+    ajax_nests_without_conductor: true
+    ajax_nests_with_conductor: false
 default_framework: standard
-default_instance_name: Untitled Vertical Menu
+default_instance_name: Vertical Menu
 
 # Warning: adding a new dependency to an existing module will break any existing sites
 # where the dependency is not running.

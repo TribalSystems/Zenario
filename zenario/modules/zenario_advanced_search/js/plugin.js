@@ -13,7 +13,10 @@ zenario_advanced_search.onKeyUp = function(Container_Id, field, default_tab, mod
 				$searchResults.stop(true, true).animate({opacity: .5}, 150);
 				
 				zenario.submitFormReturningHtml(field.form, function(html) {
-					var $resultDom = $(html);
+					var resp = zenario.splitFlagsFromMessage(html),
+						$resultDom = $(resp.responseText);
+					
+					zenario.showDumpsFromFlags(resp.flags);
 
 					if (mode == 'search_page') {
 						var requestsToRemember = {};

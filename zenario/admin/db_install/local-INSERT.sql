@@ -275,7 +275,6 @@ INSERT INTO `[[DB_PREFIX]]plugin_settings` VALUES
  (29,'order',0,'Most_Recent_First','synchronized_setting','text',NULL,0,'','remove',NULL),
  (29,'page_limit',0,'9','synchronized_setting','text',NULL,0,'','remove',NULL),
  (29,'page_size',0,'maximum_of','synchronized_setting','text',NULL,0,'','remove',NULL),
- (29,'pagination_style',0,'zenario_common_features::pagCloseWithNPIfNeeded','synchronized_setting','text',NULL,0,'','remove',NULL),
  (29,'phrase.framework.Download volume ',0,'Download volume','synchronized_setting','text',NULL,0,'','remove',NULL),
  (29,'pinned_content_items',0,'prioritise_pinned','synchronized_setting','text',NULL,0,'','remove',NULL),
  (29,'pinned_text',0,'Pinned','synchronized_setting','text',NULL,0,'','remove',NULL),

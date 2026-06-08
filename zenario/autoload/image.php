@@ -44,7 +44,7 @@ class image {
 	public static function publicPath($image) {
 		
 		$mimeType = $image['mime_type'];
-		$safeName = \ze\file::safeName($image['filename']);
+		$validName = \ze\file::validName($image['filename']);
 		
 		//Repeat the same logic that the linkInternal() function uses to decide whether
 		//an image should use WebP encoding. I.e. must not be an SVG, must not already be a WebP,
@@ -55,7 +55,7 @@ class image {
 		 && $mimeType !== 'image/svg+xml'
 		 && $image['location'] == 'db'
 		 && ($image['width'] <= 4096 && $image['height'] <= 2160)) {
-			$safeName = \ze\file::webpName($safeName);
+			$validName = \ze\file::webpName($validName);
 		}
 		
 		//T13130, MIC images should be stored in their own folder inside public/ directory
@@ -69,7 +69,7 @@ class image {
 			$publicDir = 'public/images/';
 		}
 		
-		return $publicDir. $image['short_checksum']. '/'. $safeName;
+		return $publicDir. $image['short_checksum']. '/'. $validName;
 	}
 	
 	
@@ -792,15 +792,15 @@ class image {
 		}
 		
 		//Work out the filename for the (possibly resized) image.
-		$safeName = \ze\file::safeName($image['filename']);
+		$validName = \ze\file::validName($image['filename']);
 		
 		//Note that with the exception of SVG images, we'll want to convert to WebP when resizing,
 		//so the extension will need to be changed.
 		if ($imageNeedsToBeReEncoded) {
-			$safeName = \ze\file::webpName($safeName);
+			$validName = \ze\file::webpName($validName);
 			$mimeType = 'image/webp';
 		}
-		$filepath = CMS_ROOT. $path. $safeName;
+		$filepath = CMS_ROOT. $path. $validName;
 		
 		//Look for the image inside the cache directory
 		if ($path && file_exists($filepath)) {
@@ -816,7 +816,7 @@ class image {
 					$abs = \ze\link::absoluteIfNeeded();
 				}
 				
-				$url = $abs. $path. rawurlencode($safeName);
+				$url = $abs. $path. rawurlencode($validName);
 				
 				if ($retina) {
 					$width = (int) ($finalImageWidth / 2);
@@ -837,7 +837,7 @@ class image {
 		//In this case, as well as creating the resized copy as normal,
 		//we should check if the full sized version of the image is in the public directory.
 		if ($imageNeedsToBeResized && $publicImagePath !== false) {
-			if (!file_exists(CMS_ROOT. $publicImagePath. $safeName)) {
+			if (!file_exists(CMS_ROOT. $publicImagePath. $validName)) {
 				
 				//N.b. if the " && $imageNeedsToBeResized" check wasn't in the if-statement above,
 				//and the file_exists() check wasn't made,
@@ -956,7 +956,7 @@ class image {
 						$abs = \ze\link::absoluteIfNeeded();
 					}
 				
-					$url = $abs. $path. rawurlencode($safeName);
+					$url = $abs. $path. rawurlencode($validName);
 				}
 			
 				if ($retina) {
@@ -996,7 +996,7 @@ class image {
 					'mode' => $canvas, 'offset' => $offset,
 					'id' => $imageId, 'useCacheDir' => $useCacheDir];
 		
-			$url = 'zenario/file.php?usage=resize&c='. $hash. ($retina? '&retina=1' : ''). '&filename='. rawurlencode($safeName);
+			$url = 'zenario/file.php?usage=resize&c='. $hash. ($retina? '&retina=1' : ''). '&filename='. rawurlencode($validName);
 		
 			if ($retina) {
 				$width = (int) $finalImageWidth / 2;

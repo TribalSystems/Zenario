@@ -107,6 +107,7 @@ if (!empty(ze::$siteConfig)) {
 			 || $setting == 'vis_time_format'
 			 || $setting == 'google_maps_api_key'
 			 || $setting == 'first_day_of_the_week_for_calendars'
+			 || $setting == 'matomo_url'
 			) {
 				$settings[$setting] = $value;
 			
@@ -214,6 +215,7 @@ zenarioA.init(
 	
 	', \ze\ring::engToBoolean($_SESSION['admin_show_empty_slots'] ?? false), ',
 	', \ze\ring::engToBoolean($_SESSION['admin_show_grid'] ?? false), ',
+	', \ze\ring::engToBoolean($_SESSION['admin_show_link_status'] ?? true), ',
 	', json_encode($settings), ',
 	', json_encode($adminSettings), ',
 	', json_encode($adminPrivs), ',
@@ -240,10 +242,29 @@ if (!empty(\ze\content::$piWarnings)) {
 	$others = count(\ze\content::$piWarnings) - 1;
 	
 	$mrg = [];
-	$mrg['eg1'] = array_shift(\ze\content::$piWarnings);
+	
+	//Check if the blocked image is in the image library.
+	//If it is, try to display a clickable link.
+	$firstElement = array_key_first(\ze\content::$piWarnings);
+	if (\ze\row::exists('files', ['id' => $firstElement, 'usage' => 'image'])) {
+		$mrg['link_1_start'] = '<a href="' . \ze\link::absolute() . 'organizer.php#zenario__library/panels/image_library//' . (int) $firstElement . '" target="_blank">';
+		$mrg['link_1_end'] = '</a>';
+	}
+	
+	$mrg['eg1'] = \ze\content::$piWarnings[$firstElement];
+	unset(\ze\content::$piWarnings[$firstElement]);
 	
 	if ($others) {
-		$mrg['eg2'] = array_shift(\ze\content::$piWarnings);
+		//Check if the blocked image is in the image library.
+		//If it is, try to display a clickable link.
+		$secondElement = array_key_first(\ze\content::$piWarnings);
+		if (\ze\row::exists('files', ['id' => $secondElement, 'usage' => 'image'])) {
+			$mrg['link_2_start'] = '<a href="' . \ze\link::absolute() . 'organizer.php#zenario__library/panels/image_library//' . (int) $secondElement . '" target="_blank">';
+			$mrg['link_2_end'] = '</a>';
+		}
+		
+		$mrg['eg2'] = \ze\content::$piWarnings[$secondElement];
+		unset(\ze\content::$piWarnings[$secondElement]);
 	}
 	
 	echo "\n", 'zenarioA.imagesWarning(', json_encode(
@@ -255,9 +276,9 @@ if (!empty(\ze\content::$piWarnings)) {
 		)
 	), ', ', json_encode(
 		ze\admin::nzPhrase(
-			"[[eg1]] is a private image and cannot be shown on a public content item",
-			"[[eg1]] and [[eg2]] are private images and cannot be shown on a public content item",
-			"[[eg1]] and [[count]] others are private images and cannot be shown on a public content item",
+			"[[link_1_start]][[eg1]][[link_1_end]] is a private image and cannot be shown on a public content item",
+			"[[link_1_start]][[eg1]][[link_1_end]] and [[link_2_start]][[eg2]][[link_2_end]] are private images and cannot be shown on a public content item",
+			"[[link_1_start]][[eg1]][[link_1_end]] and [[count]] others are private images and cannot be shown on a public content item",
 			$others, $mrg
 		)
 	), ');';

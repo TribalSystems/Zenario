@@ -14,7 +14,7 @@ zenario__content:
                        ON c.id = tc.equiv_id
                       AND c.type = tc.type
                 id_column: |
-                    CONCAT(c.tag_id, '_t')
+                    CONCAT(c.tag_id, '_chain')
                 group_by: c.tag_id
                 where_statement: |
                     WHERE c.status NOT IN ('trashed','deleted')
@@ -34,8 +34,6 @@ zenario__content:
                 content_type:
                     sql: 'tc.type = [[REFINER__CONTENT_TYPE]]'
             item:
-                name: Content item and its translation chain
-                names: Content items and their translation chains
                 css_class: translation_chain
             columns:
                 chain_desc:

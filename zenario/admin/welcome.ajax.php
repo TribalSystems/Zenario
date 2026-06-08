@@ -73,7 +73,7 @@ if (ze::request('method_call') == 'handleWelcomeAJAX') {
 		
 		ze\fileAdm::putUploadFileIntoCacheDir(
 			$_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'],
-			$_REQUEST['_html5_backwards_compatibility_hack'] ?? false,
+			$_REQUEST['_cms_backwards_compatibility_mode'] ?? false,
 			$cacheFor = false, $isAllowed = true
 		);
 	}
@@ -121,8 +121,8 @@ $removedColumns = [];
 ze\tuix::parse2($source, $removedColumns, 'welcome');
 
 
-if (ze::post('_format') || ze::post('_validate')) {
-	$clientTags = $tags = json_decode($_POST['_box'], true);
+if (ze::post('_cms_formatAction') || ze::post('_cms_validateAction')) {
+	$clientTags = $tags = json_decode($_POST['_cms_box'], true);
 }
 
 $getRequest = null;
@@ -405,10 +405,10 @@ if ($systemRequirementsMet && $installed) {
 }
 
 
-$tags['_task'] = $task;
+$tags['_cms_currentTask'] = $task;
 
 if (!empty(ze::$dumps)) {
-	$tags['__dumps'] = ze::$dumps;
+	$tags['_cms_dumps'] = ze::$dumps;
 	ze::$dumps = [];
 }
 

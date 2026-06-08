@@ -23,8 +23,7 @@ zenario__languages:
                 custom_where_statement_if_no_languages_enabled: |
                     WHERE l.id IS NULL
             refiners:
-                not_enabled:
-                    exists: true
+                not_enabled: {}
             
             bold_columns_in_list_view: name
             default_sort_column: name
@@ -127,8 +126,6 @@ zenario__languages:
                     disallow_sorting: true
             label_format_for_grid_view: '[[english_name]] ([[code]])'
             item:
-                name: Language
-                names: Languages
                 css_class: language
                 selection_display_type: radios
             collection_buttons:
@@ -185,7 +182,7 @@ zenario__languages:
                 edit:
                     label: Edit settings for this language
                     with_columns_set:
-                        traits.enabled: true
+                        enabled: true
                     admin_box:
                         path: zenario_setup_language
                         tab: settings
@@ -205,7 +202,7 @@ zenario__languages:
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
                     label: Enable this language
                     with_columns_set:
-                        traits.not_enabled: true
+                        not_enabled: true
                     admin_box:
                         path: zenario_setup_language
                         tab: phrases
@@ -214,7 +211,7 @@ zenario__languages:
                     label: Delete phrases
                     priv: _PRIV_MANAGE_LANGUAGE_PHRASE
                     with_columns_set:
-                        traits.not_enabled: true
+                        not_enabled: true
                     ajax:
                         confirm:
                             message: 'Are you sure that you wish to delete the phrases you have added for the language "[[name]]"?'
@@ -228,8 +225,8 @@ zenario__languages:
                     label: Delete language and its content
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
                     with_columns_set:
-                        traits.enabled: true
-                        traits.can_delete: true
+                        enabled: true
+                        can_delete: true
                     admin_box:
                         path: zenario_delete_language
                     hide_in_select_mode: true

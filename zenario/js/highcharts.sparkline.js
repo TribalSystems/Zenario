@@ -57,20 +57,20 @@
 				legend: {
 					enabled: false
 				},
-				/*tooltip: { 
-					enabled: true 
-				},*/
 				tooltip: {
-					backgroundColor: null,
-					borderWidth: 0,
-					shadow: false,
-					useHTML: true,
-					hideDelay: 0,
 					shared: true,
-					padding: 0,
+					backgroundColor: '#eeeeee',
+					borderWidth: 1,
+					padding: 2,
+					shadow: true,
+					hideDelay: 0,
 					positioner: function (w, h, point) {
-						return { x: point.plotX - w / 2, y: point.plotY - h };
-					}
+						return { x: point.plotX, y: point.plotY };
+					},
+					useHTML: true,
+                    headerFormat: ' ',
+                    pointFormat: '{point.label}',
+                    footerFormat: ' '
 				},
 				plotOptions: {
 					series: {

@@ -85,3 +85,10 @@ tinymce.PluginManager.add('zenario_save', function(editor) {
 		}
 	});
 });
+
+
+//Set the convert_unsafe_embeds option to true.
+//Recommended as per https://www.tiny.cloud/docs/tinymce/6/6.8.1-release-notes/#new-convert_unsafe_embeds-option-that-controls-whether-object-and-embed-elements-will-be-converted-to-more-restrictive-alternatives-namely-img-for-image-mime-types-video-for-video-mime-types-audio-audio-mime-types-or-iframe-for-other-or-unspecified-mime-types
+tinymce.overrideDefaults({
+   convert_unsafe_embeds: true
+});

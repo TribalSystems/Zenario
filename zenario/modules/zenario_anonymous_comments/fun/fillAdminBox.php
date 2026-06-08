@@ -29,14 +29,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'plugin_settings':
-		$box['tabs']['order']['fields']['pagination_style_posts']['values'] = 
-			ze\pluginAdm::paginationOptions();
-		
-		if (isset($box['tabs']['order']['fields']['pagination_style_threads'])) {
-			$box['tabs']['order']['fields']['pagination_style_threads']['values'] = 
-				ze\pluginAdm::paginationOptions();
-		}
-		
 		if (isset($box['tabs']['moderation']['fields']['email_address_for_reports']) && !$box['key']['instanceId']) {
 			$box['tabs']['moderation']['fields']['email_address_for_reports']['value'] = EMAIL_ADDRESS_GLOBAL_SUPPORT;
 		}

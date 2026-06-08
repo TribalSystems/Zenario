@@ -23,8 +23,7 @@ echo
 echo '
 	</title>';
 
-$prefix = '../../';
-ze\content::pageHead($prefix);
+ze\content::pageHead($scriptPrefix = '../../', $scriptMode = 'other');
 $v = ze\db::codeVersion();
 
 echo '
@@ -33,7 +32,7 @@ echo '
 
 echo '</head>';
 
-ze\content::pageBody();
+ze\content::pageBody($scriptPrefix, $scriptMode);
 
 
 if ($topic == 'body_classes') {
@@ -83,7 +82,7 @@ if ($topic == 'body_classes') {
 
 
 
-ze\content::pageFoot($prefix, false, false, false);
+ze\content::pageFoot($scriptPrefix, $scriptMode, false, false);
 
 
 echo '

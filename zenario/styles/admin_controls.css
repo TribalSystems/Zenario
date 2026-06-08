@@ -167,7 +167,20 @@ body.zenario_pageModeIsnt_layout .zenario_slot_layout_preview {
 	display: none !important;
 }
 
+/*	Layout previews, empty WYSIWYG	*/
 
+body.zenario_pageMode_preview.zenario_pageToolbar_preview .zenario_emptyWYSIWYG .zenario_slot {
+	outline:1px dashed #ccc;
+	opacity: 0.6;
+}
+
+body.zenario_pageMode_preview.zenario_pageToolbar_preview .zenario_emptyWYSIWYG .zenario_full_slot {
+	display: block !important;
+}
+
+body.zenario_pageMode_preview.zenario_pageToolbar_preview .zenario_emptyWYSIWYG .zenario_full_slot .zenario_editor_placeholder_text {
+	display: block;
+}
 
 /*	Add a special style to the h1 tag when you hover over it in admin mode,
 	to help you spot the most important SEO tag.	*/
@@ -811,8 +824,7 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenar
 	background-color:#6F6F6F;
 }
 
-.zenario_sc a.zenario_imgProps,
-.zenario_sc a.zenario_linkToNewTab {
+.zenario_sc a.zenario_imgProps {
 	width: 10px;
 	height: 10px;
 	margin-left: 3px;
@@ -827,7 +839,6 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenar
     margin-right: 0;
 }
 
-.zenario_sc a.zenario_linkToNewTab,
 .zenario_sc a.plugins_link_new_window {
 	margin-left:1px;
 	background: url('../admin/images/icon-open-in-new-window-bright-blue.svg') no-repeat center center / auto 100%;
@@ -856,6 +867,10 @@ div.zenario_slotControlsWrap .zenario_slotControl_menuSection {
 
 div.zenario_slotControlsWrap .zenario_slotControl_empty {
 	/*opacity: 0.4;*/
+}
+
+.zenario_sc a.plugins_optional_link_to_new_tab {
+	text-decoration: none;
 }
 
 .zenario_sc a.plugins_link_new_window {

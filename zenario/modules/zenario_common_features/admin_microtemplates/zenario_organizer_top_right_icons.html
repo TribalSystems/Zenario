@@ -31,6 +31,18 @@
 		<% } %>
 	></div>
 <% } %>
+<% if (zenarioA.running.zenario_analytics_matomo) { %>
+	<div
+		class="zenario_topRightIcon organizer_analytics_box"
+		data-step="16" data-position="bottom-right-aligned"
+		data-intro="{{'<p><strong>Analytics</strong></p><p>Click here for info on analytics.</p>'|escape}}"
+		onclick="zenarioAB.open('zenario_analytics_info', {});"
+		title="Analytics"
+		data-tooltip-options="
+			{position: {collision: 'flipfit'}}
+		"
+	></div>
+<% } %>
 <% if (zenarioA.hasPriv('_PRIV_EDIT_SITE_SETTING')) { %>
 	<div
 	class="zenario_topRightIcon organizer_help_box"

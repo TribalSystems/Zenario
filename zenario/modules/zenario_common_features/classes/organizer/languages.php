@@ -172,21 +172,20 @@ _text
 						//If we're looking up a Language Name, we can't rely on the formatting that Storekeeper provides and must use the actual Language Name
 						$item['name'] = ze\lang::name($id, $addIdInBracketsToEnd = true);
 						if (!$item['enabled']) {
-							$item['traits'] = ['not_enabled' => true];
+							$item['not_enabled'] = true;
 				
 						} else {
-							$item['traits'] = ['enabled' => true];
 							++$enabledCount;
 					
 							if (ze\contentAdm::allowDeleteLanguage($id)) {
-								$item['traits']['can_delete'] = true;
+								$item['can_delete'] = true;
 							}
 					
 							$cID = $cType = false;
 							if (ze\content::langSpecialPage('zenario_home', $cID, $cType, $id, true)) {
 								$item['frontend_link'] = ze\link::toItem($cID, $cType);
 								$item['homepage_id'] = $cType. '_'. $cID;
-								$item['traits']['has_homepage'] = true;
+								$item['has_homepage'] = true;
 							}
 						}
 						

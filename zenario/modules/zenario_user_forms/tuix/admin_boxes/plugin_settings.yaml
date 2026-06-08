@@ -25,8 +25,10 @@ plugin_settings:
                     values:
                         inline_in_page: 
                             label: Inline in page
+                            split_values_if_selected: true
                         in_modal_window: 
                             label: In modal window
+                            split_values_if_selected: true
                         inline_popup:
                             label: Inline popup
                     value: inline_in_page
@@ -57,14 +59,6 @@ plugin_settings:
                     indent: 1
                     visible_if: zenarioAB.value('display_mode') == 'inline_in_page'
                     redraw_onchange: true
-                output_form_id_in_the_form_element:
-                    plugin_setting:
-                        name: output_form_id_in_the_form_element
-                    label: 'Output the form ID as form_[number] in the HTML <form> element'
-                    note_below: 'Only enable this if this form appears only once on the content item; the occurrence of duplicate "id" fields can invalidate page HTML.'
-                    type: checkbox
-                    indent: 1
-                    visible_if: zenarioAB.value('display_mode') == 'inline_in_page'
                 print_page_button_pages:
                     plugin_setting:
                         name: print_page_button_pages
@@ -74,6 +68,18 @@ plugin_settings:
                     visible_if: (zenarioAB.value('display_mode') == 'inline_in_page') && zenarioAB.value('show_print_page_button')
                     side_note: A comma seperated list of page numbers to display the print page button on
                     value: 1
+                output_form_id_in_the_form_element:
+                    plugin_setting:
+                        name: output_form_id_in_the_form_element
+                    label: 'Ensure form ID is unique (advanced)'
+                    note_below: 'Only needed if the same form appears more than once on a content item. (This ensures there are no duplicate "id" fields in the generated page source.)'
+                    type: checkbox
+                    indent: 1
+                    visible_if: zenarioAB.value('display_mode') == 'inline_in_page'
+                split_values_from_display_mote_setting: 
+                    visible_if: zenarioAB.value('display_mode') != 'inline_popup'
+                    snippet: 
+                        show_split_values_from: display_mode
                 partial_completion_button_position:
                     plugin_setting:
                         name: partial_completion_button_position

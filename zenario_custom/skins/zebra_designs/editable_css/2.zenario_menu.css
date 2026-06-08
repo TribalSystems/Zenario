@@ -348,11 +348,22 @@
 	position:relative;
 }
 
-.zenario_menu ul li.private a:after {
+.zenario_menu ul li.level1.private > a:before,
+.zenario_menu ul li.level1.private > em > a:before,
+.zenario_menu ul li.level1 > ul > li.private > a:after,
+.zenario_menu ul li.level1 > ul > li.private > em > a:after,
+.zenario_menu ul li.level1 > ul > li > ul > li.private > a:after,
+.zenario_menu ul li.level1 > ul > li > ul > li.private > em > a:after {
 	font-family: "FontAwesome";
   	content: "\f023";
-  	padding-left:5px;
-  	font-size:12px;  
-  	position: absolute;
-  	top: 7px;
+  	padding-right:5px;
+  	font-size:12px;
+}
+
+.zenario_menu ul li.level1 > ul > li.private > a:after,
+.zenario_menu ul li.level1 > ul > li.private > em > a:after,
+.zenario_menu ul li.level1 > ul > li > ul > li.private > a:after,
+.zenario_menu ul li.level1 > ul > li > ul > li.private > em > a:after {
+	padding-left:5px;
+	padding-right:0;
 }

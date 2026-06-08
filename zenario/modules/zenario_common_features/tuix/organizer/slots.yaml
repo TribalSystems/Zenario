@@ -10,12 +10,9 @@ zenario__content:
                 cVersion: false
                 layoutId: false
             refiners:
-                content_item:
-                    exists: true
-                content_item_from_menu_node:
-                    exists: true
-                layout:
-                    exists: true
+                content_item: {}
+                content_item_from_menu_node: {}
+                layout: {}
             refiner_required: true
             
             panel_type: slot_reload_on_change
@@ -56,13 +53,10 @@ zenario__content:
                     disallow_sorting: true
                     width: xlarge
                     html: true
-                module_id:
-                    exists: true
-                instance_id:
-                    exists: true
+                module_id: {}
+                instance_id: {}
             default_sort_column: ord
             item:
-                name: Slot
                 css_class: slot
             
             custom_template_buttons:
@@ -94,7 +88,7 @@ zenario__content:
                     parent: insert_dropdown
                     label: Insert plugin...
                     combine_items:
-                        path: zenario__library/panels/modules/refiners/slotable_only////
+                        path: zenario__library/panels/modules/refiners/plugins_slotable_into_content_items////
                         target_path: zenario__library/panels/plugins
                         min_path: zenario__library/panels/modules
                         max_path: zenario__library/panels/plugins
@@ -157,7 +151,7 @@ zenario__content:
                     priv: _PRIV_MANAGE_TEMPLATE_SLOT
                     label: Insert plugin...
                     combine_items:
-                        path: zenario__library/panels/modules/refiners/slotable_only////
+                        path: zenario__library/panels/modules/refiners/plugins_slotable_into_layouts////
                         target_path: zenario__library/panels/plugins
                         min_path: zenario__library/panels/modules
                         max_path: zenario__library/panels/plugins

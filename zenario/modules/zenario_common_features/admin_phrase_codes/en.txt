@@ -16,11 +16,11 @@ _ERROR_SALUTATION_TOO_LONG|Salutation cannot be more than 25 characters long.
 _ERROR_SCREEN_NAME_IN_USE|This screen name is already in use.
 _ERROR_SCREEN_NAME_TOO_LONG|Screen name cannot be more than 50 characters long.
 _ERROR_SCREEN_NAME_USES_INVALID_CHARACTERS|Screen name can contain only lower case letters a-z, capital letters A-Z, numbers 0-9, hyphens, underscores, and periods.
-_FILE_SIZE_UNIT_GB|GB
-_FILE_SIZE_UNIT_MB|MB
-_FILE_SIZE_UNIT_KB|KB
 _FILE_SIZE_UNIT_BYTE|byte
 _FILE_SIZE_UNIT_BYTES|bytes
+_FILE_SIZE_UNIT_GB|GB
+_FILE_SIZE_UNIT_KB|KB
+_FILE_SIZE_UNIT_MB|MB
 ~|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||~
 ~||||||| This file lists Admin Phrases. It's read by a program that uses binomial search, so the phrase  |||||||||~
 ~||||||| codes *must* be kept in (strict binary) alphabetical order. This footer must also be kept here. |||||||||~
