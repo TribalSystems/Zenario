@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -108,11 +108,17 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				$values['unsub_exclude/exclude_previous_newsletters_recipients_enable'] = 1;
 			}
 			
+			//Don't show the buttons related to editing if this Newsletter has already been sent.
 			if ($details['status'] != '_DRAFT') {
 				$box['tabs']['meta_data']['edit_mode']['enabled'] =
 				$box['tabs']['unsub_exclude']['edit_mode']['enabled'] = false;
 				$box['tabs']['meta_data']['fields']['test_send_button']['hidden'] =
 				$box['tabs']['meta_data']['fields']['test_send_button_dummy']['hidden'] = false;
+				
+				unset(
+					$box['save_button_message'],
+					$box['save_and_continue_button_message']
+				);
 			}
 
 			$details['created_user_id'] =

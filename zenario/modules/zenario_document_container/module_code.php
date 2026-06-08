@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -464,9 +464,9 @@ class zenario_document_container extends ze\moduleBaseClass {
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {
 				if (file_exists(ze::setting("docstore_dir") . "/" . $row['path'] . "/" . $row['doc_filename'])) {
-					$paths .= ' "' . ze::setting("docstore_dir") . "/" . $row['path'] . "/" . $row['doc_filename'] . '"';
+					$paths .= ' ' . escapeshellarg(ze::setting("docstore_dir") . "/" . $row['path'] . "/" . $row['doc_filename']);
 				} else {
-					$paths .= ' "' . ze::setting("docstore_dir") . "/" . $row['path'] . "/" . $row['filename'] . '"';
+					$paths .= ' ' . escapeshellarg(ze::setting("docstore_dir") . "/" . $row['path'] . "/" . $row['filename']);
 				}
 			}
 			

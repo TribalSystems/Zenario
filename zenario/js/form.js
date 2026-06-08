@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -2731,7 +2731,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					if (field.year_range) {
 						yearRange = field.year_range
 					} else {
-						yearRange = "c-15:c+2";
+						yearRange = "c-15:+2";
 					}
 
                     if (!allowTypingInDateField) {

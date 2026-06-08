@@ -21,7 +21,7 @@
 		"blueimp-file-upload": "10.*",
 		"cytoscape": "*",
 		"howler": "^2.2.4",
-		"jquery": "*",
+		"jquery": "3.*",
 		"jquery-cycle2": "malsup\/cycle2",
 		"jquery-doubletaptogo": "3.*",
 		"jquery-lazy": "*",
@@ -31,12 +31,12 @@
 		"moment-timezone": "0.*",
 		"rcrop": "aewebsolutions\/rcrop",
 		"spectrum-colorpicker": "*",
-		"swiper": "11.*",
+		"swiper": "*",
 		"tinymce": "6.*",
 		"toastr": "*",
 		"underscore.string": "*",
 		"wow.js": "1.*",
 		"zxcvbn": "4.*"
 	},
-	"version": "10.3.65095"
+	"version": "10.3.67240"
 }

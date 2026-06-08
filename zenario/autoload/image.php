@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -230,7 +230,7 @@ class image {
 		
 				$html .= '"';
 				
-				if ($altTag !== '') {
+				if (!is_null($altTag) && $altTag !== '') {
 					$html .= "\n\t". 'alt="'. htmlspecialchars($altTag). '"';
 				}
 		
@@ -355,7 +355,7 @@ class image {
 				
 						$html .= "\n\t\t". 'type="'. htmlspecialchars($mimeType). '"';
 				
-						if ($altTag !== '') {
+						if (!is_null($altTag) && $altTag !== '') {
 							$html .= "\n\t\t". 'alt="'. htmlspecialchars($altTag). '"';
 						}
 				

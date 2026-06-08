@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -51,8 +51,8 @@ class zenario_nest__animation_libraries__cycle2 extends zenario_nest {
 				break;
 		}
 		
-		//The cycle2 and one_slide animation libraries both have support for the "Make all plugins in nest equal height" option
-		$this->sameHeight = (bool) $this->setting('eggs_equal_height');
+		//Note: the "Make all plugins in nest equal height" option does not work with multiple tabs that animate between each other.
+		$this->sameHeight = false;
 		
 		
 		$firstTabNum = false;

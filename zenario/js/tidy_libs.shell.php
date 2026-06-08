@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -143,6 +143,7 @@ filterWantedCode('cytoscape', 'dist');
 filterWantedCode('cytoscape/dist', 'cytoscape');
 filterWantedCode('@fortawesome/fontawesome-free', 'attribution.js', 'css', 'webfonts');
 filterWantedCode('@fortawesome/fontawesome-free/css', 'all', 'v4-shims');
+removeUnwantedCode('jquery/dist-module');
 removeUnwantedCode('jquery/src');
 filterWantedCode('jquery/dist', 'core', 'jquery');
 filterWantedCode('jquery-cycle2', 'build');

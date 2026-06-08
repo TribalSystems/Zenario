@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1782,15 +1782,15 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				defaultMapZoom = 1;
 				';
 		
-		if (($_GET["map_center_lat"] ?? false) && ($_GET["map_center_lng"] ?? false) && ($_GET["zoom"] ?? false)) {		
-			echo 'defaultMapCentreLat = ' . ($_GET["map_center_lat"] ?? false) . ';
-				defaultMapCentreLng = ' . ($_GET["map_center_lng"] ?? false) . ';
-				defaultMapZoom = ' . ($_GET["zoom"] ?? false) . ';';
+		if (($_GET["map_center_lat"] ?? 0) && ($_GET["map_center_lng"] ?? 0) && ($_GET["zoom"] ?? 0)) {		
+			echo 'defaultMapCentreLat = ' . (float) ($_GET["map_center_lat"] ?? 0) . ';
+				defaultMapCentreLng = ' . (float) ($_GET["map_center_lng"] ?? 0) . ';
+				defaultMapZoom = ' . (float) ($_GET["zoom"] ?? 0) . ';';
 		}
 		
-		if (($_GET["marker_lat"] ?? false) && ($_GET["marker_lng"] ?? false)) {		
-			echo 'markerLat = ' . ($_GET["marker_lat"] ?? false) . ';
-				markerLng = ' . ($_GET["marker_lng"] ?? false) . ';';
+		if (($_GET["marker_lat"] ?? 0) && ($_GET["marker_lng"] ?? 0)) {		
+			echo 'markerLat = ' . (float) ($_GET["marker_lat"] ?? 0) . ';
+				markerLng = ' . (float) ($_GET["marker_lng"] ?? 0) . ';';
 		}		
 		
 		if ($_GET["editmode"] ?? false) {

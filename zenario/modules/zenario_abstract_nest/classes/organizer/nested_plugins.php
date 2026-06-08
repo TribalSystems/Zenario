@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -606,7 +606,7 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 		//	return static::addTwigSnippet(ze::post('moduleClassName'), (ze::post('snippetName')), $instanceId, $ids, true);
 		
 		} elseif (ze::get('duplicate_plugin') || ze::get('duplicate_plugin_and_add_tab')) {
-			echo $this->duplicatePluginConfirm($ids);
+			echo $this->duplicatePluginConfirm($ids, $instanceId);
 			
 		} elseif (ze::post('duplicate_plugin')) {
 			return static::duplicatePlugin($ids, $instanceId);

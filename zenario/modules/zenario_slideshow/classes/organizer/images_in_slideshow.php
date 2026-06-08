@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -166,7 +166,7 @@ class zenario_slideshow__organizer__images_in_slideshow extends zenario_slidesho
 			return $eggId;
 		
 		} elseif (ze::get('duplicate_plugin_and_add_tab')) {
-			echo $this->duplicatePluginConfirm($ids);
+			echo $this->duplicatePluginConfirm($ids, $instanceId);
 			
 		} elseif (ze::post('duplicate_plugin_and_add_tab')) {
 			

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -559,7 +559,7 @@ class zenario_abstract_nest extends ze\moduleBaseClass {
 		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected function duplicatePluginConfirm($eggId) {
+	protected function duplicatePluginConfirm($eggId, $instanceId) {
 		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	

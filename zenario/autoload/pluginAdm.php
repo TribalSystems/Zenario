@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1119,7 +1119,7 @@ class pluginAdm {
 	
 		foreach ([
 			'nested_paths', 'plugin_instance_store',
-			'plugin_settings', 'plugin_item_link', 'plugin_layout_link'
+			'plugin_settings', 'plugin_item_link', 'plugin_layout_link', 'plugin_sitewide_link'
 		] as $table) {
 			\ze\row::delete($table, ['instance_id' => $instanceId]);
 		}

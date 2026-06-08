@@ -411,7 +411,7 @@ plugin_settings:
                     post_field_html: '&nbsp;pixels'
         eggs_size:
             visible_if:
-                zenarioAB.animationLibIn: one_slide, cycle2
+                zenarioAB.animationLibIs: one_slide
             label: All plugins size
             fields:
                 desc:

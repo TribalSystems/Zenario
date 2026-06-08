@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2025, Tribal Limited
+ * Copyright (c) 2026, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,8 @@ $mrg = [
 $message =
 	'<p>'. ze\admin::phrase('Are you sure you wish to duplicate the plugin &quot;[[plugin_name|escape]]&quot;?', $mrg). '</p>';
 
-$usage = ze\pluginAdm::usage($eggId, false);
-$usagePublished = ze\pluginAdm::usage($eggId, true);
+$usage = ze\pluginAdm::usage($instanceId, false);
+$usagePublished = ze\pluginAdm::usage($instanceId, true);
 
 if ($usage > 1 || $usagePublished > 0) {
 	$message .=
@@ -46,7 +46,7 @@ if ($usage > 1 || $usagePublished > 0) {
 			[
 				'pages' => (int) $usage,
 				'published' => (int) $usagePublished,
-				'link' => htmlspecialchars(ze\pluginAdm::usageOrganizerLink($eggId))]
+				'link' => htmlspecialchars(ze\pluginAdm::usageOrganizerLink($instanceId))]
 		). '</p>';
 }
 
